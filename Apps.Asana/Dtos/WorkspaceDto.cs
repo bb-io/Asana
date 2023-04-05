@@ -6,12 +6,10 @@ using System.Threading.Tasks;
 
 namespace Apps.Asana.Dtos
 {
-    public class TaskDto
+    public class WorkspaceDto
     {
         public string GId { get; set; }
 
         public string Name { get; set; }
-
-        public string Notes { get; set; }
     }
 }

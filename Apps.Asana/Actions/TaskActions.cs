@@ -41,6 +41,7 @@ namespace Apps.Asana.Actions
             {
                 GId = task.GId,
                 Name = task.Name,
+                Notes = task.Notes,
             };
         }
 
