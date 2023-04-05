@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Apps.Asana.Models.Responses
+namespace Apps.Asana.Models.Tasks.Responses
 {
     public class ListTasksResponse
     {
