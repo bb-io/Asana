@@ -18,7 +18,7 @@ namespace Apps.Asana.Actions
            [ActionParameter] ListTasksRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"https://app.asana.com/api/1.0/tasks?project={input.ProjectId}", Method.Get, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/tasks?project={input.ProjectId}", Method.Get, authenticationCredentialsProvider);
             dynamic content = JsonConvert.DeserializeObject(client.Get(request).Content);
             JArray tasksArray = content.data;
             var tasks = tasksArray.ToObject<List<TaskDto>>();
@@ -33,7 +33,7 @@ namespace Apps.Asana.Actions
            [ActionParameter] GetTaskRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"https://app.asana.com/api/1.0/tasks/{input.TaskId}", Method.Get, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/tasks/{input.TaskId}", Method.Get, authenticationCredentialsProvider);
             dynamic content = JsonConvert.DeserializeObject(client.Get(request).Content);
             JObject taskObj = content.data;
             var task = taskObj.ToObject<TaskDto>();
@@ -50,7 +50,7 @@ namespace Apps.Asana.Actions
            [ActionParameter] UpdateTaskRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"https://app.asana.com/api/1.0/tasks/{input.TaskId}", Method.Put, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/tasks/{input.TaskId}", Method.Put, authenticationCredentialsProvider);
             request.AddJsonBody(new
             {
                 data = new
@@ -67,7 +67,7 @@ namespace Apps.Asana.Actions
            [ActionParameter] CreateTaskRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"https://app.asana.com/api/1.0/tasks", Method.Post, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/tasks", Method.Post, authenticationCredentialsProvider);
             request.AddJsonBody(new
             {
                 data = new
@@ -85,8 +85,23 @@ namespace Apps.Asana.Actions
            [ActionParameter] DeleteTaskRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"https://app.asana.com/api/1.0/tasks/{input.TaskId}", Method.Delete, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/tasks/{input.TaskId}", Method.Delete, authenticationCredentialsProvider);
             client.Execute(request);
+        }
+
+        [Action("Get user tasks", Description = "Get user tasks from user task list Id")]
+        public ListTasksResponse GetUserTasks(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+           [ActionParameter] GetUserTasksRequest input)
+        {
+            var client = new AsanaClient();
+            var request = new AsanaRequest($"/user_task_lists/{input.UserTaskListId}/tasks", Method.Get, authenticationCredentialsProvider);
+            dynamic content = JsonConvert.DeserializeObject(client.Get(request).Content);
+            JArray tasksArray = content.data;
+            var tasks = tasksArray.ToObject<List<TaskDto>>();
+            return new ListTasksResponse()
+            {
+                Tasks = tasks
+            };
         }
     }
 }

@@ -23,7 +23,7 @@ namespace Apps.Asana.Actions
         public ListWorkspacesResponse ListAllWorkspaces(AuthenticationCredentialsProvider authenticationCredentialsProvider)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"https://app.asana.com/api/1.0/workspaces", Method.Get, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/workspaces", Method.Get, authenticationCredentialsProvider);
             dynamic content = JsonConvert.DeserializeObject(client.Get(request).Content);
             JArray workspacesArray = content.data;
             var workspaces = workspacesArray.ToObject<List<WorkspaceDto>>();

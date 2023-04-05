@@ -25,7 +25,7 @@ namespace Apps.Asana.Actions
            [ActionParameter] GetUserRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"https://app.asana.com/api/1.0/users/{input.UserId}", Method.Get, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/users/{input.UserId}", Method.Get, authenticationCredentialsProvider);
             dynamic content = JsonConvert.DeserializeObject(client.Get(request).Content);
             JObject userObj = content.data;
             var user = userObj.ToObject<UserDto>();
@@ -35,6 +35,23 @@ namespace Apps.Asana.Actions
                 Name = user.Name,
                 Email = user.Email,
                 Workspaces = user.Workspaces
+            };
+        }
+
+        [Action("Get user's task list", Description = "Get user's task list by user Id")]
+        public GetUserTaskListResponse GetUserTaskList(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+           [ActionParameter] GetUserTaskListRequest input)
+        {
+            var client = new AsanaClient();
+            var request = new AsanaRequest($"/users/{input.UserId}/user_task_list?workspace={input.WorkspaceId}", 
+                Method.Get, authenticationCredentialsProvider);
+            dynamic content = JsonConvert.DeserializeObject(client.Get(request).Content);
+            JObject userTaskListObj = content.data;
+            var userTaskList = userTaskListObj.ToObject<UserTaskListDto>();
+            return new GetUserTaskListResponse()
+            {
+                Id = userTaskList.GId,
+                Name = userTaskList.Name
             };
         }
     }

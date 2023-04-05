@@ -18,7 +18,7 @@ namespace Apps.Asana.Actions
            [ActionParameter] ListProjectsRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"https://app.asana.com/api/1.0/projects", Method.Get, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/projects", Method.Get, authenticationCredentialsProvider);
             dynamic content = JsonConvert.DeserializeObject(client.Get(request).Content);
             JArray projectsArray = content.data;
             var projects = projectsArray.ToObject<List<ProjectDto>>();
@@ -33,7 +33,7 @@ namespace Apps.Asana.Actions
            [ActionParameter] GetProjectRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"https://app.asana.com/api/1.0/projects/{input.ProjectId}", Method.Get, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/projects/{input.ProjectId}", Method.Get, authenticationCredentialsProvider);
             dynamic content = JsonConvert.DeserializeObject(client.Get(request).Content);
             JObject projectObj = content.data;
             var project = projectObj.ToObject<ProjectDto>();
@@ -49,7 +49,7 @@ namespace Apps.Asana.Actions
            [ActionParameter] UpdateProjectRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"https://app.asana.com/api/1.0/projects/{input.ProjectId}", Method.Put, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/projects/{input.ProjectId}", Method.Put, authenticationCredentialsProvider);
             request.AddJsonBody(new
             {
                 data = new
@@ -66,7 +66,7 @@ namespace Apps.Asana.Actions
            [ActionParameter] CreateProjectRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"https://app.asana.com/api/1.0/projects", Method.Post, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/projects", Method.Post, authenticationCredentialsProvider);
             request.AddJsonBody(new
             {
                 data = new
@@ -84,7 +84,7 @@ namespace Apps.Asana.Actions
            [ActionParameter] DeleteProjectRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"https://app.asana.com/api/1.0/projects/{input.ProjectId}", Method.Delete, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/projects/{input.ProjectId}", Method.Delete, authenticationCredentialsProvider);
             client.Execute(request);
         }
     }
