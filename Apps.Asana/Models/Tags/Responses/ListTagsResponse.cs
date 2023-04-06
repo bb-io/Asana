@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Apps.Asana.Models.Projects.Requests
+namespace Apps.Asana.Models.Tags.Responses
 {
-    public class ListProjectsResponse
+    public class ListTagsResponse
     {
-        public IEnumerable<ProjectDto> Projects { get; set; }
+        public IEnumerable<TagDto> Tags { get; set; }
     }
 }

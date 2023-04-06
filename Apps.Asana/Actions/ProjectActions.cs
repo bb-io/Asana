@@ -81,5 +81,48 @@ namespace Apps.Asana.Actions
             var request = new AsanaRequest($"/projects/{input.ProjectId}", Method.Delete, authenticationCredentialsProvider);
             client.Execute(request);
         }
+
+        [Action("Get project sections", Description = "Get project sections")]
+        public GetProjectSectionsResponse GetProjectSections(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+           [ActionParameter] GetProjectSectionsRequest input)
+        {
+            var client = new AsanaClient();
+            var request = new AsanaRequest($"/projects/{input.ProjectId}/sections", Method.Get, authenticationCredentialsProvider);
+            var sections = client.Get<ResponseWrapper<List<SectionDto>>>(request);
+            return new GetProjectSectionsResponse()
+            {
+                Sections = sections.Data
+            };
+        }
+
+        [Action("Get project status", Description = "Get project status by Id")]
+        public GetProjectStatusResponse GetProjectStatus(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+           [ActionParameter] GetProjectStatusRequest input)
+        {
+            var client = new AsanaClient();
+            var request = new AsanaRequest($"/project_statuses/{input.ProjectStatusId}", Method.Get, authenticationCredentialsProvider);
+            var statuses = client.Get<ResponseWrapper<ProjectStatusDto>>(request);
+            return new GetProjectStatusResponse()
+            {
+                GId = statuses.Data.GId,
+                Color = statuses.Data.Color,
+                Text = statuses.Data.Text,
+                Title = statuses.Data.Title
+            };
+        }
+
+        [Action("Get project status updates", Description = "Get project status updates")]
+        public GetProjectStatusUpdatesResponse GetProjectStatusUpdates(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+           [ActionParameter] GetProjectStatusUpdatesRequest input)
+        {
+            var client = new AsanaClient();
+            var request = new AsanaRequest($"/status_updates?parent={input.ProjectId}", Method.Get, authenticationCredentialsProvider);
+            var updates = client.Get<ResponseWrapper<List<ProjectStatusUpdateDto>>>(request);
+            return new GetProjectStatusUpdatesResponse()
+            {
+                Updates = updates.Data
+            };
+        }
+
     }
 }
