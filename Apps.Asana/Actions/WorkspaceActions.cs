@@ -24,12 +24,10 @@ namespace Apps.Asana.Actions
         {
             var client = new AsanaClient();
             var request = new AsanaRequest($"/workspaces", Method.Get, authenticationCredentialsProvider);
-            dynamic content = JsonConvert.DeserializeObject(client.Get(request).Content);
-            JArray workspacesArray = content.data;
-            var workspaces = workspacesArray.ToObject<List<WorkspaceDto>>();
+            var workspaces = client.Get<ResponseWrapper<List<WorkspaceDto>>>(request);
             return new ListWorkspacesResponse()
             {
-                Workspaces = workspaces
+                Workspaces = workspaces.Data
             };
         }
     }

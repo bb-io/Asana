@@ -19,12 +19,10 @@ namespace Apps.Asana.Actions
         {
             var client = new AsanaClient();
             var request = new AsanaRequest($"/projects", Method.Get, authenticationCredentialsProvider);
-            dynamic content = JsonConvert.DeserializeObject(client.Get(request).Content);
-            JArray projectsArray = content.data;
-            var projects = projectsArray.ToObject<List<ProjectDto>>();
+            var projects = client.Get<ResponseWrapper<List<ProjectDto>>>(request); 
             return new ListProjectsResponse()
             {
-                Projects = projects
+                Projects = projects.Data
             };
         }
 
@@ -34,13 +32,11 @@ namespace Apps.Asana.Actions
         {
             var client = new AsanaClient();
             var request = new AsanaRequest($"/projects/{input.ProjectId}", Method.Get, authenticationCredentialsProvider);
-            dynamic content = JsonConvert.DeserializeObject(client.Get(request).Content);
-            JObject projectObj = content.data;
-            var project = projectObj.ToObject<ProjectDto>();
+            var project = client.Get<ResponseWrapper<ProjectDto>>(request);
             return new GetProjectResponse()
             {
-                GId = project.GId,
-                Name = project.Name,
+                GId = project.Data.GId,
+                Name = project.Data.Name,
             };
         }
 
@@ -57,7 +53,6 @@ namespace Apps.Asana.Actions
                     name = input.NewName
                 }
             });
-
             client.Execute(request);
         }
 
@@ -75,7 +70,6 @@ namespace Apps.Asana.Actions
                     team = input.TeamId
                 }
             });
-
             client.Execute(request);
         }
 

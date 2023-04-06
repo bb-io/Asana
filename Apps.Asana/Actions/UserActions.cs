@@ -26,15 +26,13 @@ namespace Apps.Asana.Actions
         {
             var client = new AsanaClient();
             var request = new AsanaRequest($"/users/{input.UserId}", Method.Get, authenticationCredentialsProvider);
-            dynamic content = JsonConvert.DeserializeObject(client.Get(request).Content);
-            JObject userObj = content.data;
-            var user = userObj.ToObject<UserDto>();
+            var user = client.Get<ResponseWrapper<UserDto>>(request);
             return new GetUserResponse()
             {
-                GId = user.GId,
-                Name = user.Name,
-                Email = user.Email,
-                Workspaces = user.Workspaces
+                GId = user.Data.GId,
+                Name = user.Data.Name,
+                Email = user.Data.Email,
+                Workspaces = user.Data.Workspaces
             };
         }
 
@@ -45,13 +43,11 @@ namespace Apps.Asana.Actions
             var client = new AsanaClient();
             var request = new AsanaRequest($"/users/{input.UserId}/user_task_list?workspace={input.WorkspaceId}", 
                 Method.Get, authenticationCredentialsProvider);
-            dynamic content = JsonConvert.DeserializeObject(client.Get(request).Content);
-            JObject userTaskListObj = content.data;
-            var userTaskList = userTaskListObj.ToObject<UserTaskListDto>();
+            var userTaskList = client.Get<ResponseWrapper<UserTaskListDto>>(request);
             return new GetUserTaskListResponse()
             {
-                Id = userTaskList.GId,
-                Name = userTaskList.Name
+                Id = userTaskList.Data.GId,
+                Name = userTaskList.Data.Name
             };
         }
     }

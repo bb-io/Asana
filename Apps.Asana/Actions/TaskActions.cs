@@ -7,6 +7,7 @@ using Blackbird.Applications.Sdk.Common.Authentication;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
+using System.Collections.Generic;
 
 namespace Apps.Asana.Actions
 {
@@ -19,12 +20,10 @@ namespace Apps.Asana.Actions
         {
             var client = new AsanaClient();
             var request = new AsanaRequest($"/tasks?project={input.ProjectId}", Method.Get, authenticationCredentialsProvider);
-            dynamic content = JsonConvert.DeserializeObject(client.Get(request).Content);
-            JArray tasksArray = content.data;
-            var tasks = tasksArray.ToObject<List<TaskDto>>();
+            var tasks = client.Get<ResponseWrapper<List<TaskDto>>>(request);
             return new ListTasksResponse()
             {
-                Tasks = tasks
+                Tasks = tasks.Data
             };
         }
 
@@ -34,14 +33,12 @@ namespace Apps.Asana.Actions
         {
             var client = new AsanaClient();
             var request = new AsanaRequest($"/tasks/{input.TaskId}", Method.Get, authenticationCredentialsProvider);
-            dynamic content = JsonConvert.DeserializeObject(client.Get(request).Content);
-            JObject taskObj = content.data;
-            var task = taskObj.ToObject<TaskDto>();
+            var task = client.Get<ResponseWrapper<TaskDto>>(request);
             return new GetTaskResponse()
             {
-                GId = task.GId,
-                Name = task.Name,
-                Notes = task.Notes,
+                GId = task.Data.GId,
+                Name = task.Data.Name,
+                Notes = task.Data.Notes,
             };
         }
 
@@ -76,7 +73,6 @@ namespace Apps.Asana.Actions
                     projects = input.ProjectId
                 }
             });
-
             client.Execute(request);
         }
 
@@ -95,12 +91,10 @@ namespace Apps.Asana.Actions
         {
             var client = new AsanaClient();
             var request = new AsanaRequest($"/user_task_lists/{input.UserTaskListId}/tasks", Method.Get, authenticationCredentialsProvider);
-            dynamic content = JsonConvert.DeserializeObject(client.Get(request).Content);
-            JArray tasksArray = content.data;
-            var tasks = tasksArray.ToObject<List<TaskDto>>();
+            var tasks = client.Get<ResponseWrapper<List<TaskDto>>> (request);
             return new ListTasksResponse()
             {
-                Tasks = tasks
+                Tasks = tasks.Data
             };
         }
     }
