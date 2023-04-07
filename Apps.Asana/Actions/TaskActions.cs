@@ -97,5 +97,34 @@ namespace Apps.Asana.Actions
                 Tasks = tasks.Data
             };
         }
+
+        [Action("Get tasks by tag", Description = "Get tasks by tag")]
+        public ListTasksResponse GetTasksByTag(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+           [ActionParameter] GetTasksByTagRequest input)
+        {
+            var client = new AsanaClient();
+            var request = new AsanaRequest($"/tags/{input.TagId}/tasks", Method.Get, authenticationCredentialsProvider);
+            var tasks = client.Get<ResponseWrapper<List<TaskDto>>>(request);
+            return new ListTasksResponse()
+            {
+                Tasks = tasks.Data
+            };
+        }
+
+        [Action("Assign tag to task", Description = "Assign tag to task")]
+        public void AssignTag(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+           [ActionParameter] AssignTagRequest input)
+        {
+            var client = new AsanaClient();
+            var request = new AsanaRequest($"/tasks/{input.TaskId}/addTag", Method.Post, authenticationCredentialsProvider);
+            request.AddJsonBody(new
+            {
+                data = new
+                {
+                    tag = input.TagId
+                }
+            });
+            client.Execute(request);
+        }
     }
 }
