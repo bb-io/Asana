@@ -50,5 +50,19 @@ namespace Apps.Asana.Actions
                 Name = userTaskList.Data.Name
             };
         }
+
+        [Action("Get user's teams", Description = "Get user's teams")]
+        public GetUserTeamsResponse GetUserTeams(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+           [ActionParameter] GetUserTeamsRequest input)
+        {
+            var client = new AsanaClient();
+            var request = new AsanaRequest($"/users/{input.UserId}/teams?organization={input.WorkspaceId}",
+                Method.Get, authenticationCredentialsProvider);
+            var teams = client.Get<ResponseWrapper<List<WorkspaceDto>>>(request);
+            return new GetUserTeamsResponse()
+            {
+                Teams = teams.Data
+            };
+        }
     }
 }
