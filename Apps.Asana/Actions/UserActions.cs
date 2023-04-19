@@ -1,19 +1,11 @@
 ﻿using Apps.Asana.Dtos;
-using Apps.Asana.Models.Tasks.Requests;
-using Apps.Asana.Models.Tasks.Responses;
 using Apps.Translate5;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Authentication;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
 using RestSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Apps.Asana.Models.Users.Requests;
 using Apps.Asana.Models.Users.Responses;
+using Blackbird.Applications.Sdk.Common.Actions;
 
 namespace Apps.Asana.Actions
 {
@@ -21,11 +13,11 @@ namespace Apps.Asana.Actions
     public class UserActions
     {
         [Action("Get user", Description = "Get user by Id")]
-        public GetUserResponse GetUser(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public GetUserResponse GetUser(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] GetUserRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"/users/{input.UserId}", Method.Get, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/users/{input.UserId}", Method.Get, authenticationCredentialsProviders);
             var user = client.Get<ResponseWrapper<UserDto>>(request);
             return new GetUserResponse()
             {
@@ -37,12 +29,12 @@ namespace Apps.Asana.Actions
         }
 
         [Action("Get user's task list", Description = "Get user's task list by user Id")]
-        public GetUserTaskListResponse GetUserTaskList(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public GetUserTaskListResponse GetUserTaskList(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] GetUserTaskListRequest input)
         {
             var client = new AsanaClient();
             var request = new AsanaRequest($"/users/{input.UserId}/user_task_list?workspace={input.WorkspaceId}", 
-                Method.Get, authenticationCredentialsProvider);
+                Method.Get, authenticationCredentialsProviders);
             var userTaskList = client.Get<ResponseWrapper<UserTaskListDto>>(request);
             return new GetUserTaskListResponse()
             {
@@ -52,12 +44,12 @@ namespace Apps.Asana.Actions
         }
 
         [Action("Get user's teams", Description = "Get user's teams")]
-        public GetUserTeamsResponse GetUserTeams(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public GetUserTeamsResponse GetUserTeams(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] GetUserTeamsRequest input)
         {
             var client = new AsanaClient();
             var request = new AsanaRequest($"/users/{input.UserId}/teams?organization={input.WorkspaceId}",
-                Method.Get, authenticationCredentialsProvider);
+                Method.Get, authenticationCredentialsProviders);
             var teams = client.Get<ResponseWrapper<List<WorkspaceDto>>>(request);
             return new GetUserTeamsResponse()
             {

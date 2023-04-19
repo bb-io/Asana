@@ -4,9 +4,8 @@ using Apps.Asana.Models.Projects.Responses;
 using Apps.Translate5;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Authentication;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
 using RestSharp;
+using Blackbird.Applications.Sdk.Common.Actions;
 
 namespace Apps.Asana.Actions
 {
@@ -14,11 +13,11 @@ namespace Apps.Asana.Actions
     public class ProjectActions
     {
         [Action("List projects", Description = "List projects")]
-        public ListProjectsResponse ListAllProjects(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public ListProjectsResponse ListAllProjects(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] ListProjectsRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"/projects", Method.Get, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/projects", Method.Get, authenticationCredentialsProviders);
             var projects = client.Get<ResponseWrapper<List<ProjectDto>>>(request); 
             return new ListProjectsResponse()
             {
@@ -27,11 +26,11 @@ namespace Apps.Asana.Actions
         }
 
         [Action("Get project", Description = "Get project by Id")]
-        public GetProjectResponse GetProject(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public GetProjectResponse GetProject(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] GetProjectRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"/projects/{input.ProjectId}", Method.Get, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/projects/{input.ProjectId}", Method.Get, authenticationCredentialsProviders);
             var project = client.Get<ResponseWrapper<ProjectDto>>(request);
             return new GetProjectResponse()
             {
@@ -41,11 +40,11 @@ namespace Apps.Asana.Actions
         }
 
         [Action("Update project", Description = "Update project by Id")]
-        public void UpdateProject(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public void UpdateProject(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] UpdateProjectRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"/projects/{input.ProjectId}", Method.Put, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/projects/{input.ProjectId}", Method.Put, authenticationCredentialsProviders);
             request.AddJsonBody(new
             {
                 data = new
@@ -57,11 +56,11 @@ namespace Apps.Asana.Actions
         }
 
         [Action("Create project", Description = "Create project")]
-        public void CreateProject(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public void CreateProject(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] CreateProjectRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"/projects", Method.Post, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/projects", Method.Post, authenticationCredentialsProviders);
             request.AddJsonBody(new
             {
                 data = new
@@ -74,20 +73,20 @@ namespace Apps.Asana.Actions
         }
 
         [Action("Delete project", Description = "Delete project")]
-        public void DeleteProject(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public void DeleteProject(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] DeleteProjectRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"/projects/{input.ProjectId}", Method.Delete, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/projects/{input.ProjectId}", Method.Delete, authenticationCredentialsProviders);
             client.Execute(request);
         }
 
         [Action("Get project sections", Description = "Get project sections")]
-        public GetProjectSectionsResponse GetProjectSections(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public GetProjectSectionsResponse GetProjectSections(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] GetProjectSectionsRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"/projects/{input.ProjectId}/sections", Method.Get, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/projects/{input.ProjectId}/sections", Method.Get, authenticationCredentialsProviders);
             var sections = client.Get<ResponseWrapper<List<SectionDto>>>(request);
             return new GetProjectSectionsResponse()
             {
@@ -96,11 +95,11 @@ namespace Apps.Asana.Actions
         }
 
         [Action("Get project status", Description = "Get project status by Id")]
-        public GetProjectStatusResponse GetProjectStatus(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public GetProjectStatusResponse GetProjectStatus(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] GetProjectStatusRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"/project_statuses/{input.ProjectStatusId}", Method.Get, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/project_statuses/{input.ProjectStatusId}", Method.Get, authenticationCredentialsProviders);
             var statuses = client.Get<ResponseWrapper<ProjectStatusDto>>(request);
             return new GetProjectStatusResponse()
             {
@@ -112,11 +111,11 @@ namespace Apps.Asana.Actions
         }
 
         [Action("Get project status updates", Description = "Get project status updates")]
-        public GetProjectStatusUpdatesResponse GetProjectStatusUpdates(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public GetProjectStatusUpdatesResponse GetProjectStatusUpdates(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] GetProjectStatusUpdatesRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"/status_updates?parent={input.ProjectId}", Method.Get, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/status_updates?parent={input.ProjectId}", Method.Get, authenticationCredentialsProviders);
             var updates = client.Get<ResponseWrapper<List<ProjectStatusUpdateDto>>>(request);
             return new GetProjectStatusUpdatesResponse()
             {

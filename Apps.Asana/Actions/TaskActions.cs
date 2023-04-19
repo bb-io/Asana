@@ -3,11 +3,9 @@ using Apps.Asana.Models.Tasks.Requests;
 using Apps.Asana.Models.Tasks.Responses;
 using Apps.Translate5;
 using Blackbird.Applications.Sdk.Common;
+using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Authentication;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using RestSharp;
-using System.Collections.Generic;
 
 namespace Apps.Asana.Actions
 {
@@ -15,11 +13,11 @@ namespace Apps.Asana.Actions
     public class TaskActions
     {
         [Action("List tasks", Description = "List tasks")]
-        public ListTasksResponse ListAllTasks(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public ListTasksResponse ListAllTasks(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] ListTasksRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"/tasks?project={input.ProjectId}", Method.Get, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/tasks?project={input.ProjectId}", Method.Get, authenticationCredentialsProviders);
             var tasks = client.Get<ResponseWrapper<List<TaskDto>>>(request);
             return new ListTasksResponse()
             {
@@ -28,11 +26,11 @@ namespace Apps.Asana.Actions
         }
 
         [Action("Get task", Description = "Get task by Id")]
-        public GetTaskResponse GetTask(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public GetTaskResponse GetTask(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] GetTaskRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"/tasks/{input.TaskId}", Method.Get, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/tasks/{input.TaskId}", Method.Get, authenticationCredentialsProviders);
             var task = client.Get<ResponseWrapper<TaskDto>>(request);
             return new GetTaskResponse()
             {
@@ -43,11 +41,11 @@ namespace Apps.Asana.Actions
         }
 
         [Action("Update task", Description = "Update task by Id")]
-        public void UpdateTask(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public void UpdateTask(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] UpdateTaskRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"/tasks/{input.TaskId}", Method.Put, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/tasks/{input.TaskId}", Method.Put, authenticationCredentialsProviders);
             request.AddJsonBody(new
             {
                 data = new
@@ -60,11 +58,11 @@ namespace Apps.Asana.Actions
         }
 
         [Action("Create task", Description = "Create task")]
-        public void CreateTask(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public void CreateTask(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] CreateTaskRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"/tasks", Method.Post, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/tasks", Method.Post, authenticationCredentialsProviders);
             request.AddJsonBody(new
             {
                 data = new
@@ -77,20 +75,20 @@ namespace Apps.Asana.Actions
         }
 
         [Action("Delete task", Description = "Delete task")]
-        public void DeleteTask(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public void DeleteTask(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] DeleteTaskRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"/tasks/{input.TaskId}", Method.Delete, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/tasks/{input.TaskId}", Method.Delete, authenticationCredentialsProviders);
             client.Execute(request);
         }
 
         [Action("Get user tasks", Description = "Get user tasks from user task list Id")]
-        public ListTasksResponse GetUserTasks(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public ListTasksResponse GetUserTasks(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] GetUserTasksRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"/user_task_lists/{input.UserTaskListId}/tasks", Method.Get, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/user_task_lists/{input.UserTaskListId}/tasks", Method.Get, authenticationCredentialsProviders);
             var tasks = client.Get<ResponseWrapper<List<TaskDto>>> (request);
             return new ListTasksResponse()
             {
@@ -99,11 +97,11 @@ namespace Apps.Asana.Actions
         }
 
         [Action("Get tasks by tag", Description = "Get tasks by tag")]
-        public ListTasksResponse GetTasksByTag(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public ListTasksResponse GetTasksByTag(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] GetTasksByTagRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"/tags/{input.TagId}/tasks", Method.Get, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/tags/{input.TagId}/tasks", Method.Get, authenticationCredentialsProviders);
             var tasks = client.Get<ResponseWrapper<List<TaskDto>>>(request);
             return new ListTasksResponse()
             {
@@ -112,11 +110,11 @@ namespace Apps.Asana.Actions
         }
 
         [Action("Assign tag to task", Description = "Assign tag to task")]
-        public void AssignTag(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public void AssignTag(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] AssignTagRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"/tasks/{input.TaskId}/addTag", Method.Post, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/tasks/{input.TaskId}/addTag", Method.Post, authenticationCredentialsProviders);
             request.AddJsonBody(new
             {
                 data = new

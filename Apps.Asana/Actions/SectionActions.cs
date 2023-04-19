@@ -1,17 +1,11 @@
 ﻿using Apps.Asana.Dtos;
 using Apps.Asana.Models.Sections.Requests;
 using Apps.Asana.Models.Sections.Responses;
-using Apps.Asana.Models.Tasks.Requests;
-using Apps.Asana.Models.Tasks.Responses;
 using Apps.Translate5;
 using Blackbird.Applications.Sdk.Common;
+using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Authentication;
 using RestSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Apps.Asana.Actions
 {
@@ -19,11 +13,11 @@ namespace Apps.Asana.Actions
     public class SectionActions
     {
         [Action("Get section", Description = "Get section by Id")]
-        public GetSectionResponse GetSection(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public GetSectionResponse GetSection(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] GetSectionRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"/sections/{input.SectionId}", Method.Get, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/sections/{input.SectionId}", Method.Get, authenticationCredentialsProviders);
             var section = client.Get<ResponseWrapper<SectionDto>>(request);
             return new GetSectionResponse()
             {
@@ -33,11 +27,11 @@ namespace Apps.Asana.Actions
         }
 
         [Action("Update section", Description = "Update section by Id")]
-        public void UpdateSection(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public void UpdateSection(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] UpdateSectionRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"/sections/{input.SectionId}", Method.Put, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/sections/{input.SectionId}", Method.Put, authenticationCredentialsProviders);
             request.AddJsonBody(new
             {
                 data = new
@@ -49,11 +43,11 @@ namespace Apps.Asana.Actions
         }
 
         [Action("Create section", Description = "Create section in project")]
-        public void CreateSection(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public void CreateSection(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] CreateSectionRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"/projects/{input.ProjectId}/sections", Method.Post, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/projects/{input.ProjectId}/sections", Method.Post, authenticationCredentialsProviders);
             request.AddJsonBody(new
             {
                 data = new
@@ -65,11 +59,11 @@ namespace Apps.Asana.Actions
         }
 
         [Action("Delete section", Description = "Delete section")]
-        public void DeleteSection(AuthenticationCredentialsProvider authenticationCredentialsProvider,
+        public void DeleteSection(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
            [ActionParameter] DeleteSectionRequest input)
         {
             var client = new AsanaClient();
-            var request = new AsanaRequest($"/sections/{input.SectionId}", Method.Delete, authenticationCredentialsProvider);
+            var request = new AsanaRequest($"/sections/{input.SectionId}", Method.Delete, authenticationCredentialsProviders);
             client.Execute(request);
         }
     }
