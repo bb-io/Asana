@@ -26,7 +26,7 @@ namespace Apps.Asana.Connections
             {
                 Name = "Developer API token",
                 AuthenticationType = ConnectionAuthenticationType.Undefined,
-                ConnectionUsage = ConnectionUsage.Actions,
+                ConnectionUsage = ConnectionUsage.Webhooks,
                 ConnectionProperties = new List<ConnectionProperty>()
                 {
                     new ConnectionProperty("apiToken")
