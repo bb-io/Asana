@@ -20,7 +20,7 @@ namespace Apps.Asana.Webhooks
         const string SecretHeaderKey = "X-Hook-Secret";
 
         [Webhook("On project changed", typeof(ProjectChangedHandler), Description = "Triggered when changes are made to the project")]
-        public async Task<WebhookResponse<ProjectDto>> ProjectCreation(WebhookRequest webhookRequest)
+        public async Task<WebhookResponse<ProjectDto>> ProjectChangedHandler(WebhookRequest webhookRequest)
         {
             if (webhookRequest.Headers.ContainsKey(SecretHeaderKey))
             {
