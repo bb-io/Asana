@@ -8,7 +8,7 @@ namespace Apps.Translate5
         public AsanaRequest(string endpoint, Method method, IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders) : base(endpoint, method)
         {
             var authenticationCredentialsProvider = authenticationCredentialsProviders.First(p => p.KeyName == "Authorization");
-            this.AddHeader("Authorization", $"Bearer {authenticationCredentialsProvider.Value}");
+            this.AddHeader("Authorization", authenticationCredentialsProvider.Value);
             this.AddHeader("Accept", "application/json");
         }
     }
