@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Apps.Asana.Dtos.Base;
+using Blackbird.Applications.Sdk.Common;
 
-namespace Apps.Asana.Dtos
+namespace Apps.Asana.Dtos;
+
+public class TaskDto : AsanaEntity
 {
-    public class TaskDto
-    {
-        public string GId { get; set; }
+    public string Notes { get; set; }
+    public bool Completed { get; set; }
+    public AsanaEntity Workspace { get; set; }
+    public AsanaEntity Assignee { get; set; }
+    public IEnumerable<AsanaEntity> Followers { get; set; }
+    public IEnumerable<AsanaEntity> Projects { get; set; }
 
-        public string Name { get; set; }
-
-        public string Notes { get; set; }
-    }
+    [Display("Created at")] public DateTime CreatedAt { get; set; }
+    [Display("Permalink URL")] public string PermalinkUrl { get; set; }
 }

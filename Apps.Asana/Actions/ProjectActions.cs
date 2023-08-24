@@ -1,127 +1,125 @@
-﻿using Apps.Asana.Dtos;
+﻿using Apps.Asana.Actions.Base;
+using Apps.Asana.Api;
+using Apps.Asana.Constants;
+using Apps.Asana.Dtos;
+using Apps.Asana.Dtos.Base;
+using Apps.Asana.Models;
 using Apps.Asana.Models.Projects.Requests;
 using Apps.Asana.Models.Projects.Responses;
-using Apps.Translate5;
 using Blackbird.Applications.Sdk.Common;
-using Blackbird.Applications.Sdk.Common.Authentication;
 using RestSharp;
 using Blackbird.Applications.Sdk.Common.Actions;
+using Blackbird.Applications.Sdk.Common.Invocation;
+using Blackbird.Applications.Sdk.Utils.Extensions.Http;
+using Blackbird.Applications.Sdk.Utils.Extensions.String;
 
-namespace Apps.Asana.Actions
+namespace Apps.Asana.Actions;
+
+[ActionList]
+public class ProjectActions : AsanaActions
 {
-    [ActionList]
-    public class ProjectActions
+    public ProjectActions(InvocationContext invocationContext) : base(invocationContext)
     {
-        [Action("List projects", Description = "List projects")]
-        public ListProjectsResponse ListAllProjects(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] ListProjectsRequest input)
-        {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/projects", Method.Get, authenticationCredentialsProviders);
-            var projects = client.Get<ResponseWrapper<List<ProjectDto>>>(request); 
-            return new ListProjectsResponse()
-            {
-                Projects = projects.Data
-            };
-        }
+    }
 
-        [Action("Get project", Description = "Get project by Id")]
-        public GetProjectResponse GetProject(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] GetProjectRequest input)
-        {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/projects/{input.ProjectId}", Method.Get, authenticationCredentialsProviders);
-            var project = client.Get<ResponseWrapper<ProjectDto>>(request);
-            return new GetProjectResponse()
-            {
-                GId = project.Data.GId,
-                Name = project.Data.Name,
-            };
-        }
+    [Action("List projects", Description = "List all projects")]
+    public async Task<ListProjectsResponse> ListAllProjects([ActionParameter] ListProjectsRequest input)
+    {
+        var endpoint = ApiEndpoints.Projects.WithQuery(input);
+        var request = new AsanaRequest(endpoint, Method.Get, Creds);
+        
+        var projects = await Client.ExecuteWithErrorHandling<IEnumerable<AsanaEntity>>(request);
 
-        [Action("Update project", Description = "Update project by Id")]
-        public void UpdateProject(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] UpdateProjectRequest input)
+        return new()
         {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/projects/{input.ProjectId}", Method.Put, authenticationCredentialsProviders);
-            request.AddJsonBody(new
-            {
-                data = new
-                {
-                    name = input.NewName
-                }
-            });
-            client.Execute(request);
-        }
+            Projects = projects
+        };
+    }
 
-        [Action("Create project", Description = "Create project")]
-        public void CreateProject(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] CreateProjectRequest input)
+    [Action("Get project", Description = "Get project by ID")]
+    public Task<ProjectDto> GetProject([ActionParameter] ProjectRequest input)
+    {
+        var endpoint = $"{ApiEndpoints.Projects}/{input.ProjectId}";
+        var request = new AsanaRequest(endpoint, Method.Get, Creds);
+
+        return Client.ExecuteWithErrorHandling<ProjectDto>(request);
+    }
+
+    [Action("Update project", Description = "Update project by ID")]
+    public Task<ProjectDto> UpdateProject(
+        [ActionParameter] ProjectRequest project,
+        [ActionParameter] UpdateProjectRequest input)
+    {
+        var endpoint = $"{ApiEndpoints.Projects}/{project.ProjectId}";
+
+        var payload = new ResponseWrapper<UpdateProjectRequest>
         {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/projects", Method.Post, authenticationCredentialsProviders);
-            request.AddJsonBody(new
-            {
-                data = new
-                {
-                    name = input.ProjectName,
-                    team = input.TeamId
-                }
-            });
-            client.Execute(request);
-        }
+            Data = input
+        };
+        var request = new AsanaRequest(endpoint, Method.Put, Creds)
+            .WithJsonBody(payload, JsonConfig.Settings);
 
-        [Action("Delete project", Description = "Delete project")]
-        public void DeleteProject(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] DeleteProjectRequest input)
+        return Client.ExecuteWithErrorHandling<ProjectDto>(request);
+    }
+
+    [Action("Create project", Description = "Create a new project")]
+    public Task<ProjectDto> CreateProject([ActionParameter] CreateProjectRequest input)
+    {
+        var payload = new ResponseWrapper<CreateProjectRequest>
         {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/projects/{input.ProjectId}", Method.Delete, authenticationCredentialsProviders);
-            client.Execute(request);
-        }
+            Data = input
+        };
+        var request = new AsanaRequest(ApiEndpoints.Projects, Method.Post, Creds)
+            .WithJsonBody(payload, JsonConfig.Settings);
 
-        [Action("Get project sections", Description = "Get project sections")]
-        public GetProjectSectionsResponse GetProjectSections(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] GetProjectSectionsRequest input)
+        return Client.ExecuteWithErrorHandling<ProjectDto>(request);
+    }
+
+    [Action("Delete project", Description = "Delete specific project")]
+    public Task DeleteProject([ActionParameter] ProjectRequest input)
+    {
+        var endpoint = $"{ApiEndpoints.Projects}/{input.ProjectId}";
+        var request = new AsanaRequest(endpoint, Method.Delete, Creds);
+
+        return Client.ExecuteWithErrorHandling(request);
+    }
+
+    [Action("Get project sections", Description = "Get all project sections")]
+    public async Task<GetProjectSectionsResponse> GetProjectSections(
+        [ActionParameter] ProjectRequest input)
+    {
+        var endpoint = $"{ApiEndpoints.Projects}/{input.ProjectId}/sections";
+        var request = new AsanaRequest(endpoint, Method.Get, Creds);
+
+        var sections = await Client.ExecuteWithErrorHandling<IEnumerable<AsanaEntity>>(request);
+
+        return new()
         {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/projects/{input.ProjectId}/sections", Method.Get, authenticationCredentialsProviders);
-            var sections = client.Get<ResponseWrapper<List<SectionDto>>>(request);
-            return new GetProjectSectionsResponse()
-            {
-                Sections = sections.Data
-            };
-        }
+            Sections = sections
+        };
+    }
 
-        [Action("Get project status", Description = "Get project status by Id")]
-        public GetProjectStatusResponse GetProjectStatus(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] GetProjectStatusRequest input)
+    [Action("Get project status", Description = "Get project status by ID")]
+    public Task<ProjectStatusDto> GetProjectStatus([ActionParameter] GetProjectStatusRequest input)
+    {
+        var endpoint = $"/project_statuses/{input.ProjectStatusId}";
+
+        var request = new AsanaRequest(endpoint, Method.Get, Creds);
+        return Client.ExecuteWithErrorHandling<ProjectStatusDto>(request);
+    }
+
+    [Action("Get project status updates", Description = "Get project all status updates")]
+    public async Task<GetProjectStatusUpdatesResponse> GetProjectStatusUpdates(
+        [ActionParameter] ProjectRequest input)
+    {
+        var endpoint = $"/status_updates?parent={input.ProjectId}";
+        var request = new AsanaRequest(endpoint, Method.Get, Creds);
+
+        var updates = await Client.ExecuteWithErrorHandling<IEnumerable<ProjectStatusUpdateDto>>(request);
+
+        return new()
         {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/project_statuses/{input.ProjectStatusId}", Method.Get, authenticationCredentialsProviders);
-            var statuses = client.Get<ResponseWrapper<ProjectStatusDto>>(request);
-            return new GetProjectStatusResponse()
-            {
-                GId = statuses.Data.GId,
-                Color = statuses.Data.Color,
-                Text = statuses.Data.Text,
-                Title = statuses.Data.Title
-            };
-        }
-
-        [Action("Get project status updates", Description = "Get project status updates")]
-        public GetProjectStatusUpdatesResponse GetProjectStatusUpdates(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] GetProjectStatusUpdatesRequest input)
-        {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/status_updates?parent={input.ProjectId}", Method.Get, authenticationCredentialsProviders);
-            var updates = client.Get<ResponseWrapper<List<ProjectStatusUpdateDto>>>(request);
-            return new GetProjectStatusUpdatesResponse()
-            {
-                Updates = updates.Data
-            };
-        }
-
+            Updates = updates
+        };
     }
 }

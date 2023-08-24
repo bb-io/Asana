@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Apps.Asana.Dtos.Base;
+using Blackbird.Applications.Sdk.Common;
 
-namespace Apps.Asana.Dtos
+namespace Apps.Asana.Dtos;
+
+public class SectionDto : AsanaEntity
 {
-    public class SectionDto
-    {
-        public string GId { get; set; }
-        public string Name { get; set; }
-    }
+    [Display("Created at")]
+    public DateTime CreatedAt { get; set; }
+
+    public AsanaEntity Project { get; set; }
 }

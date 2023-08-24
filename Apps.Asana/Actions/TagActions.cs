@@ -1,88 +1,85 @@
-﻿using Apps.Asana.Dtos;
+﻿using Apps.Asana.Actions.Base;
+using Apps.Asana.Api;
+using Apps.Asana.Constants;
+using Apps.Asana.Dtos;
+using Apps.Asana.Dtos.Base;
+using Apps.Asana.Models;
 using Apps.Asana.Models.Tags.Requests;
 using Apps.Asana.Models.Tags.Responses;
-using Apps.Translate5;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
-using Blackbird.Applications.Sdk.Common.Authentication;
+using Blackbird.Applications.Sdk.Common.Invocation;
+using Blackbird.Applications.Sdk.Utils.Extensions.Http;
+using Blackbird.Applications.Sdk.Utils.Extensions.String;
 using RestSharp;
 
-namespace Apps.Asana.Actions
+namespace Apps.Asana.Actions;
+
+[ActionList]
+public class TagActions : AsanaActions
 {
-    [ActionList]
-    public class TagActions
+    public TagActions(InvocationContext invocationContext) : base(invocationContext)
     {
-        [Action("List tags", Description = "List tags")]
-        public ListTagsResponse ListAllTags(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] ListTagsRequest input)
-        {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/tags?workspace={input.WorkspaceId}", Method.Get, authenticationCredentialsProviders);
-            var tags = client.Get<ResponseWrapper<List<TagDto>>>(request);
-            return new ListTagsResponse()
-            {
-                Tags = tags.Data
-            };
-        }
+    }
 
-        [Action("Get tag", Description = "Get tag by Id")]
-        public GetTagResponse GetTag(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] GetTagRequest input)
-        {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/tags/{input.TagId}", Method.Get, authenticationCredentialsProviders);
-            var task = client.Get<ResponseWrapper<TagDto>>(request);
-            return new GetTagResponse()
-            {
-                GId = task.Data.GId,
-                Name = task.Data.Name,
-                Color = task.Data.Color
-            };
-        }
+    [Action("List tags", Description = "List all tags")]
+    public async Task<ListTagsResponse> ListAllTags([ActionParameter] ListTagsRequest input)
+    {
+        var endpoint = ApiEndpoints.Tags.WithQuery(input);
+        var request = new AsanaRequest(endpoint, Method.Get, Creds);
 
-        [Action("Update tag", Description = "Update tag by Id")]
-        public void UpdateTag(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] UpdateTagRequest input)
-        {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/tags/{input.TagId}", Method.Put, authenticationCredentialsProviders);
-            request.AddJsonBody(new
-            {
-                data = new
-                {
-                    name = input.NewName,
-                    color = input.NewColor
-                }
-            });
+        var tags = await Client.ExecuteWithErrorHandling<IEnumerable<AsanaEntity>>(request);
 
-            client.Execute(request);
-        }
-
-        [Action("Create tag", Description = "Create tag")]
-        public void CreateTag(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] CreateTagRequest input)
+        return new()
         {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/tags", Method.Post, authenticationCredentialsProviders);
-            request.AddJsonBody(new
-            {
-                data = new
-                {
-                    name = input.TagName,
-                    workspace = input.WorkspaceId,
-                    color = input.TagColor
-                }
-            });
-            client.Execute(request);
-        }
+            Tags = tags
+        };
+    }
 
-        [Action("Delete tag", Description = "Delete tag")]
-        public void DeleteTag(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] DeleteTagRequest input)
+    [Action("Get tag", Description = "Get tag by ID")]
+    public Task<TagDto> GetTag([ActionParameter] TagRequest input)
+    {
+        var endpoint = $"{ApiEndpoints.Tags}/{input.TagId}";
+        var request = new AsanaRequest(endpoint, Method.Get, Creds);
+
+        return Client.ExecuteWithErrorHandling<TagDto>(request);
+    }
+
+    [Action("Update tag", Description = "Update tag by ID")]
+    public Task<TagDto> UpdateTag(
+        [ActionParameter] TagRequest tag,
+        [ActionParameter] UpdateTagRequest input)
+    {
+        var payload = new ResponseWrapper<UpdateTagRequest>()
         {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/tags/{input.TagId}", Method.Delete, authenticationCredentialsProviders);
-            client.Execute(request);
-        }
+            Data = input
+        };
+        var endpoint = $"{ApiEndpoints.Tags}/{tag.TagId}";
+        var request = new AsanaRequest(endpoint, Method.Put, Creds)
+            .WithJsonBody(payload, JsonConfig.Settings);
+
+        return Client.ExecuteWithErrorHandling<TagDto>(request);
+    }
+
+    [Action("Create tag", Description = "Create a new tag")]
+    public Task<TagDto> CreateTag([ActionParameter] CreateTagRequest input)
+    {
+        var payload = new ResponseWrapper<CreateTagRequest>()
+        {
+            Data = input
+        };
+        var request = new AsanaRequest(ApiEndpoints.Tags, Method.Post, Creds)
+            .WithJsonBody(payload, JsonConfig.Settings);
+
+        return Client.ExecuteWithErrorHandling<TagDto>(request);
+    }
+
+    [Action("Delete tag", Description = "Delete specific tag")]
+    public Task DeleteTag([ActionParameter] TagRequest input)
+    {
+        var endpoint = $"{ApiEndpoints.Tags}/{input.TagId}";
+        var request = new AsanaRequest(endpoint, Method.Delete, Creds);
+        
+        return Client.ExecuteWithErrorHandling(request);
     }
 }

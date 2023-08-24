@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Apps.Asana.DataSourceHandlers.EnumDataHandlers;
+using Apps.Asana.Models.Workspaces.Requests;
+using Blackbird.Applications.Sdk.Common.Dynamic;
 
-namespace Apps.Asana.Models.Tags.Requests
+namespace Apps.Asana.Models.Tags.Requests;
+
+public class CreateTagRequest : WorkspaceRequest
 {
-    public class CreateTagRequest
-    {
-        public string WorkspaceId { get; set; }
-
-        public string TagName { get; set; }
-
-        public string TagColor { get; set; }
-    }
+    public string? Name { get; set; }
+    
+    [DataSource(typeof(ColorDataHandler))]
+    public string? Color { get; set; }
+    public string? Notes { get; set; }
 }

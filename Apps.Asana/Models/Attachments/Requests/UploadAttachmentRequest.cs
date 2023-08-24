@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Blackbird.Applications.Sdk.Common;
 
-namespace Apps.Asana.Models.Attachments.Requests
+namespace Apps.Asana.Models.Attachments.Requests;
+
+public class UploadAttachmentRequest
 {
-    public class UploadAttachmentRequest
-    {
-        public string Filename { get; set; }
+    public byte[] File { get; set; }
+    
+    [Display("File name")]
+    public string FileName { get; set; }
 
-        public byte[] File { get; set; }
-
-        public string ParentId { get; set; }
-    }
+    [Display("Parent ID")]
+    public string ParentId { get; set; }
 }

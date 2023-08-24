@@ -1,15 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Apps.Asana.DataSourceHandlers;
+using Blackbird.Applications.Sdk.Common;
+using Blackbird.Applications.Sdk.Common.Dynamic;
 
-namespace Apps.Asana.Models.Tasks.Requests
+namespace Apps.Asana.Models.Tasks.Requests;
+
+public class CreateTaskRequest
 {
-    public class CreateTaskRequest
-    {
-        public string ProjectId { get; set; }
-
-        public string TaskName { get; set; }
-    }
+    public string? Name { get; set; }
+    public string? Notes { get; set; }
+    
+    [Display("Assignee ID")]
+    [DataSource(typeof(UserDataHandler))]
+    public string? Assignee { get; set; }
+    
+    [Display("Parent ID")]
+    public string? Parent { get; set; }
+    
+    [Display("Workspace")]
+    [DataSource(typeof(WorkspaceDataHandler))]
+    public string? Workspace { get; set; }
+    
+    public IEnumerable<string>? Projects { get; set; }
 }

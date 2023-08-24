@@ -1,128 +1,133 @@
-﻿using Apps.Asana.Dtos;
+﻿using Apps.Asana.Actions.Base;
+using Apps.Asana.Api;
+using Apps.Asana.Constants;
+using Apps.Asana.Dtos;
+using Apps.Asana.Dtos.Base;
+using Apps.Asana.Models;
+using Apps.Asana.Models.Tags.Requests;
 using Apps.Asana.Models.Tasks.Requests;
 using Apps.Asana.Models.Tasks.Responses;
-using Apps.Translate5;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
-using Blackbird.Applications.Sdk.Common.Authentication;
+using Blackbird.Applications.Sdk.Common.Invocation;
+using Blackbird.Applications.Sdk.Utils.Extensions.Http;
+using Blackbird.Applications.Sdk.Utils.Extensions.String;
 using RestSharp;
 
-namespace Apps.Asana.Actions
+namespace Apps.Asana.Actions;
+
+[ActionList]
+public class TaskActions : AsanaActions
 {
-    [ActionList]
-    public class TaskActions
+    public TaskActions(InvocationContext invocationContext) : base(invocationContext)
     {
-        [Action("List tasks", Description = "List tasks")]
-        public ListTasksResponse ListAllTasks(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] ListTasksRequest input)
-        {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/tasks?project={input.ProjectId}", Method.Get, authenticationCredentialsProviders);
-            var tasks = client.Get<ResponseWrapper<List<TaskDto>>>(request);
-            return new ListTasksResponse()
-            {
-                Tasks = tasks.Data
-            };
-        }
+    }
 
-        [Action("Get task", Description = "Get task by Id")]
-        public GetTaskResponse GetTask(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] GetTaskRequest input)
-        {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/tasks/{input.TaskId}", Method.Get, authenticationCredentialsProviders);
-            var task = client.Get<ResponseWrapper<TaskDto>>(request);
-            return new GetTaskResponse()
-            {
-                GId = task.Data.GId,
-                Name = task.Data.Name,
-                Notes = task.Data.Notes,
-            };
-        }
+    [Action("List tasks", Description = "List all tasks")]
+    public async Task<ListTasksResponse> ListAllTasks([ActionParameter] ListTasksRequest input)
+    {
+        var endpoint = ApiEndpoints.Tasks.WithQuery(input);
+        var request = new AsanaRequest(endpoint, Method.Get, Creds);
 
-        [Action("Update task", Description = "Update task by Id")]
-        public void UpdateTask(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] UpdateTaskRequest input)
-        {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/tasks/{input.TaskId}", Method.Put, authenticationCredentialsProviders);
-            request.AddJsonBody(new
-            {
-                data = new
-                {
-                    name = input.NewName
-                }
-            });
+        var tasks = await Client.ExecuteWithErrorHandling<IEnumerable<AsanaEntity>>(request);
 
-            client.Execute(request);
-        }
-
-        [Action("Create task", Description = "Create task")]
-        public void CreateTask(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] CreateTaskRequest input)
+        return new()
         {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/tasks", Method.Post, authenticationCredentialsProviders);
-            request.AddJsonBody(new
-            {
-                data = new
-                {
-                    name = input.TaskName,
-                    projects = input.ProjectId
-                }
-            });
-            client.Execute(request);
-        }
+            Tasks = tasks
+        };
+    }
 
-        [Action("Delete task", Description = "Delete task")]
-        public void DeleteTask(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] DeleteTaskRequest input)
-        {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/tasks/{input.TaskId}", Method.Delete, authenticationCredentialsProviders);
-            client.Execute(request);
-        }
+    [Action("Get task", Description = "Get task by ID")]
+    public Task<TaskDto> GetTask([ActionParameter] TaskRequest input)
+    {
+        var endpoint = $"{ApiEndpoints.Tasks}/{input.TaskId}";
+        var request = new AsanaRequest(endpoint, Method.Get, Creds);
 
-        [Action("Get user tasks", Description = "Get user tasks from user task list Id")]
-        public ListTasksResponse GetUserTasks(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] GetUserTasksRequest input)
-        {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/user_task_lists/{input.UserTaskListId}/tasks", Method.Get, authenticationCredentialsProviders);
-            var tasks = client.Get<ResponseWrapper<List<TaskDto>>> (request);
-            return new ListTasksResponse()
-            {
-                Tasks = tasks.Data
-            };
-        }
+        return Client.ExecuteWithErrorHandling<TaskDto>(request);
+    }
 
-        [Action("Get tasks by tag", Description = "Get tasks by tag")]
-        public ListTasksResponse GetTasksByTag(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] GetTasksByTagRequest input)
+    [Action("Create task", Description = "Create a new task")]
+    public Task<TaskDto> CreateTask([ActionParameter] CreateTaskRequest input)
+    {
+        var payload = new ResponseWrapper<CreateTaskRequest>()
         {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/tags/{input.TagId}/tasks", Method.Get, authenticationCredentialsProviders);
-            var tasks = client.Get<ResponseWrapper<List<TaskDto>>>(request);
-            return new ListTasksResponse()
-            {
-                Tasks = tasks.Data
-            };
-        }
+            Data = input
+        };
 
-        [Action("Assign tag to task", Description = "Assign tag to task")]
-        public void AssignTag(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] AssignTagRequest input)
+        var request = new AsanaRequest(ApiEndpoints.Tasks, Method.Post, Creds)
+            .WithJsonBody(payload, JsonConfig.Settings);
+
+        return Client.ExecuteWithErrorHandling<TaskDto>(request);
+    }
+
+    [Action("Update task", Description = "Update task by ID")]
+    public Task<TaskDto> UpdateTask(
+        [ActionParameter] TaskRequest task,
+        [ActionParameter] UpdateTaskRequest input)
+    {
+        var payload = new ResponseWrapper<UpdateTaskRequest>()
         {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/tasks/{input.TaskId}/addTag", Method.Post, authenticationCredentialsProviders);
-            request.AddJsonBody(new
-            {
-                data = new
-                {
-                    tag = input.TagId
-                }
-            });
-            client.Execute(request);
-        }
+            Data = input
+        };
+
+        var endpoint = $"{ApiEndpoints.Tasks}/{task.TaskId}";
+        var request = new AsanaRequest(endpoint, Method.Put, Creds)
+            .WithJsonBody(payload, JsonConfig.Settings);
+
+        return Client.ExecuteWithErrorHandling<TaskDto>(request);
+    }
+
+    [Action("Delete task", Description = "Delete specific task")]
+    public Task DeleteTask([ActionParameter] TaskRequest input)
+    {
+        var endpoint = $"{ApiEndpoints.Tasks}/{input.TaskId}";
+        var request = new AsanaRequest(endpoint, Method.Delete, Creds);
+
+        return Client.ExecuteWithErrorHandling(request);
+    }
+
+    [Action("Get user tasks", Description = "Get user tasks from user task list ID")]
+    public async Task<ListTasksResponse> GetUserTasks([ActionParameter] GetUserTasksRequest input)
+    {
+        var endpoint = $"/user_task_lists/{input.UserTaskListId}{ApiEndpoints.Tasks}";
+        var request = new AsanaRequest(endpoint, Method.Get, Creds);
+
+        var tasks = await Client.ExecuteWithErrorHandling<IEnumerable<AsanaEntity>>(request);
+
+        return new()
+        {
+            Tasks = tasks
+        };
+    }
+
+    [Action("Get tasks by tag", Description = "Get tasks by specific tag")]
+    public async Task<ListTasksResponse> GetTasksByTag([ActionParameter] TagRequest input)
+    {
+        var endpoint = $"{ApiEndpoints.Tags}/{input.TagId}{ApiEndpoints.Tasks}";
+        var request = new AsanaRequest(endpoint, Method.Get, Creds);
+
+        var tasks = await Client.ExecuteWithErrorHandling<IEnumerable<AsanaEntity>>(request);
+
+        return new()
+        {
+            Tasks = tasks
+        };
+    }
+
+    [Action("Assign tag to task", Description = "Assign tag to a specific task")]
+    public Task AssignTag(
+        [ActionParameter] TaskRequest task,
+        [ActionParameter] AssignTagRequest input)
+    {
+        var endpoint = $"{ApiEndpoints.Tasks}/{task.TaskId}/addTag";
+
+        var payload = new ResponseWrapper<AssignTagRequest>()
+        {
+            Data = input
+        };
+        var request = new AsanaRequest(endpoint, Method.Post, Creds)
+            .WithJsonBody(payload, JsonConfig.Settings);
+
+        return Client.ExecuteWithErrorHandling(request);
     }
 }

@@ -1,15 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Apps.Asana.DataSourceHandlers.EnumDataHandlers;
+using Blackbird.Applications.Sdk.Common;
+using Blackbird.Applications.Sdk.Common.Dynamic;
 
-namespace Apps.Asana.Models.Projects.Requests
+namespace Apps.Asana.Models.Projects.Requests;
+
+public class UpdateProjectRequest
 {
-    public class UpdateProjectRequest
-    {
-        public string ProjectId { get; set; }
-
-        public string NewName { get; set; }
-    }
+    public string? Name { get; set; }
+    public bool? Archived { get; set; }
+    
+    [DataSource(typeof(ColorDataHandler))]
+    public string? Color { get; set; }
+    public string? Owner { get; set; }
+    
+    [Display("Team ID")]
+    public string? Team { get; set; }
+    
+    [Display("Is public")]
+    public bool? Public { get; set; }
 }

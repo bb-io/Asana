@@ -1,56 +1,77 @@
-﻿using Apps.Asana.Dtos;
-using Apps.Asana.Webhooks.Handlers.Models;
-using Apps.Translate5;
+﻿using Apps.Asana.Api;
+using Apps.Asana.Constants;
+using Apps.Asana.Dtos.Base;
+using Apps.Asana.Webhooks.Models.Request;
 using Blackbird.Applications.Sdk.Common.Authentication;
 using Blackbird.Applications.Sdk.Common.Webhooks;
+using Blackbird.Applications.Sdk.Utils.Extensions.Http;
 using RestSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.AccessControl;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Apps.Asana.Webhooks.Handlers
+namespace Apps.Asana.Webhooks.Handlers;
+
+public class BaseWebhookHandler : IWebhookEventHandler
 {
-    public class BaseWebhookHandler : IWebhookEventHandler
+    private readonly string _resourceId;
+    private readonly string _resourceType;
+    private readonly string _action;
+    private readonly AsanaClient _client;
+
+    public BaseWebhookHandler(string resourceId, string resourceType, string action)
     {
-        private string ResourceId;
-        private string ResourceType;
-        private string Action;
-        public BaseWebhookHandler(string resourceId, string resourceType, string action)
-        {
-            ResourceId = resourceId;
-            ResourceType = resourceType;
-            Action = action;
-        }
-        public async Task SubscribeAsync(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProvider, Dictionary<string, string> values)
-        {
-            var client = new AsanaClient();
-            var request = new AsanaWebhookRequest($"/webhooks", Method.Post, authenticationCredentialsProvider);
-            request.AddJsonBody(new
+        _resourceId = resourceId;
+        _resourceType = resourceType;
+        _action = action;
+
+        _client = new();
+    }
+
+    public Task SubscribeAsync(
+        IEnumerable<AuthenticationCredentialsProvider> creds,
+        Dictionary<string, string> values)
+    {
+        var request = new AsanaRequest(ApiEndpoints.Webhooks, Method.Post, creds)
+            .WithJsonBody(new AddWebhookRequest
             {
-                resource = ResourceId,
-                target = values["payloadUrl"],
-                filters = new[] { new { action = Action, resource_type = ResourceType }}
-            });
+                Resource = _resourceId,
+                Target = values["payloadUrl"],
+                Filters = new Filter[]
+                {
+                    new()
+                    {
+                        Action = _action,
+                        ResourceType = _resourceType
+                    }
+                }
+            }, JsonConfig.Settings);
 
-            Task.Run(async () =>
-            {
-                await Task.Delay(2000);
-                client.Execute(request);
-            });
-        }
-
-        public async Task UnsubscribeAsync(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProvider, Dictionary<string, string> values)
+        return Task.Run(async () =>
         {
-            var client = new AsanaClient();
-            var getRequest = new AsanaWebhookRequest($"/webhooks/{ResourceId}", Method.Get, authenticationCredentialsProvider);
-            var webhooks = await client.GetAsync<ResponseWrapper<List<WebhookDto>>>(getRequest);
-            var webhookGId = webhooks.Data.First().GId;
+            await Task.Delay(2000);
+            await _client.ExecuteWithErrorHandling(request);
+        });
+    }
 
-            var deleteRequest = new AsanaRequest($"/webhooks/{webhookGId}", Method.Delete, authenticationCredentialsProvider);
-            await client.ExecuteAsync(deleteRequest);
-        }
+    public async Task UnsubscribeAsync(IEnumerable<AuthenticationCredentialsProvider> creds,
+        Dictionary<string, string> values)
+    {
+        var webhooks = await GetAllWebhooks(creds);
+        var webhookGId = webhooks.FirstOrDefault()?.Gid;
+
+        if (webhookGId is null)
+            return;
+
+        var endpoint = $"{ApiEndpoints.Webhooks}/{webhookGId}";
+        var request = new AsanaRequest(endpoint, Method.Delete, creds);
+
+        await _client.ExecuteWithErrorHandling(request);
+    }
+
+    private Task<IEnumerable<AsanaEntity>> GetAllWebhooks(
+        IEnumerable<AuthenticationCredentialsProvider> creds)
+    {
+        var endpoint = $"{ApiEndpoints.Webhooks}/{_resourceId}";
+        var request = new AsanaRequest(endpoint, Method.Get, creds);
+
+        return _client.ExecuteWithErrorHandling<IEnumerable<AsanaEntity>>(request);
     }
 }

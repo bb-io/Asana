@@ -1,14 +1,8 @@
-﻿using Apps.Asana.Dtos;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Apps.Asana.Dtos.Base;
 
-namespace Apps.Asana.Models.Projects.Responses
+namespace Apps.Asana.Models.Projects.Responses;
+
+public class GetProjectSectionsResponse
 {
-    public class GetProjectSectionsResponse
-    {
-        public IEnumerable<SectionDto> Sections { get; set; }
-    }
+    public IEnumerable<AsanaEntity> Sections { get; set; }
 }

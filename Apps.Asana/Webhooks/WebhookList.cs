@@ -2,53 +2,43 @@
 using Apps.Asana.Webhooks.Handlers.ProjectHandlers;
 using Blackbird.Applications.Sdk.Common.Webhooks;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Net;
-using System.Net.Sockets;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+using Apps.Asana.Webhooks.Models;
+using Apps.Asana.Webhooks.Models.Payload;
 
-namespace Apps.Asana.Webhooks
+namespace Apps.Asana.Webhooks;
+
+[WebhookList]
+public class WebhookList
 {
-    [WebhookList]
-    public class WebhookList
+    const string SecretHeaderKey = "X-Hook-Secret";
+
+    [Webhook("On project changed", typeof(ProjectChangedHandler),
+        Description = "Triggered when changes are made to the project")]
+    public async Task<WebhookResponse<ProjectDto>> ProjectChangedHandler(WebhookRequest webhookRequest)
     {
-        const string SecretHeaderKey = "X-Hook-Secret";
-
-        [Webhook("On project changed", typeof(ProjectChangedHandler), Description = "Triggered when changes are made to the project")]
-        public async Task<WebhookResponse<ProjectDto>> ProjectChangedHandler(WebhookRequest webhookRequest)
+        if (webhookRequest.Headers.ContainsKey(SecretHeaderKey))
         {
-            if (webhookRequest.Headers.ContainsKey(SecretHeaderKey))
+            var responseMessage = new HttpResponseMessage()
             {
-                HttpResponseMessage httpResponseMessage = new HttpResponseMessage();
-                httpResponseMessage.StatusCode = HttpStatusCode.OK;
-                httpResponseMessage.Headers.Add(SecretHeaderKey, webhookRequest.Headers[SecretHeaderKey]);
-                return new WebhookResponse<ProjectDto>
-                {
-                    HttpResponseMessage = httpResponseMessage,
-                    Result = null
-                };
-            }
-
-            var data = JsonConvert.DeserializeObject<ProjectWrapper>(webhookRequest.Body.ToString());
-            if (data is null)
-            {
-                throw new InvalidCastException(nameof(webhookRequest.Body));
-            }
+                StatusCode = HttpStatusCode.OK
+            };
+            responseMessage.Headers.Add(SecretHeaderKey, webhookRequest.Headers[SecretHeaderKey]);
             return new WebhookResponse<ProjectDto>
             {
-                HttpResponseMessage = null,
-                Result = data.Project
+                HttpResponseMessage = responseMessage,
+                Result = null
             };
         }
 
-        public class ProjectWrapper
-        {
-            public ProjectDto Project { get; set; }
-        }
+        var data = JsonConvert.DeserializeObject<ProjectWrapper>(webhookRequest.Body.ToString());
+
+        return data is not null
+            ? new WebhookResponse<ProjectDto>
+            {
+                HttpResponseMessage = null,
+                Result = data.Project
+            }
+            : throw new InvalidCastException(nameof(webhookRequest.Body));
     }
 }

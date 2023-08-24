@@ -1,14 +1,8 @@
-﻿using Apps.Asana.Dtos;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Apps.Asana.Dtos.Base;
 
-namespace Apps.Asana.Models.Workspaces.Responses
+namespace Apps.Asana.Models.Workspaces.Responses;
+
+public class ListWorkspacesResponse
 {
-    public class ListWorkspacesResponse
-    {
-        public IEnumerable<WorkspaceDto> Workspaces { get; set; }
-    }
+    public IEnumerable<AsanaEntity> Workspaces { get; set; }
 }

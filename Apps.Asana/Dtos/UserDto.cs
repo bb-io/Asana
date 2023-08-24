@@ -1,19 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Apps.Asana.Dtos.Base;
 
-namespace Apps.Asana.Dtos
+namespace Apps.Asana.Dtos;
+
+public class UserDto : AsanaEntity
 {
-    public class UserDto
-    {
-        public string GId { get; set; }
+    public string Email { get; set; }
 
-        public string Email { get; set; }
-
-        public string Name { get; set; }
-
-        public IEnumerable<WorkspaceDto> Workspaces { get; set; }
-    }
+    public IEnumerable<AsanaEntity> Workspaces { get; set; }
 }

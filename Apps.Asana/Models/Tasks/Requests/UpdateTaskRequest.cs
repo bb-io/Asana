@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Apps.Asana.DataSourceHandlers;
+using Blackbird.Applications.Sdk.Common;
+using Blackbird.Applications.Sdk.Common.Dynamic;
 
-namespace Apps.Asana.Models.Tasks.Requests
+namespace Apps.Asana.Models.Tasks.Requests;
+
+public class UpdateTaskRequest
 {
-    public class UpdateTaskRequest
-    {
-        public string TaskId { get; set; }
-
-        public string NewName { get; set; }
-    }
+    public string? Name { get; set; }
+    public string? Notes { get; set; }
+    
+    [Display("Assignee ID")]
+    [DataSource(typeof(UserDataHandler))]
+    public string? Assignee { get; set; }
 }

@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Blackbird.Applications.Sdk.Common;
 
-namespace Apps.Asana.Models.Tasks.Requests
+namespace Apps.Asana.Models.Tasks.Requests;
+
+public class GetUserTasksRequest
 {
-    public class GetUserTasksRequest
-    {
-        public string UserTaskListId { get; set; }
-    }
+    [Display("User task list ID")]
+    public string UserTaskListId { get; set; }
 }

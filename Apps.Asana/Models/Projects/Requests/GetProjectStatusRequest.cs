@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Blackbird.Applications.Sdk.Common;
 
-namespace Apps.Asana.Models.Projects.Requests
+namespace Apps.Asana.Models.Projects.Requests;
+
+public class GetProjectStatusRequest
 {
-    public class GetProjectStatusRequest
-    {
-        public string ProjectStatusId { get; set; }
-    }
+    [Display("Project status ID")]
+    public string ProjectStatusId { get; set; }
 }

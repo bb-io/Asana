@@ -1,14 +1,8 @@
-﻿using Apps.Asana.Dtos;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Apps.Asana.Dtos.Base;
 
-namespace Apps.Asana.Models.Users.Responses
-{
-    public class GetUserTeamsResponse
-    {   
-        public IEnumerable<WorkspaceDto> Teams { get; set; }
-    }
+namespace Apps.Asana.Models.Users.Responses;
+
+public class GetUserTeamsResponse
+{   
+    public IEnumerable<AsanaEntity> Teams { get; set; }
 }

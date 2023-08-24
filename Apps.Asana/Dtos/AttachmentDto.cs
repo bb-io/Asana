@@ -1,16 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Apps.Asana.Dtos.Base;
+using Blackbird.Applications.Sdk.Common;
 
-namespace Apps.Asana.Dtos
+namespace Apps.Asana.Dtos;
+
+public class AttachmentDto : AsanaEntity
 {
-    public class AttachmentDto
-    {
-        public string GId { get; set; }
+    [Display("Download URL")]
+    public string DownloadUrl { get; set; }
 
-        public string Name { get; set; }
+    [Display("Permanent URL")]
+    public string PermanentUrl { get; set; }
 
-    }
+    [Display("Created at")]
+    public DateTime CreatedAt { get; set; }
+
+    public AsanaEntity? Parent { get; set; }
 }

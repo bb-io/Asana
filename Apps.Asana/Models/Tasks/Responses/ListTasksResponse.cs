@@ -1,14 +1,8 @@
-﻿using Apps.Asana.Dtos;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Apps.Asana.Dtos.Base;
 
-namespace Apps.Asana.Models.Tasks.Responses
+namespace Apps.Asana.Models.Tasks.Responses;
+
+public class ListTasksResponse
 {
-    public class ListTasksResponse
-    {
-        public IEnumerable<TaskDto> Tasks { get; set; }
-    }
+    public IEnumerable<AsanaEntity> Tasks { get; set; }
 }

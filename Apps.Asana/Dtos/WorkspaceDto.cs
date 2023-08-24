@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Apps.Asana.Dtos.Base;
 
-namespace Apps.Asana.Dtos
+namespace Apps.Asana.Dtos;
+
+public class WorkspaceDto : AsanaEntity
 {
-    public class WorkspaceDto
-    {
-        public string GId { get; set; }
-
-        public string Name { get; set; }
-    }
+    public IEnumerable<string> EmailDomains { get; set; }
+    public bool IsOrganization { get; set; }
 }

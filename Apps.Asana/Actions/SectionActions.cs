@@ -1,70 +1,90 @@
-﻿using Apps.Asana.Dtos;
+﻿using Apps.Asana.Actions.Base;
+using Apps.Asana.Api;
+using Apps.Asana.Constants;
+using Apps.Asana.Dtos;
+using Apps.Asana.Dtos.Base;
+using Apps.Asana.Models;
+using Apps.Asana.Models.Projects.Requests;
 using Apps.Asana.Models.Sections.Requests;
-using Apps.Asana.Models.Sections.Responses;
-using Apps.Translate5;
+using Apps.Asana.Models.Sections.Response;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
-using Blackbird.Applications.Sdk.Common.Authentication;
+using Blackbird.Applications.Sdk.Common.Invocation;
+using Blackbird.Applications.Sdk.Utils.Extensions.Http;
 using RestSharp;
 
-namespace Apps.Asana.Actions
+namespace Apps.Asana.Actions;
+
+[ActionList]
+public class SectionActions : AsanaActions
 {
-    [ActionList]
-    public class SectionActions
+    public SectionActions(InvocationContext invocationContext) : base(invocationContext)
     {
-        [Action("Get section", Description = "Get section by Id")]
-        public GetSectionResponse GetSection(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] GetSectionRequest input)
-        {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/sections/{input.SectionId}", Method.Get, authenticationCredentialsProviders);
-            var section = client.Get<ResponseWrapper<SectionDto>>(request);
-            return new GetSectionResponse()
-            {
-                GId = section.Data.GId,
-                Name = section.Data.Name,
-            };
-        }
+    }
 
-        [Action("Update section", Description = "Update section by Id")]
-        public void UpdateSection(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] UpdateSectionRequest input)
-        {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/sections/{input.SectionId}", Method.Put, authenticationCredentialsProviders);
-            request.AddJsonBody(new
-            {
-                data = new
-                {
-                    name = input.NewName
-                }
-            });
-            client.Execute(request);
-        }
+    [Action("List sections", Description = "List all project sections")]
+    public async Task<ListSectionsResponse> ListSections([ActionParameter] ProjectRequest input)
+    {
+        var endpoint = $"{ApiEndpoints.Projects}/{input.ProjectId}{ApiEndpoints.Sections}";
+        var request = new AsanaRequest(endpoint, Method.Get, Creds);
 
-        [Action("Create section", Description = "Create section in project")]
-        public void CreateSection(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] CreateSectionRequest input)
-        {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/projects/{input.ProjectId}/sections", Method.Post, authenticationCredentialsProviders);
-            request.AddJsonBody(new
-            {
-                data = new
-                {
-                    name = input.SectionName,
-                }
-            });
-            client.Execute(request);
-        }
+        var sections = await Client.ExecuteWithErrorHandling<IEnumerable<AsanaEntity>>(request);
 
-        [Action("Delete section", Description = "Delete section")]
-        public void DeleteSection(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-           [ActionParameter] DeleteSectionRequest input)
+        return new()
         {
-            var client = new AsanaClient();
-            var request = new AsanaRequest($"/sections/{input.SectionId}", Method.Delete, authenticationCredentialsProviders);
-            client.Execute(request);
-        }
+            Sections = sections
+        };
+    }
+
+    [Action("Get section", Description = "Get section by ID")]
+    public Task<AsanaEntity> GetSection([ActionParameter] SectionRequest input)
+    {
+        var endpoint = $"{ApiEndpoints.Sections}/{input.SectionId}";
+        var request = new AsanaRequest(endpoint, Method.Get, Creds);
+
+        return Client.ExecuteWithErrorHandling<AsanaEntity>(request);
+    }
+
+    [Action("Update section", Description = "Update section by ID")]
+    public Task<SectionDto> UpdateSection(
+        [ActionParameter] SectionRequest section,
+        [ActionParameter] ManageSectionRequest input)
+    {
+        var payload = new ResponseWrapper<ManageSectionRequest>()
+        {
+            Data = input
+        };
+
+        var endpoint = $"{ApiEndpoints.Sections}/{section.SectionId}";
+        var request = new AsanaRequest(endpoint, Method.Put, Creds)
+            .WithJsonBody(payload, JsonConfig.Settings);
+
+        return Client.ExecuteWithErrorHandling<SectionDto>(request);
+    }
+
+    [Action("Create section", Description = "Create section in project")]
+    public Task<SectionDto> CreateSection(
+        [ActionParameter] ProjectRequest project,
+        [ActionParameter] ManageSectionRequest input)
+    {
+        var payload = new ResponseWrapper<ManageSectionRequest>()
+        {
+            Data = input
+        };
+
+        var endpoint = $"{ApiEndpoints.Projects}/{project.ProjectId}{ApiEndpoints.Sections}";
+        var request = new AsanaRequest(endpoint, Method.Post, Creds)
+            .WithJsonBody(payload, JsonConfig.Settings);
+
+        return Client.ExecuteWithErrorHandling<SectionDto>(request);
+    }
+
+    [Action("Delete section", Description = "Delete specific section")]
+    public Task DeleteSection([ActionParameter] SectionRequest input)
+    {
+        var endpoint = $"{ApiEndpoints.Sections}/{input.SectionId}";
+        var request = new AsanaRequest(endpoint, Method.Delete, Creds);
+
+        return Client.ExecuteWithErrorHandling(request);
     }
 }

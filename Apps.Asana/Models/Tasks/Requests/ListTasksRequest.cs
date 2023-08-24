@@ -1,13 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Apps.Asana.DataSourceHandlers;
+using Blackbird.Applications.Sdk.Common;
+using Blackbird.Applications.Sdk.Common.Dynamic;
+using Newtonsoft.Json;
 
-namespace Apps.Asana.Models.Tasks.Requests
+namespace Apps.Asana.Models.Tasks.Requests;
+
+public class ListTasksRequest
 {
-    public class ListTasksRequest
-    {
-        public string ProjectId { get; set; }
-    }
+    [JsonProperty("project")]
+    [Display("Project")]
+    [DataSource(typeof(ProjectDataHandler))]
+    public string? Project { get; set; }
+    
+    [JsonProperty("assignee")]
+    [Display("Assignee ID")]
+    [DataSource(typeof(UserDataHandler))]
+    public string? Assignee { get; set; }
+    
+    [JsonProperty("section")]
+    [Display("Section ID")]
+    public string? Section { get; set; }
+    
+    [JsonProperty("workspace")]
+    [Display("Workspace")]
+    [DataSource(typeof(WorkspaceDataHandler))]
+    public string? Workspace { get; set; }
+    
+    [JsonProperty("tag")]
+    [Display("Tag")]
+    [DataSource(typeof(TagDataHandler))]
+    public string? Tag { get; set; }
+    
+    [JsonProperty("user_task_list")]
+    [Display("User task list ID")]
+    public string? UserTaskList { get; set; }
 }

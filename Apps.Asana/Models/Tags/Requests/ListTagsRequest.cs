@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Apps.Asana.DataSourceHandlers;
+using Blackbird.Applications.Sdk.Common;
+using Blackbird.Applications.Sdk.Common.Dynamic;
+using Newtonsoft.Json;
 
-namespace Apps.Asana.Models.Tags.Requests
+namespace Apps.Asana.Models.Tags.Requests;
+
+public class ListTagsRequest
 {
-    public class ListTagsRequest
-    {
-        public string WorkspaceId { get; set; }
-    }
+    [JsonProperty("workspace")]
+    [Display("Workspace")]
+    [DataSource(typeof(WorkspaceDataHandler))]
+    public string? WorkspaceId { get; set; }
 }

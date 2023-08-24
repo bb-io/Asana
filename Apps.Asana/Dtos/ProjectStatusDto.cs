@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Blackbird.Applications.Sdk.Common;
 
-namespace Apps.Asana.Dtos
+namespace Apps.Asana.Dtos;
+
+public class ProjectStatusDto
 {
-    public class ProjectStatusDto
-    {
-        public string GId { get; set; }
+    [Display("ID")]
+    public string Gid { get; set; }
 
-        public string Color { get; set; }
+    public string Color { get; set; }
 
-        public string Text { get; set; }
+    public string Text { get; set; }
 
-        public string Title { get; set; }
-    }
+    public string Title { get; set; }
 }
