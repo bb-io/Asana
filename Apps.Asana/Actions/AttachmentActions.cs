@@ -59,7 +59,7 @@ public class AttachmentActions : AsanaActions
     {
         var request = new AsanaRequest(ApiEndpoints.Attachments, Method.Post, Creds);
 
-        request.AddFile("file", input.File, input.FileName);
+        request.AddFile("file", input.File.Bytes, input.FileName ?? input.File.Name);
         request.AddParameter("parent", input.ParentId);
 
         return Client.ExecuteWithErrorHandling<AttachmentDto>(request);
