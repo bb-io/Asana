@@ -2,12 +2,8 @@
 
 public static class CredsNames
 {
-    public const string ClientId = "client_id";
-    public const string ClientSecret = "client_secret";
-    public const string RedirectUri = "redirect_uri";
-    public const string Scope = "scope";
-    public const string ResponseType = "response_type";
-    
-    public const string ApiToken = "api_token";
-    public const string AccessToken = "access_token";
+    public const string AccessToken = "AccessToken";
+    public const string ExpiresIn = "ExpiresIn";
+    public const string ExpiresAt = "ExpiresAt";
+    public const string RefreshToken = "RefreshToken";
 }

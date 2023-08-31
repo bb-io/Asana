@@ -3,7 +3,6 @@ using Apps.Asana.Webhooks.Handlers.ProjectHandlers;
 using Blackbird.Applications.Sdk.Common.Webhooks;
 using Newtonsoft.Json;
 using System.Net;
-using Apps.Asana.Webhooks.Models;
 using Apps.Asana.Webhooks.Models.Payload;
 
 namespace Apps.Asana.Webhooks;

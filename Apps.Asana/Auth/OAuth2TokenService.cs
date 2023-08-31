@@ -1,31 +1,35 @@
 ﻿using System.Globalization;
 using Apps.Asana.Constants;
+using Apps.Asana.Models;
 using Blackbird.Applications.Sdk.Common.Authentication.OAuth2;
+using Blackbird.Applications.Sdk.Utils.Extensions.System;
 using Newtonsoft.Json;
 
 namespace Apps.Asana.Auth;
 
 public class OAuth2TokenService : IOAuth2TokenService
 {
-    private const string ExpiresAtKeyName = "expires_at";
-
     public bool IsRefreshToken(Dictionary<string, string> values)
     {
-        var expiresAt = DateTime.Parse(values[ExpiresAtKeyName]);
+        var expiresAt = DateTime.Parse(values[CredsNames.ExpiresAt]);
         return DateTime.UtcNow > expiresAt;
     }
 
-    public Task<Dictionary<string, string>> RefreshToken(Dictionary<string, string> values,
+    public async Task<Dictionary<string, string>> RefreshToken(Dictionary<string, string> values,
         CancellationToken cancellationToken)
     {
         var bodyParameters = new Dictionary<string, string>
         {
             { "grant_type", "refresh_token" },
-            { "client_id", values[CredsNames.ClientId] },
-            { "client_secret", values[CredsNames.ClientSecret] },
-            { "refresh_token", values["refresh_token"] },
+            { "client_id", ApplicationConstants.ClientId },
+            { "client_secret", ApplicationConstants.ClientSecret },
+            { "refresh_token", values[CredsNames.RefreshToken] },
         };
-        return GetToken(bodyParameters, cancellationToken);
+        
+        var response = await GetToken(bodyParameters, cancellationToken);
+        response[CredsNames.RefreshToken] = values[CredsNames.RefreshToken];
+
+        return response;
     }
 
     public Task<Dictionary<string, string>> RequestToken(
@@ -37,11 +41,12 @@ public class OAuth2TokenService : IOAuth2TokenService
         var bodyParameters = new Dictionary<string, string>
         {
             { "grant_type", "authorization_code" },
-            { "client_id", values[CredsNames.ClientId] },
-            { "client_secret", values[CredsNames.ClientSecret] },
-            { "redirect_uri", values[CredsNames.RedirectUri] },
-            { "code", code }
+            { "client_id", ApplicationConstants.ClientId },
+            { "client_secret", ApplicationConstants.ClientSecret },
+            { "redirect_uri", ApplicationConstants.RedirectUri },
+            { "code", code },
         };
+
         return GetToken(bodyParameters, cancellationToken);
     }
 
@@ -54,15 +59,16 @@ public class OAuth2TokenService : IOAuth2TokenService
         CancellationToken token)
     {
         var responseContent = await ExecuteTokenRequest(parameters, token);
+        var resultDictionary = JsonConvert.DeserializeObject<AuthData>(responseContent, JsonConfig.Settings)
+            ?.AsDictionary();
 
-        var resultDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseContent)
-                                   ?.ToDictionary(r => r.Key, r => r.Value.ToString())
-                               ?? throw new InvalidOperationException(
-                                   $"Invalid response content: {responseContent}");
+        if (resultDictionary is null)
+            throw new InvalidOperationException(
+                $"Invalid response content: {responseContent}");
 
-        var expiresIn = int.Parse(resultDictionary["expires_in"]);
+        var expiresIn = int.Parse(resultDictionary[CredsNames.ExpiresIn]);
         var expiresAt = DateTime.UtcNow.AddSeconds(expiresIn);
-        resultDictionary.Add(ExpiresAtKeyName, expiresAt.ToString(CultureInfo.InvariantCulture));
+        resultDictionary.Add(CredsNames.ExpiresAt, expiresAt.ToString(CultureInfo.InvariantCulture));
 
         return resultDictionary;
     }

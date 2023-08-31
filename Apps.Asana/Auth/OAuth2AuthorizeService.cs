@@ -10,11 +10,11 @@ public class OAuth2AuthorizeService : IOAuth2AuthorizeService
     {
         var parameters = new Dictionary<string, string>
         {
-            { "client_id", values[CredsNames.ClientId] },
-            { "redirect_uri", values[CredsNames.RedirectUri] },
-            { "response_type", values[CredsNames.ResponseType] },
-            { "scope", values[CredsNames.Scope] },
-            { "state", values["state"] }
+            { "client_id", ApplicationConstants.ClientId },
+            { "redirect_uri", ApplicationConstants.RedirectUri },
+            { "response_type", "code" },
+            { "scope", ApplicationConstants.Scope },
+            { "state", values["state"] },
         };
         
         return Urls.OAuthUrl.WithQuery(parameters);
