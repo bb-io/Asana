@@ -1,15 +1,16 @@
 ﻿using Apps.Asana.Auth;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Authentication.OAuth2;
+using Blackbird.Applications.Sdk.Common.Invocation;
 
 namespace Apps.Asana;
 
-public class AsanaApplication : IApplication
+public class AsanaApplication : BaseInvocable, IApplication
 {
     private string _name;
     private readonly Dictionary<Type, object> _typesInstances;
 
-    public AsanaApplication()
+    public AsanaApplication(InvocationContext invocationContext) : base(invocationContext)
     {
         _name = "Asana";
         _typesInstances = CreateTypesInstances();
@@ -34,8 +35,8 @@ public class AsanaApplication : IApplication
     {
         return new Dictionary<Type, object>
         {
-            { typeof(IOAuth2AuthorizeService), new OAuth2AuthorizeService() },
-            { typeof(IOAuth2TokenService), new OAuth2TokenService() }
+            { typeof(IOAuth2AuthorizeService), new OAuth2AuthorizeService(InvocationContext) },
+            { typeof(IOAuth2TokenService), new OAuth2TokenService(InvocationContext) }
         };
     }
 }
