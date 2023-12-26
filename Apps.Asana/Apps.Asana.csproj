@@ -12,7 +12,6 @@
         <PackageReference Include="Blackbird.Applications.Sdk.Common" Version="2.3.2-alpha1"/>
         <PackageReference Include="Blackbird.Applications.SDK.Extensions.FileManagement" Version="1.0.0-alpha2"/>
         <PackageReference Include="Blackbird.Applications.Sdk.Utils" Version="1.0.3"/>
-        <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0"/>
     </ItemGroup>
     <ItemGroup>
         <Folder Include="Models\Workspaces\Requests\"/>
