@@ -9,6 +9,7 @@ using Apps.Asana.Models.Attachments.Requests;
 using Apps.Asana.Models.Attachments.Responses;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Invocation;
+using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using Blackbird.Applications.Sdk.Utils.Extensions.String;
 
 namespace Apps.Asana.Actions;
@@ -16,8 +17,12 @@ namespace Apps.Asana.Actions;
 [ActionList]
 public class AttachmentActions : AsanaActions
 {
-    public AttachmentActions(InvocationContext invocationContext) : base(invocationContext)
+    private readonly IFileManagementClient _fileManagementClient;
+
+    public AttachmentActions(InvocationContext invocationContext, IFileManagementClient fileManagementClient) : base(
+        invocationContext)
     {
+        _fileManagementClient = fileManagementClient;
     }
 
     [Action("List attachments", Description = "List attachments from object")]
@@ -54,14 +59,15 @@ public class AttachmentActions : AsanaActions
     }
 
     [Action("Upload attachment", Description = "Upload a new attachment")]
-    public Task<AttachmentDto> UploadAttachment(
+    public async Task<AttachmentDto> UploadAttachment(
         [ActionParameter] UploadAttachmentRequest input)
     {
         var request = new AsanaRequest(ApiEndpoints.Attachments, Method.Post, Creds);
 
-        request.AddFile("file", input.File.Bytes, input.FileName ?? input.File.Name);
+        var file = await _fileManagementClient.DownloadAsync(input.File);
+            request.AddFile("file", () => file, input.FileName ?? input.File.Name!);
         request.AddParameter("parent", input.ParentId);
 
-        return Client.ExecuteWithErrorHandling<AttachmentDto>(request);
+        return await Client.ExecuteWithErrorHandling<AttachmentDto>(request);
     }
 }
