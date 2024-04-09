@@ -2,13 +2,20 @@
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Authentication.OAuth2;
 using Blackbird.Applications.Sdk.Common.Invocation;
+using Blackbird.Applications.Sdk.Common.Metadata;
 
 namespace Apps.Asana;
 
-public class AsanaApplication : BaseInvocable, IApplication
+public class AsanaApplication : BaseInvocable, IApplication, ICategoryProvider
 {
     private string _name;
     private readonly Dictionary<Type, object> _typesInstances;
+
+    public IEnumerable<ApplicationCategory> Categories
+    {
+        get => [ApplicationCategory.ProjectManagementAndProductivity, ApplicationCategory.TaskManagement];
+        set { }
+    }
 
     public AsanaApplication(InvocationContext invocationContext) : base(invocationContext)
     {
@@ -28,6 +35,7 @@ public class AsanaApplication : BaseInvocable, IApplication
         {
             throw new InvalidOperationException($"Instance of type '{typeof(T)}' not found");
         }
+
         return (T)value;
     }
 
