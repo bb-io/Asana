@@ -1,22 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <Product>Asana</Product>
-    <Description>Work management</Description>
-    <Version>1.0.2</Version>
-    <AssemblyName>Apps.Asana</AssemblyName>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Blackbird.Applications.Sdk.Utils" Version="1.0.3" />
-    <PackageReference Include="Blackbird.Applications.Sdk.Common" Version="2.2.0-alpha4" />
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\Workspaces\Requests\" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource CopyToOutputDirectory="Always" Include="image\icon.png" />
-  </ItemGroup>
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <Product>Asana</Product>
+        <Description>Work management</Description>
+        <Version>1.0.3</Version>
+        <AssemblyName>Apps.Asana</AssemblyName>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Blackbird.Applications.Sdk.Common" Version="2.3.2-alpha1"/>
+        <PackageReference Include="Blackbird.Applications.SDK.Extensions.FileManagement" Version="1.0.1"/>
+        <PackageReference Include="Blackbird.Applications.Sdk.Utils" Version="1.0.3"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Folder Include="Models\Workspaces\Requests\"/>
+    </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource CopyToOutputDirectory="Always" Include="image\icon.png"/>
+    </ItemGroup>
 </Project>
