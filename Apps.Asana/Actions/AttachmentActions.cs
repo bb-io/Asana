@@ -1,4 +1,5 @@
-﻿using Apps.Asana.Actions.Base;
+﻿using System.Net.Mime;
+using Apps.Asana.Actions.Base;
 using Apps.Asana.Api;
 using Apps.Asana.Constants;
 using Apps.Asana.Dtos;
@@ -8,6 +9,7 @@ using RestSharp;
 using Apps.Asana.Models.Attachments.Requests;
 using Apps.Asana.Models.Attachments.Responses;
 using Blackbird.Applications.Sdk.Common.Actions;
+using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using Blackbird.Applications.Sdk.Utils.Extensions.String;
@@ -41,12 +43,20 @@ public class AttachmentActions : AsanaActions
     }
 
     [Action("Get attachment", Description = "Get attachment by ID")]
-    public Task<AttachmentDto> GetAttachment([ActionParameter] AttachmentRequest input)
+    public async Task<AttachmentDto> GetAttachment([ActionParameter] AttachmentRequest input)
     {
         var endpoint = $"{ApiEndpoints.Attachments}/{input.AttachmentId}";
         var request = new AsanaRequest(endpoint, Method.Get, Creds);
 
-        return Client.ExecuteWithErrorHandling<AttachmentDto>(request);
+        var response = await Client.ExecuteWithErrorHandling<AttachmentResponse>(request);
+
+        var contentType = MimeTypes.TryGetMimeType(response.Name, out var mimeType)
+            ? mimeType
+            : MediaTypeNames.Application.Octet;
+        return new(response)
+        {
+            File = new FileReference(new HttpRequestMessage(HttpMethod.Get, response.DownloadUrl), response.Name, contentType)
+        };
     }
 
     [Action("Delete attachment", Description = "Delete attachment by ID")]
@@ -65,7 +75,7 @@ public class AttachmentActions : AsanaActions
         var request = new AsanaRequest(ApiEndpoints.Attachments, Method.Post, Creds);
 
         var file = await _fileManagementClient.DownloadAsync(input.File);
-            request.AddFile("file", () => file, input.FileName ?? input.File.Name!);
+        request.AddFile("file", () => file, input.FileName ?? input.File.Name!);
         request.AddParameter("parent", input.ParentId);
 
         return await Client.ExecuteWithErrorHandling<AttachmentDto>(request);

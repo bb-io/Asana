@@ -6,7 +6,7 @@ namespace Apps.Asana.Models.Projects.Requests;
 
 public class ProjectRequest
 {
-    [Display("Project")]
+    [Display("Project ID")]
     [DataSource(typeof(ProjectDataHandler))]
     public string ProjectId { get; set; }
 }

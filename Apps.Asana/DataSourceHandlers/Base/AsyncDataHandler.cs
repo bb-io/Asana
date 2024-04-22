@@ -24,7 +24,7 @@ public abstract class AsyncDataHandler : BaseInvocable, IAsyncDataSourceHandler
     public async Task<Dictionary<string, string>> GetDataAsync(DataSourceContext context, CancellationToken cancellationToken)
     {
         var request = new AsanaRequest(Endpoint, Method.Get, Creds);
-        var items = await Client.ExecuteWithErrorHandling<IEnumerable<AsanaEntity>>(request);
+        var items = await Client.Paginate<AsanaEntity>(request);
 
         return items
             .Where(x => context.SearchString is null ||
