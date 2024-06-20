@@ -12,7 +12,7 @@ public class ProjectStatusDataHandler : AsyncDataHandler
     private readonly GetProjectStatusRequest _request;
 
     public ProjectStatusDataHandler(InvocationContext invocationContext,
-        [ActionParameter] GetProjectStatusRequest request) : base(invocationContext)
+        [ActionParameter] GetProjectStatusRequest request) : base(invocationContext, request)
     {
         _request = request;
 

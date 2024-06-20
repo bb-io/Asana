@@ -12,7 +12,7 @@ public class SectionDataHandler : AsyncDataHandler
     private readonly SectionRequest _request;
 
     public SectionDataHandler(InvocationContext invocationContext,
-        [ActionParameter] SectionRequest request) : base(invocationContext)
+        [ActionParameter] SectionRequest request) : base(invocationContext, request)
     {
         _request = request;
 
