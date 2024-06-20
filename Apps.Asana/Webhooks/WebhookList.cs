@@ -16,13 +16,13 @@ public class WebhookList
         Description = "Triggered when changes are made to the project")]
     public async Task<WebhookResponse<ProjectDto>> ProjectChangedHandler(WebhookRequest webhookRequest)
     {
-        if (webhookRequest.Headers.ContainsKey(SecretHeaderKey))
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
         {
             var responseMessage = new HttpResponseMessage()
             {
                 StatusCode = HttpStatusCode.OK
             };
-            responseMessage.Headers.Add(SecretHeaderKey, webhookRequest.Headers[SecretHeaderKey]);
+            responseMessage.Headers.Add(SecretHeaderKey, secretKey);
             return new WebhookResponse<ProjectDto>
             {
                 HttpResponseMessage = responseMessage,

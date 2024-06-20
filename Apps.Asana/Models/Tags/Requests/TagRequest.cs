@@ -6,7 +6,7 @@ namespace Apps.Asana.Models.Tags.Requests;
 
 public class TagRequest
 {
-    [Display("Tag")]
+    [Display("Tag ID")]
     [DataSource(typeof(TagDataHandler))]
     public string TagId { get; set; }
 }

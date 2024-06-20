@@ -6,7 +6,7 @@ namespace Apps.Asana.Models.Users.Requests;
 
 public class UserRequest
 {
-    [Display("User")]
+    [Display("User ID")]
     [DataSource(typeof(UserDataHandler))]
     public string UserId { get; set; }
 }

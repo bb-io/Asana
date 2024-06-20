@@ -30,20 +30,22 @@ public class BaseWebhookHandler : IWebhookEventHandler
         Dictionary<string, string> values)
     {
         var request = new AsanaRequest(ApiEndpoints.Webhooks, Method.Post, creds)
-            .WithJsonBody(new AddWebhookRequest
+            .WithJsonBody(new
             {
-                Resource = _resourceId,
-                Target = values["payloadUrl"],
-                Filters = new Filter[]
+                data = new AddWebhookRequest
                 {
-                    new()
+                    Resource = _resourceId,
+                    Target = values["payloadUrl"],
+                    Filters = new Filter[]
                     {
-                        Action = _action,
-                        ResourceType = _resourceType
+                        new()
+                        {
+                            Action = _action,
+                            ResourceType = _resourceType
+                        }
                     }
                 }
             }, JsonConfig.Settings);
-
         return Task.Run(async () =>
         {
             await Task.Delay(2000);

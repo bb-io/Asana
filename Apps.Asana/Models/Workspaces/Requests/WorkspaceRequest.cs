@@ -6,7 +6,7 @@ namespace Apps.Asana.Models.Workspaces.Requests;
 
 public class WorkspaceRequest
 {
-    [Display("Workspace")]
+    [Display("Workspace ID")]
     [DataSource(typeof(WorkspaceDataHandler))]
     public string WorkspaceId { get; set; }
 }

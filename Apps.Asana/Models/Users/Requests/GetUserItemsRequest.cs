@@ -6,11 +6,11 @@ namespace Apps.Asana.Models.Users.Requests;
 
 public class GetUserItemsRequest
 {
-    [Display("User")]
+    [Display("User ID")]
     [DataSource(typeof(UserDataHandler))]
     public string UserId { get; set; }
 
-    [Display("Workspace")]
+    [Display("Workspace ID")]
     [DataSource(typeof(WorkspaceDataHandler))]
     public string WorkspaceId { get; set; }
 }
