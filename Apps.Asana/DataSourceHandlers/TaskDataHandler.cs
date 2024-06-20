@@ -12,11 +12,18 @@ public class TaskDataHandler : AsyncDataHandler
     private readonly TaskRequest _request;
 
     public TaskDataHandler(InvocationContext invocationContext,
-        [ActionParameter] TaskRequest request) : base(invocationContext)
+        [ActionParameter] TaskRequest request) : base(invocationContext, request)
     {
         _request = request;
 
         if (string.IsNullOrWhiteSpace(_request.ProjectId))
-            throw new("You should specify Project ID first");
+        {
+            throw new("You should specify 'Project ID' first");
+        }
+
+        if (string.IsNullOrEmpty(_request.WorkspaceId))
+        {
+            throw new("You should specify 'Workspace ID' first");
+        }
     }
 }
