@@ -38,7 +38,8 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
                 return new WebhookResponse<ProjectDto>
                 {
                     HttpResponseMessage = responseMessage,
-                    Result = null
+                    Result = null,
+                    ReceivedWebhookRequestType = WebhookRequestType.Preflight
                 };
             }
 
@@ -48,7 +49,6 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
                 {
                     HttpResponseMessage = null,
                     Result = data.Project, 
-                    ReceivedWebhookRequestType = WebhookRequestType.Preflight
                 }
                 : throw new InvalidCastException(nameof(webhookRequest.Body));
         }
@@ -79,10 +79,17 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
                 };
                 responseMessage.Headers.Add(SecretHeaderKey, secretKey);
                 
+                await Logger.LogAsync(new
+                {
+                    responseMessage,
+                    secretKey
+                });
+                
                 return new WebhookResponse<ProjectDto>
                 {
                     HttpResponseMessage = responseMessage,
-                    Result = null
+                    Result = null,
+                    ReceivedWebhookRequestType = WebhookRequestType.Preflight
                 };
             }
 
