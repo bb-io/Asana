@@ -58,4 +58,48 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
             throw;
         }
     }
+    
+    [Webhook("Test webhook",
+        Description = "Triggered when changes are made to the project")]
+    public async Task<WebhookResponse<ProjectDto>> TestWebhookHandler(WebhookRequest webhookRequest)
+    {
+        await Logger.LogAsync(new
+        {
+            webhookRequest.Body,
+            webhookRequest.Headers,
+        });
+        
+        try
+        {
+            if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+            {
+                var responseMessage = new HttpResponseMessage()
+                {
+                    StatusCode = HttpStatusCode.OK
+                };
+                responseMessage.Headers.Add(SecretHeaderKey, secretKey);
+                
+                return new WebhookResponse<ProjectDto>
+                {
+                    HttpResponseMessage = responseMessage,
+                    Result = null
+                };
+            }
+
+            var data = JsonConvert.DeserializeObject<ProjectWrapper>(webhookRequest.Body.ToString()!);
+            return data is not null
+                ? new WebhookResponse<ProjectDto>
+                {
+                    HttpResponseMessage = null,
+                    Result = data.Project, 
+                    ReceivedWebhookRequestType = WebhookRequestType.Preflight
+                }
+                : throw new InvalidCastException(nameof(webhookRequest.Body));
+        }
+        catch (Exception e)
+        {
+            await Logger.LogException(e);
+            throw;
+        }
+    }
 }
