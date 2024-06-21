@@ -78,6 +78,7 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
                     StatusCode = HttpStatusCode.OK
                 };
                 
+                responseMessage.TrailingHeaders.Add(SecretHeaderKey, secretKey);
                 responseMessage.Content.Headers.Add(SecretHeaderKey, secretKey);
                 responseMessage.Headers.Add(SecretHeaderKey, secretKey);
                 
