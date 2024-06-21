@@ -77,6 +77,8 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
                 {
                     StatusCode = HttpStatusCode.OK
                 };
+                
+                responseMessage.Content.Headers.Add(SecretHeaderKey, secretKey);
                 responseMessage.Headers.Add(SecretHeaderKey, secretKey);
                 
                 await Logger.LogAsync(new
