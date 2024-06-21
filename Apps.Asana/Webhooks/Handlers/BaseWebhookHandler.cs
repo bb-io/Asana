@@ -25,32 +25,47 @@ public class BaseWebhookHandler : IWebhookEventHandler
         _client = new();
     }
 
-    public Task SubscribeAsync(
+    public async Task SubscribeAsync(
         IEnumerable<AuthenticationCredentialsProvider> creds,
         Dictionary<string, string> values)
     {
-        var request = new AsanaRequest(ApiEndpoints.Webhooks, Method.Post, creds)
-            .WithJsonBody(new
+        try
+        {
+            await Logger.LogAsync(new
             {
-                data = new AddWebhookRequest
+                ResourceId = _resourceId,
+                ResourceType = _resourceType,
+                Action = _action,
+                Values = values,
+                Creds = creds
+            });
+            
+            var request = new AsanaRequest(ApiEndpoints.Webhooks, Method.Post, creds)
+                .WithJsonBody(new
                 {
-                    Resource = _resourceId,
-                    Target = values["payloadUrl"],
-                    Filters = new Filter[]
+                    data = new AddWebhookRequest
                     {
-                        new()
+                        Resource = _resourceId,
+                        Target = values["payloadUrl"],
+                        Filters = new Filter[]
                         {
-                            Action = _action,
-                            ResourceType = _resourceType
+                            new()
+                            {
+                                Action = _action,
+                                ResourceType = _resourceType
+                            }
                         }
                     }
-                }
-            }, JsonConfig.Settings);
-        return Task.Run(async () =>
-        {
+                }, JsonConfig.Settings);
+            
             await Task.Delay(2000);
             await _client.ExecuteWithErrorHandling(request);
-        });
+        }
+        catch (Exception e)
+        {
+            await Logger.LogException(e);
+            throw;
+        }
     }
 
     public async Task UnsubscribeAsync(IEnumerable<AuthenticationCredentialsProvider> creds,

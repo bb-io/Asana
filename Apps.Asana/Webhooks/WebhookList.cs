@@ -6,6 +6,7 @@ using System.Net;
 using Apps.Asana.Webhooks.Models.Payload;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Invocation;
+using Microsoft.Extensions.Logging;
 
 namespace Apps.Asana.Webhooks;
 
@@ -18,6 +19,12 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
         Description = "Triggered when changes are made to the project")]
     public async Task<WebhookResponse<ProjectDto>> ProjectChangedHandler(WebhookRequest webhookRequest)
     {
+        await Logger.LogAsync(new
+        {
+            webhookRequest.Body,
+            webhookRequest.Headers,
+        });
+        
         try
         {
             if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
@@ -40,14 +47,14 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
                 ? new WebhookResponse<ProjectDto>
                 {
                     HttpResponseMessage = null,
-                    Result = data.Project
+                    Result = data.Project, 
+                    ReceivedWebhookRequestType = WebhookRequestType.Preflight
                 }
                 : throw new InvalidCastException(nameof(webhookRequest.Body));
         }
         catch (Exception e)
         {
-            InvocationContext?.Logger?.LogError($"Error occurred while processing webhook request: {e.Message}; " +
-                                                $"JSON: {webhookRequest.Body}; Headers: {JsonConvert.SerializeObject(webhookRequest.Headers)}", null);
+            await Logger.LogException(e);
             throw;
         }
     }
