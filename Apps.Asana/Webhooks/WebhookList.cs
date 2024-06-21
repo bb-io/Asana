@@ -27,6 +27,7 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
                     StatusCode = HttpStatusCode.OK
                 };
                 responseMessage.Headers.Add(SecretHeaderKey, secretKey);
+                
                 return new WebhookResponse<ProjectDto>
                 {
                     HttpResponseMessage = responseMessage,
