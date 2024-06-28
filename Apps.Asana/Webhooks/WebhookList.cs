@@ -16,17 +16,19 @@ namespace Apps.Asana.Webhooks;
 public class WebhookList(InvocationContext invocationContext) : BaseInvocable(invocationContext)
 {
     const string SecretHeaderKey = "X-Hook-Secret";
-
-    [Webhook("On projects changed", typeof(ProjectChangedHandler),
-        Description = "Triggered when changes are made to projects")]
-    public async Task<WebhookResponse<ProjectsResponse>> ProjectChangedHandler(WebhookRequest webhookRequest)
+    
+    #region Projects
+    
+    [Webhook("On projects added", typeof(ProjectAddedHandler),
+        Description = "Triggered when added are made to projects")]
+    public async Task<WebhookResponse<ProjectsResponse>> ProjectsAddedHandler(WebhookRequest webhookRequest)
     {
         if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
         {
-            return CreatePreflightResponse(secretKey);
+            return CreatePreflightResponse<ProjectsResponse>(secretKey);
         }
 
-        var payload = JsonConvert.DeserializeObject<ProjectChangedPayload>(webhookRequest.Body.ToString()!);
+        var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
         await Logger.LogAsync(new
         {
             Events = payload
@@ -34,9 +36,10 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
         
         if (payload == null || payload.Events == null)
         {
-            return CreatePreflightResponse();
+            return CreatePreflightResponse<ProjectsResponse>();
         }
 
+        payload.Events = payload.Events.Where(x => x.Action == "added").ToList();
         var projects = await GetProjectsFromPayload(payload);
         return new WebhookResponse<ProjectsResponse>
         {
@@ -49,7 +52,146 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
         };
     }
 
-    private WebhookResponse<ProjectsResponse> CreatePreflightResponse(string? secretKey = null)
+    [Webhook("On projects changed", typeof(ProjectChangedHandler),
+        Description = "Triggered when changes are made to projects")]
+    public async Task<WebhookResponse<ProjectsResponse>> ProjectChangedHandler(WebhookRequest webhookRequest)
+    {
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<ProjectsResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+        
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<ProjectsResponse>();
+        }
+
+        payload.Events = payload.Events.Where(x => x.Action == "changed").ToList();
+        var projects = await GetProjectsFromPayload(payload);
+        return new WebhookResponse<ProjectsResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new ProjectsResponse { Projects = projects },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+    
+    [Webhook("On projects deleted", typeof(ProjectDeletedHandler),
+        Description = "Triggered when projects are deleted")]
+    public async Task<WebhookResponse<ProjectsDeletedResponse>> ProjectsDeletedHandler(WebhookRequest webhookRequest)
+    {
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<ProjectsDeletedResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+        
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<ProjectsDeletedResponse>();
+        }
+
+        return new WebhookResponse<ProjectsDeletedResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new ProjectsDeletedResponse 
+            { 
+                DeletedProjectIds = payload.Events
+                    .Where(x => x.Action == "deleted" &&  x.Resource?.Gid != null)
+                    .Select(x => x.Resource.Gid)
+                    .ToList()
+            },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+    
+    [Webhook("On projects removed", typeof(ProjectRemovedHandler),
+        Description = "Triggered when projects are removed")]
+    public async Task<WebhookResponse<ProjectsResponse>> ProjectsRemovedHandler(WebhookRequest webhookRequest)
+    {
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<ProjectsResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+        
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<ProjectsResponse>();
+        }
+
+        payload.Events = payload.Events.Where(x => x.Action == "removed").ToList();
+        var projects = await GetProjectsFromPayload(payload);
+        return new WebhookResponse<ProjectsResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new ProjectsResponse { Projects = projects },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+    
+    [Webhook("On projects undeleted", typeof(ProjectUndeletedHandler),
+        Description = "Triggered when projects are undeleted")]
+    public async Task<WebhookResponse<ProjectsResponse>> ProjectsuUndeletedHandler(WebhookRequest webhookRequest)
+    {
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<ProjectsResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+        
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<ProjectsResponse>();
+        }
+
+        payload.Events = payload.Events.Where(x => x.Action == "undeleted").ToList();
+        var projects = await GetProjectsFromPayload(payload);
+        return new WebhookResponse<ProjectsResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new ProjectsResponse { Projects = projects },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+
+    #region Utils
+
+    private WebhookResponse<T> CreatePreflightResponse<T>(string? secretKey = null)
+        where T : class
     {
         var responseMessage = new HttpResponseMessage
         {
@@ -61,7 +203,7 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
             responseMessage.Headers.Add(SecretHeaderKey, secretKey);
         }
 
-        return new WebhookResponse<ProjectsResponse>
+        return new WebhookResponse<T>
         {
             HttpResponseMessage = responseMessage,
             Result = null,
@@ -69,12 +211,12 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
         };
     }
 
-    private async Task<List<ProjectDto>> GetProjectsFromPayload(ProjectChangedPayload payload)
+    private async Task<List<ProjectDto>> GetProjectsFromPayload(Payload payload)
     {
         var projectActions = new ProjectActions(InvocationContext);
         var projects = new List<ProjectDto>();
 
-        foreach (var project in payload.Events.Where(x => x.Resource?.Gid != null).DistinctBy(x => x.Resource.Gid))
+        foreach (var project in payload.Events!.Where(x => x.Resource?.Gid != null).DistinctBy(x => x.Resource.Gid))
         {
             var projectDto = await projectActions.GetProject(new ProjectRequest
             {
@@ -85,4 +227,8 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
 
         return projects;
     }
+    
+    #endregion
+    
+    #endregion
 }

@@ -2,7 +2,7 @@
 
 namespace Apps.Asana.Webhooks.Models.Payload;
 
-public class ProjectChangedPayload
+public class Payload
 {
     [JsonProperty("events")]
     public List<Event>? Events { get; set; }
@@ -23,7 +23,11 @@ public class Change
 public class Resource
 {
     public string Gid { get; set; }
+    
+    [JsonProperty("resource_type")]
     public string ResourceType { get; set; }
+    
+    [JsonProperty("resource_subtype")]
     public string ResourceSubtype { get; set; }
 }
 
