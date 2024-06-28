@@ -19,7 +19,7 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
     
     #region Projects
     
-    [Webhook("On projects added", typeof(ProjectAddedHandler),
+    [Webhook("On projects added", typeof(ProjectsAddedHandler),
         Description = "Triggered when added are made to projects")]
     public async Task<WebhookResponse<ProjectsResponse>> ProjectsAddedHandler(WebhookRequest webhookRequest)
     {
@@ -187,7 +187,9 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
             ReceivedWebhookRequestType = WebhookRequestType.Default
         };
     }
-
+    
+    #endregion
+    
     #region Utils
 
     private WebhookResponse<T> CreatePreflightResponse<T>(string? secretKey = null)
@@ -227,8 +229,6 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
 
         return projects;
     }
-    
-    #endregion
     
     #endregion
 }
