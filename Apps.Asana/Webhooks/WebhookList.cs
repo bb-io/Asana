@@ -6,9 +6,9 @@ using System.Net;
 using Apps.Asana.Actions;
 using Apps.Asana.Models.Projects.Requests;
 using Apps.Asana.Webhooks.Models.Payload;
+using Apps.Asana.Webhooks.Models.Responses;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Invocation;
-using Microsoft.Extensions.Logging;
 
 namespace Apps.Asana.Webhooks;
 
@@ -17,74 +17,72 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
 {
     const string SecretHeaderKey = "X-Hook-Secret";
 
-    [Webhook("On project changed", typeof(ProjectChangedHandler),
-        Description = "Triggered when changes are made to the project")]
-    public async Task<WebhookResponse<ProjectDto>> ProjectChangedHandler(WebhookRequest webhookRequest)
+    [Webhook("On projects changed", typeof(ProjectChangedHandler),
+        Description = "Triggered when changes are made to projects")]
+    public async Task<WebhookResponse<ProjectsResponse>> ProjectChangedHandler(WebhookRequest webhookRequest)
     {
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<ProjectChangedPayload>(webhookRequest.Body.ToString()!);
         await Logger.LogAsync(new
         {
-            Json = webhookRequest.Body.ToString(),
-            webhookRequest.Headers,
+            Events = payload
         });
         
-        try
+        if (payload == null || payload.Events == null)
         {
-            if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
-            {
-                var responseMessage = new HttpResponseMessage()
-                {
-                    StatusCode = HttpStatusCode.OK
-                };
-                responseMessage.Headers.Add(SecretHeaderKey, secretKey);
-                
-                return new WebhookResponse<ProjectDto>
-                {
-                    HttpResponseMessage = responseMessage,
-                    Result = null,
-                    ReceivedWebhookRequestType = WebhookRequestType.Preflight
-                };
-            }
-            
-            var payload = JsonConvert.DeserializeObject<ProjectChangedPayload>(webhookRequest.Body.ToString()!);
-            await Logger.LogAsync(new
-            {
-                Events = payload,
-                webhookRequest.Headers,
-            });
-
-            if (payload == null || payload.Events == null || !payload.Events.Any())
-            {
-                return new WebhookResponse<ProjectDto>
-                {
-                    HttpResponseMessage = new HttpResponseMessage()
-                    {
-                        StatusCode = HttpStatusCode.OK
-                    },
-                    Result = null,
-                    ReceivedWebhookRequestType = WebhookRequestType.Preflight
-                };
-            }
-
-            var projectActions = new ProjectActions(InvocationContext);
-            var project = await projectActions.GetProject(new ProjectRequest
-            {
-                ProjectId = payload.Events.First().Resource.Gid
-            });
-            
-            return new WebhookResponse<ProjectDto>
-            {
-                HttpResponseMessage = new HttpResponseMessage()
-                {
-                    StatusCode = HttpStatusCode.OK
-                },
-                Result = project,
-                ReceivedWebhookRequestType = WebhookRequestType.Default
-            };
+            return CreatePreflightResponse();
         }
-        catch (Exception e)
+
+        var projects = await GetProjectsFromPayload(payload);
+        return new WebhookResponse<ProjectsResponse>
         {
-            await Logger.LogException(e);
-            throw;
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new ProjectsResponse { Projects = projects },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+
+    private WebhookResponse<ProjectsResponse> CreatePreflightResponse(string? secretKey = null)
+    {
+        var responseMessage = new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK
+        };
+
+        if (!string.IsNullOrEmpty(secretKey))
+        {
+            responseMessage.Headers.Add(SecretHeaderKey, secretKey);
         }
+
+        return new WebhookResponse<ProjectsResponse>
+        {
+            HttpResponseMessage = responseMessage,
+            Result = null,
+            ReceivedWebhookRequestType = WebhookRequestType.Preflight
+        };
+    }
+
+    private async Task<List<ProjectDto>> GetProjectsFromPayload(ProjectChangedPayload payload)
+    {
+        var projectActions = new ProjectActions(InvocationContext);
+        var projects = new List<ProjectDto>();
+
+        foreach (var project in payload.Events.Where(x => x.Resource?.Gid != null).DistinctBy(x => x.Resource.Gid))
+        {
+            var projectDto = await projectActions.GetProject(new ProjectRequest
+            {
+                ProjectId = project.Resource.Gid
+            });
+            projects.Add(projectDto);
+        }
+
+        return projects;
     }
 }
