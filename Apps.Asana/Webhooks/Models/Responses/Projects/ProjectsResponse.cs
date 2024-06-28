@@ -1,6 +1,6 @@
 ﻿using Apps.Asana.Dtos;
 
-namespace Apps.Asana.Webhooks.Models.Responses;
+namespace Apps.Asana.Webhooks.Models.Responses.Projects;
 
 public class ProjectsResponse
 {
