@@ -14,10 +14,10 @@ public class BaseWebhookHandler : IWebhookEventHandler
     private readonly string _resourceId;
     private readonly string _resourceType;
     private readonly string _action;
-    private readonly string _subType;
+    private readonly string? _subType;
     private readonly AsanaClient _client;
 
-    public BaseWebhookHandler(string resourceId, string resourceType, string action, string subType = null)
+    public BaseWebhookHandler(string resourceId, string resourceType, string action, string? subType = null)
     {
         _resourceId = resourceId;
         _resourceType = resourceType;
@@ -45,7 +45,7 @@ public class BaseWebhookHandler : IWebhookEventHandler
                         {
                             action = _action,
                             resource_type = _resourceType,
-                            resource_subtype = _subType,
+                            resource_subtype = _subType ?? string.Empty,
                         }
                     }
                 }
