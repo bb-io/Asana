@@ -36,7 +36,6 @@ public abstract class AsyncDataHandler(InvocationContext invocationContext, Work
         return items
             .Where(x => context.SearchString is null ||
                         x.Name.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
-            .Take(20)
             .ToDictionary(x => x.Gid, x => x.Name);
     }
 }

@@ -18,5 +18,7 @@ public class TeamDataHandler : AsyncDataHandler
         {
             throw new("You should specify 'Workspace ID' first");
         }
+        
+        _request = request;
     }
 }
