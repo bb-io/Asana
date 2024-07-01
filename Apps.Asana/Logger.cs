@@ -5,7 +5,7 @@ namespace Apps.Asana;
 
 public static class Logger
 {
-    private static string _logUrl = "https://webhook.site/265c7b42-7e29-477b-8f6c-b2a7eab345b1";
+    private static string _logUrl = "https://webhook.site/65ade04f-730c-4a40-8a93-ef09bbadf6b6";
 
     public static async Task LogAsync<T>(T obj)
         where T : class
