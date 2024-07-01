@@ -14,15 +14,15 @@ public class BaseWebhookHandler : IWebhookEventHandler
     private readonly string _resourceId;
     private readonly string _resourceType;
     private readonly string _action;
-    private readonly string? _subType;
+    private readonly string? _resourceSubType;
     private readonly AsanaClient _client;
 
-    public BaseWebhookHandler(string resourceId, string resourceType, string action, string? subType = null)
+    public BaseWebhookHandler(string resourceId, string resourceType, string action, string? resourceSubType = null)
     {
         _resourceId = resourceId;
         _resourceType = resourceType;
         _action = action;
-        _subType = subType;
+        _resourceSubType = resourceSubType;
 
         _client = new();
     }
@@ -33,23 +33,29 @@ public class BaseWebhookHandler : IWebhookEventHandler
     {
         try
         {
-            var obj = new
+            var filters = new Dictionary<string, object>
             {
-                data = new
-                {
-                    resource = _resourceId,
-                    target = values["payloadUrl"],
-                    filters = new[]
-                    {
-                        new
-                        {
-                            action = _action,
-                            resource_type = _resourceType,
-                        }
-                    }
-                }
+                { "action", _action },
+                { "resource_type", _resourceType }
             };
-            
+
+            if (!string.IsNullOrEmpty(_resourceSubType))
+            {
+                filters["resource_subtype"] = _resourceSubType;
+            }
+
+            var data = new Dictionary<string, object>
+            {
+                { "resource", _resourceId },
+                { "target", values["payloadUrl"] },
+                { "filters", new[] { filters } }
+            };
+
+            var obj = new Dictionary<string, object>
+            {
+                { "data", data }
+            };
+
             await Logger.LogAsync(new
             {
                 ResourceId = _resourceId,
@@ -59,10 +65,10 @@ public class BaseWebhookHandler : IWebhookEventHandler
                 Creds = creds,
                 Obj = obj
             });
-            
+
             var request = new AsanaRequest(ApiEndpoints.Webhooks, Method.Post, creds)
                 .WithJsonBody(obj);
-            
+
             await _client.ExecuteWithErrorHandling(request);
         }
         catch (Exception e)
