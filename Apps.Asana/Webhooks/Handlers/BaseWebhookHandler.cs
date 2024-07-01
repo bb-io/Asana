@@ -33,35 +33,37 @@ public class BaseWebhookHandler : IWebhookEventHandler
     {
         try
         {
+            var obj = new
+            {
+                data = new
+                {
+                    resource = _resourceId,
+                    target = values["payloadUrl"],
+                    filters = new[]
+                    {
+                        new
+                        {
+                            action = _action,
+                            resource_type = _resourceType,
+                            resource_subtype = _subType,
+                        }
+                    }
+                }
+            };
+            
             await Logger.LogAsync(new
             {
                 ResourceId = _resourceId,
                 ResourceType = _resourceType,
                 Action = _action,
                 Values = values,
-                Creds = creds
+                Creds = creds,
+                Obj = obj
             });
             
             var request = new AsanaRequest(ApiEndpoints.Webhooks, Method.Post, creds)
-                .WithJsonBody(new
-                {
-                    data = new
-                    {
-                        resource = _resourceId,
-                        target = values["payloadUrl"],
-                        filters = new[]
-                        {
-                            new
-                            {
-                                action = _action,
-                                resource_type = _resourceType,
-                                resource_subtype = _subType,
-                            }
-                        }
-                    }
-                }, JsonConfig.Settings);
+                .WithJsonBody(obj);
             
-            await Task.Delay(2000);
             await _client.ExecuteWithErrorHandling(request);
         }
         catch (Exception e)
