@@ -4,15 +4,32 @@ using Blackbird.Applications.Sdk.Common.Webhooks;
 using Newtonsoft.Json;
 using System.Net;
 using Apps.Asana.Actions;
+using Apps.Asana.Api;
+using Apps.Asana.Constants;
 using Apps.Asana.Dtos.Base;
+using Apps.Asana.Models.Goals;
+using Apps.Asana.Models.ProjectMemberships.Responses;
 using Apps.Asana.Models.Projects.Requests;
 using Apps.Asana.Models.Sections.Requests;
+using Apps.Asana.Models.Stories.Response;
 using Apps.Asana.Models.Tags.Requests;
 using Apps.Asana.Models.Tasks.Requests;
+using Apps.Asana.Models.TeamMemberships;
+using Apps.Asana.Models.Teams.Responses;
+using Apps.Asana.Models.WorkspaceMemberships.Responses;
+using Apps.Asana.Models.Workspaces.Requests;
+using Apps.Asana.Webhooks.Handlers.GoalHandlers;
+using Apps.Asana.Webhooks.Handlers.ProjectMemberships;
 using Apps.Asana.Webhooks.Handlers.SectionHandlers;
+using Apps.Asana.Webhooks.Handlers.StoryCommentHandlers;
+using Apps.Asana.Webhooks.Handlers.StoryHandlers;
 using Apps.Asana.Webhooks.Handlers.TagHandlers;
 using Apps.Asana.Webhooks.Handlers.TaskHandlers;
+using Apps.Asana.Webhooks.Handlers.TeamHandlers;
+using Apps.Asana.Webhooks.Handlers.TeamMembershipHandlers;
 using Apps.Asana.Webhooks.Handlers.WorkspaceHandlers;
+using Apps.Asana.Webhooks.Handlers.WorkspaceMembershipHandlers;
+using Apps.Asana.Webhooks.Models;
 using Apps.Asana.Webhooks.Models.Payload;
 using Apps.Asana.Webhooks.Models.Responses.Projects;
 using Apps.Asana.Webhooks.Models.Responses.Sections;
@@ -21,6 +38,7 @@ using Apps.Asana.Webhooks.Models.Responses.Tasks;
 using Apps.Asana.Webhooks.Models.Responses.Workspaces;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Invocation;
+using RestSharp;
 
 namespace Apps.Asana.Webhooks;
 
@@ -655,6 +673,249 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
 
     #endregion
 
+    #region Stories
+    
+    [Webhook("On stories added", typeof(StoriesAddedHandler),
+        Description = "Triggered when stories are added")]
+    public async Task<WebhookResponse<StoriesResponse>> StoriesAddedHandler(WebhookRequest webhookRequest)
+    {
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<StoriesResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<StoriesResponse>();
+        }
+
+        payload.Events = payload.Events.Where(x => x.Action == "added").ToList();
+        var stories = await GetStoriesFromPayload(payload);
+        return new WebhookResponse<StoriesResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new StoriesResponse { Stories = stories },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+
+    [Webhook("On stories removed", typeof(StoriesRemovedHandler),
+        Description = "Triggered when stories are removed")]
+    public async Task<WebhookResponse<StoriesResponse>> StoriesRemovedHandler(WebhookRequest webhookRequest)
+    {
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<StoriesResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<StoriesResponse>();
+        }
+
+        payload.Events = payload.Events.Where(x => x.Action == "removed").ToList();
+        var stories = await GetStoriesFromPayload(payload);
+        return new WebhookResponse<StoriesResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new StoriesResponse { Stories = stories },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+
+    [Webhook("On stories undeleted", typeof(StoriesUndeletedHandler),
+        Description = "Triggered when stories are undeleted")]
+    public async Task<WebhookResponse<StoriesResponse>> StoriesUndeletedHandler(WebhookRequest webhookRequest)
+    {
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<StoriesResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<StoriesResponse>();
+        }
+
+        payload.Events = payload.Events.Where(x => x.Action == "undeleted").ToList();
+        var stories = await GetStoriesFromPayload(payload);
+        return new WebhookResponse<StoriesResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new StoriesResponse { Stories = stories },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+
+    #endregion
+
+    #region StoriesComments
+
+    [Webhook("On stories comments added", typeof(StoriesCommentsAddedHandler),
+        Description = "Triggered when comments are added to stories")]
+    public async Task<WebhookResponse<StoriesResponse>> StoriesCommentsAddedHandler(
+        WebhookRequest webhookRequest)
+    {
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<StoriesResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<StoriesResponse>();
+        }
+
+        payload.Events = payload.Events.Where(x => x.Action == "added").ToList();
+        var storiesComments = await GetStoriesFromPayload(payload);
+        return new WebhookResponse<StoriesResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new StoriesResponse { Stories = storiesComments },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+
+    [Webhook("On stories comments changed", typeof(StoriesCommentsChangedHandler),
+        Description = "Triggered when changes are made to comments on stories")]
+    public async Task<WebhookResponse<StoriesResponse>> StoriesCommentsChangedHandler(
+        WebhookRequest request)
+    {
+        if (request.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<StoriesResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(request.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<StoriesResponse>();
+        }
+
+        payload.Events = payload.Events.Where(x => x.Action == "changed").ToList();
+        var storiesComments = await GetStoriesFromPayload(payload);
+        return new WebhookResponse<StoriesResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new StoriesResponse { Stories = storiesComments },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+
+    [Webhook("On stories comments removed", typeof(StoriesCommentsRemovedHandler),
+        Description = "Triggered when comments are removed from stories")]
+    public async Task<WebhookResponse<StoriesResponse>> StoriesCommentsRemovedHandler(
+        WebhookRequest request)
+    {
+        if (request.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<StoriesResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(request.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<StoriesResponse>();
+        }
+
+        payload.Events = payload.Events.Where(x => x.Action == "removed").ToList();
+        var storiesComments = await GetStoriesFromPayload(payload);
+        return new WebhookResponse<StoriesResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new StoriesResponse { Stories = storiesComments },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+
+    [Webhook("On stories comments undeleted", typeof(StoriesCommentsUndeletedHandler),
+        Description = "Triggered when comments are undeleted from stories")]
+    public async Task<WebhookResponse<StoriesResponse>> StoriesCommentsUndeletedHandler(
+        WebhookRequest request)
+    {
+        if (request.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<StoriesResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(request.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<StoriesResponse>();
+        }
+
+        payload.Events = payload.Events.Where(x => x.Action == "undeleted").ToList();
+        var storiesComments = await GetStoriesFromPayload(payload);
+        return new WebhookResponse<StoriesResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new StoriesResponse { Stories = storiesComments },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+
+    #endregion
+    
     #region Workspaces
 
     [Webhook("On workspaces changed", typeof(WorkspaceChangedHandler),
@@ -691,6 +952,502 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
     }
 
     #endregion
+
+    #region Goals
+
+    [Webhook("On goals added", typeof(GoalsAddedHandler),
+        Description = "Triggered when goals are added")]
+    public async Task<WebhookResponse<GoalsResponse>> GoalsAddedHandler(WebhookRequest webhookRequest)
+    {
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<GoalsResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<GoalsResponse>();
+        }
+
+        payload.Events = payload.Events.Where(x => x.Action == "added").ToList();
+        var goals = await GetGoalsFromPayload(payload);
+        return new WebhookResponse<GoalsResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new GoalsResponse { Goals = goals },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+
+    [Webhook("On goals changed", typeof(GoalsChangedHandler),
+        Description = "Triggered when changes are made to goals")]
+    public async Task<WebhookResponse<GoalsResponse>> GoalsChangedHandler(WebhookRequest webhookRequest)
+    {
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<GoalsResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<GoalsResponse>();
+        }
+
+        payload.Events = payload.Events.Where(x => x.Action == "changed").ToList();
+        var goals = await GetGoalsFromPayload(payload);
+        return new WebhookResponse<GoalsResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new GoalsResponse { Goals = goals },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+
+    [Webhook("On goals removed", typeof(GoalsRemovedHandler),
+        Description = "Triggered when goals are removed")]
+    public async Task<WebhookResponse<GoalsResponse>> GoalsRemovedHandler(WebhookRequest webhookRequest)
+    {
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<GoalsResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<GoalsResponse>();
+        }
+
+        payload.Events = payload.Events.Where(x => x.Action == "removed").ToList();
+        var goals = await GetGoalsFromPayload(payload);
+        return new WebhookResponse<GoalsResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new GoalsResponse { Goals = goals },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+
+    [Webhook("On goals deleted", typeof(GoalsDeletedHandler),
+        Description = "Triggered when goals are deleted")]
+    public async Task<WebhookResponse<DeletedItemsResponse>> GoalsDeletedHandler(WebhookRequest webhookRequest)
+    {
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<DeletedItemsResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<DeletedItemsResponse>();
+        }
+
+        return new WebhookResponse<DeletedItemsResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new DeletedItemsResponse
+            {
+                ItemIds = payload.Events
+                    .Where(x => x.Action == "deleted" && x.Resource?.Gid != null)
+                    .Select(x => x.Resource.Gid)
+                    .ToList()
+            },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+
+    [Webhook("On goals undeleted", typeof(GoalsUndeletedHandler),
+        Description = "Triggered when goals are undeleted")]
+    public async Task<WebhookResponse<GoalsResponse>> GoalsUndeletedHandler(WebhookRequest webhookRequest)
+    {
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<GoalsResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<GoalsResponse>();
+        }
+
+        payload.Events = payload.Events.Where(x => x.Action == "undeleted").ToList();
+        var goals = await GetGoalsFromPayload(payload);
+        return new WebhookResponse<GoalsResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new GoalsResponse { Goals = goals },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+
+    #endregion
+    
+    #region ProjectMemberships
+
+    [Webhook("On project memberships added", typeof(ProjectMembershipsAddedHandler),
+        Description = "Triggered when project memberships are added")]
+    public async Task<WebhookResponse<ProjectMembershipsResponse>> ProjectMembershipsAddedHandler(
+        WebhookRequest webhookRequest)
+    {
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<ProjectMembershipsResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<ProjectMembershipsResponse>();
+        }
+
+        payload.Events = payload.Events.Where(x => x.Action == "added").ToList();
+        var projectMemberships = await GetProjectMembershipsFromPayload(payload);
+        return new WebhookResponse<ProjectMembershipsResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new ProjectMembershipsResponse { ProjectMemberships = projectMemberships },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+
+    [Webhook("On project memberships removed", typeof(ProjectMembershipsRemovedHandler),
+        Description = "Triggered when project memberships are removed")]
+    public async Task<WebhookResponse<ProjectMembershipsResponse>> ProjectMembershipsRemovedHandler(
+        WebhookRequest webhookRequest)
+    {
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<ProjectMembershipsResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<ProjectMembershipsResponse>();
+        }
+
+        payload.Events = payload.Events.Where(x => x.Action == "removed").ToList();
+        var projectMemberships = await GetProjectMembershipsFromPayload(payload);
+        return new WebhookResponse<ProjectMembershipsResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new ProjectMembershipsResponse { ProjectMemberships = projectMemberships },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+
+    #endregion
+
+    #region Teams
+
+    [Webhook("On teams added", typeof(TeamsAddedHandler),
+        Description = "Triggered when teams are added")]
+    public async Task<WebhookResponse<TeamsResponse>> TeamsAddedHandler(WebhookRequest webhookRequest)
+    {
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<TeamsResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<TeamsResponse>();
+        }
+
+        payload.Events = payload.Events.Where(x => x.Action == "added").ToList();
+        var teams = await GetTeamsFromPayload(payload);
+        return new WebhookResponse<TeamsResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new TeamsResponse { Teams = teams },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+
+    [Webhook("On teams changed", typeof(TeamsChangedHandler),
+        Description = "Triggered when changes are made to teams")]
+    public async Task<WebhookResponse<TeamsResponse>> TeamsChangedHandler(WebhookRequest webhookRequest)
+    {
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<TeamsResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<TeamsResponse>();
+        }
+
+        payload.Events = payload.Events.Where(x => x.Action == "changed").ToList();
+        var teams = await GetTeamsFromPayload(payload);
+        return new WebhookResponse<TeamsResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new TeamsResponse { Teams = teams },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+
+    [Webhook("On teams deleted", typeof(TeamsDeletedHandler),
+        Description = "Triggered when teams are deleted")]
+    public async Task<WebhookResponse<DeletedItemsResponse>> TeamsDeletedHandler(WebhookRequest webhookRequest)
+    {
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<DeletedItemsResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<DeletedItemsResponse>();
+        }
+
+        return new WebhookResponse<DeletedItemsResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new DeletedItemsResponse
+            {
+                ItemIds = payload.Events
+                    .Where(x => x.Action == "deleted" && x.Resource?.Gid != null)
+                    .Select(x => x.Resource.Gid)
+                    .ToList()
+            },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+    
+    #endregion
+
+    #region TeamMemberships
+
+    [Webhook("On team memberships added", typeof(TeamMembershipsAddedHandler),
+        Description = "Triggered when team memberships are added")]
+    public async Task<WebhookResponse<TeamMembershipsResponse>> TeamMembershipsAddedHandler(
+        WebhookRequest webhookRequest)
+    {
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<TeamMembershipsResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<TeamMembershipsResponse>();
+        }
+
+        payload.Events = payload.Events.Where(x => x.Action == "added").ToList();
+        var teamMemberships = await GetTeamMembershipsFromPayload(payload);
+        return new WebhookResponse<TeamMembershipsResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new TeamMembershipsResponse { TeamMemberships = teamMemberships },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+
+    [Webhook("On team memberships removed", typeof(TeamMembershipsRemovedHandler),
+        Description = "Triggered when team memberships are removed")]
+    public async Task<WebhookResponse<TeamMembershipsResponse>> TeamMembershipsRemovedHandler(
+        WebhookRequest request)
+    {
+        if (request.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<TeamMembershipsResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(request.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<TeamMembershipsResponse>();
+        }
+
+        payload.Events = payload.Events.Where(x => x.Action == "removed").ToList();
+        var teamMemberships = await GetTeamMembershipsFromPayload(payload);
+        return new WebhookResponse<TeamMembershipsResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new TeamMembershipsResponse { TeamMemberships = teamMemberships },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+
+    #endregion
+
+    #region WorkspaceMemberships
+
+    [Webhook("On workspace memberships added", typeof(WorkspaceMembershipsAddedHandler),
+        Description = "Triggered when workspace memberships are added")]
+    public async Task<WebhookResponse<WorkspaceMembershipsResponse>> WorkspaceMembershipsAddedHandler(
+        WebhookRequest request)
+    {
+        if (request.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<WorkspaceMembershipsResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(request.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<WorkspaceMembershipsResponse>();
+        }
+
+        payload.Events = payload.Events.Where(x => x.Action == "added").ToList();
+        var workspaceMemberships = await GetWorkspaceMembershipsFromPayload(payload);
+        return new WebhookResponse<WorkspaceMembershipsResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new WorkspaceMembershipsResponse { WorkspaceMemberships = workspaceMemberships },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+
+    [Webhook("On workspace memberships removed", typeof(WorkspaceMembershipsRemovedHandler),
+        Description = "Triggered when workspace memberships are removed")]
+    public async Task<WebhookResponse<WorkspaceMembershipsResponse>> WorkspaceMembershipsRemovedHandler(
+        WebhookRequest request)
+    {
+        if (request.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        {
+            return CreatePreflightResponse<WorkspaceMembershipsResponse>(secretKey);
+        }
+
+        var payload = JsonConvert.DeserializeObject<Payload>(request.Body.ToString()!);
+        await Logger.LogAsync(new
+        {
+            Events = payload
+        });
+
+        if (payload == null || payload.Events == null)
+        {
+            return CreatePreflightResponse<WorkspaceMembershipsResponse>();
+        }
+
+        payload.Events = payload.Events.Where(x => x.Action == "removed").ToList();
+        var workspaceMemberships = await GetWorkspaceMembershipsFromPayload(payload);
+        return new WebhookResponse<WorkspaceMembershipsResponse>
+        {
+            HttpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK
+            },
+            Result = new WorkspaceMembershipsResponse { WorkspaceMemberships = workspaceMemberships },
+            ReceivedWebhookRequestType = WebhookRequestType.Default
+        };
+    }
+
+    #endregion
     
     #region Utils
 
@@ -715,89 +1472,121 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
         };
     }
 
-    private async Task<List<ProjectDto>> GetProjectsFromPayload(Payload payload)
+    private async Task<List<TDto>> GetEntitiesFromPayload<TDto, TRequest, TAction>(Payload payload,
+        Func<InvocationContext, TAction> createAction, Func<Event, TRequest> createRequest,
+        Func<TAction, TRequest, Task<TDto>> fetchEntity)
     {
-        var projectActions = new ProjectActions(InvocationContext);
-        var projects = new List<ProjectDto>();
+        var action = createAction(InvocationContext);
+        var entities = new List<TDto>();
 
-        foreach (var project in payload.Events!.Where(x => x.Resource?.Gid != null).DistinctBy(x => x.Resource.Gid))
+        foreach (var item in payload.Events!.Where(x => x.Resource?.Gid != null).DistinctBy(x => x.Resource.Gid))
         {
-            var projectDto = await projectActions.GetProject(new ProjectRequest
-            {
-                ProjectId = project.Resource.Gid
-            });
-            projects.Add(projectDto);
+            var request = createRequest(item);
+            var dto = await fetchEntity(action, request);
+            entities.Add(dto);
         }
 
-        return projects;
+        return entities;
+    }
+
+    private async Task<List<ProjectDto>> GetProjectsFromPayload(Payload payload)
+    {
+        return await GetEntitiesFromPayload(payload,
+            context => new ProjectActions(context),
+            item => new ProjectRequest { ProjectId = item.Resource.Gid },
+            (action, request) => action.GetProject(request));
     }
 
     private async Task<List<TaskDto>> GetTasksFromPayload(Payload payload)
     {
-        var taskActions = new TaskActions(InvocationContext);
-        var tasks = new List<TaskDto>();
-
-        foreach (var task in payload.Events!.Where(x => x.Resource?.Gid != null).DistinctBy(x => x.Resource.Gid))
-        {
-            var taskDto = await taskActions.GetTask(new TaskRequest
-            {
-                TaskId = task.Resource.Gid
-            });
-            tasks.Add(taskDto);
-        }
-
-        return tasks;
+        return await GetEntitiesFromPayload(payload,
+            context => new TaskActions(context),
+            item => new TaskRequest { TaskId = item.Resource.Gid },
+            (action, request) => action.GetTask(request));
     }
 
     private async Task<List<TagDto>> GetTagsFromPayload(Payload payload)
     {
-        var tagActions = new TagActions(InvocationContext);
-        var tags = new List<TagDto>();
-
-        foreach (var tag in payload.Events!.Where(x => x.Resource?.Gid != null).DistinctBy(x => x.Resource.Gid))
-        {
-            var tagDto = await tagActions.GetTag(new TagRequest
-            {
-                TagId = tag.Resource.Gid
-            });
-            tags.Add(tagDto);
-        }
-
-        return tags;
+        return await GetEntitiesFromPayload(payload,
+            context => new TagActions(context),
+            item => new TagRequest { TagId = item.Resource.Gid },
+            (action, request) => action.GetTag(request));
     }
 
     private async Task<List<AsanaEntity>> GetSectionsFromPayload(Payload payload)
     {
-        var sectionActions = new SectionActions(InvocationContext);
-        var sections = new List<AsanaEntity>();
-
-        foreach (var section in payload.Events!.Where(x => x.Resource?.Gid != null).DistinctBy(x => x.Resource.Gid))
-        {
-            var sectionDto = await sectionActions.GetSection(new SectionRequest
-            {
-                SectionId = section.Resource.Gid
-            });
-            sections.Add(sectionDto);
-        }
-
-        return sections;
+        return await GetEntitiesFromPayload(payload,
+            context => new SectionActions(context),
+            item => new SectionRequest { SectionId = item.Resource.Gid },
+            (action, request) => action.GetSection(request));
     }
-    
+
     private async Task<List<WorkspaceDto>> GetWorkspacesFromPayload(Payload payload)
     {
-        var sectionActions = new WorkspaceActions(InvocationContext);
-        var workspaces = new List<WorkspaceDto>();
+        return await GetEntitiesFromPayload(payload,
+            context => new WorkspaceActions(context),
+            item => new WorkspaceRequest { WorkspaceId = item.Resource.Gid },
+            (action, request) => action.GetWorkspace(request));
+    }
 
-        foreach (var section in payload.Events!.Where(x => x.Resource?.Gid != null).DistinctBy(x => x.Resource.Gid))
-        {
-            var sectionDto = await sectionActions.GetWorkspace(new SectionRequest
-            {
-                SectionId = section.Resource.Gid
-            });
-            workspaces.Add(sectionDto);
-        }
+    private async Task<List<GoalResponse>> GetGoalsFromPayload(Payload payload)
+    {
+        return await GetEntitiesFromPayload(payload,
+            context => new AsanaClient(),
+            item => new AsanaRequest($"{ApiEndpoints.Goals}/{item.Resource.Gid}", Method.Get,
+                InvocationContext.AuthenticationCredentialsProviders),
+            (client, request) => client.ExecuteWithErrorHandling<GoalDto>(request)
+                .ContinueWith(task => new GoalResponse(task.Result)));
+    }
 
-        return workspaces;
+    private async Task<List<ProjectMembershipResponse>> GetProjectMembershipsFromPayload(Payload payload)
+    {
+        return await GetEntitiesFromPayload(payload,
+            context => new AsanaClient(),
+            item => new AsanaRequest($"{ApiEndpoints.ProjectMemberships}/{item.Resource.Gid}", Method.Get,
+                InvocationContext.AuthenticationCredentialsProviders),
+            (client, request) => client.ExecuteWithErrorHandling<ProjectMembershipDto>(request)
+                .ContinueWith(task => new ProjectMembershipResponse(task.Result)));
+    }
+
+    private async Task<List<StoryResponse>> GetStoriesFromPayload(Payload payload)
+    {
+        return await GetEntitiesFromPayload(payload,
+            context => new AsanaClient(),
+            item => new AsanaRequest($"{ApiEndpoints.Stories}/{item.Resource.Gid}", Method.Get,
+                InvocationContext.AuthenticationCredentialsProviders),
+            (client, request) => client.ExecuteWithErrorHandling<StoryDto>(request)
+                .ContinueWith(task => new StoryResponse(task.Result)));
+    }
+
+    private async Task<List<TeamResponse>> GetTeamsFromPayload(Payload payload)
+    {
+        return await GetEntitiesFromPayload(payload,
+            context => new AsanaClient(),
+            item => new AsanaRequest($"{ApiEndpoints.Teams}/{item.Resource.Gid}", Method.Get,
+                InvocationContext.AuthenticationCredentialsProviders),
+            (client, request) => client.ExecuteWithErrorHandling<TeamDto>(request)
+                .ContinueWith(task => new TeamResponse(task.Result)));
+    }
+
+    private async Task<List<TeamMembershipResponse>> GetTeamMembershipsFromPayload(Payload payload)
+    {
+        return await GetEntitiesFromPayload(payload,
+            context => new AsanaClient(),
+            item => new AsanaRequest($"{ApiEndpoints.TeamMemberships}/{item.Resource.Gid}", Method.Get,
+                InvocationContext.AuthenticationCredentialsProviders),
+            (client, request) => client.ExecuteWithErrorHandling<TeamMembershipDto>(request)
+                .ContinueWith(task => new TeamMembershipResponse(task.Result)));
+    }
+
+    private async Task<List<WorkspaceMembershipResponse>> GetWorkspaceMembershipsFromPayload(Payload payload)
+    {
+        return await GetEntitiesFromPayload(payload,
+            context => new AsanaClient(),
+            item => new AsanaRequest($"{ApiEndpoints.WorkspaceMemberships}/{item.Resource.Gid}", Method.Get,
+                InvocationContext.AuthenticationCredentialsProviders),
+            (client, request) => client.ExecuteWithErrorHandling<WorkspaceMembershipDto>(request)
+                .ContinueWith(task => new WorkspaceMembershipResponse(task.Result)));
     }
 
     #endregion

@@ -14,13 +14,15 @@ public class BaseWebhookHandler : IWebhookEventHandler
     private readonly string _resourceId;
     private readonly string _resourceType;
     private readonly string _action;
+    private readonly string _subType;
     private readonly AsanaClient _client;
 
-    public BaseWebhookHandler(string resourceId, string resourceType, string action)
+    public BaseWebhookHandler(string resourceId, string resourceType, string action, string subType = null)
     {
         _resourceId = resourceId;
         _resourceType = resourceType;
         _action = action;
+        _subType = subType;
 
         _client = new();
     }
@@ -47,6 +49,7 @@ public class BaseWebhookHandler : IWebhookEventHandler
                     {
                         Resource = _resourceId,
                         Target = values["payloadUrl"],
+                        ResourceSubtype = _subType,
                         Filters = new Filter[]
                         {
                             new()
