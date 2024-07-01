@@ -1,4 +1,5 @@
 ﻿using Apps.Asana.Api;
+using Apps.Asana.Constants;
 using Apps.Asana.Dtos.Base;
 using Apps.Asana.Models.Workspaces.Requests;
 using Blackbird.Applications.Sdk.Common;
@@ -24,7 +25,10 @@ public abstract class AsyncDataHandler(InvocationContext invocationContext, Work
         var request = new AsanaRequest(Endpoint, Method.Get, Creds);
         if (!string.IsNullOrEmpty(workspaceRequest.WorkspaceId))
         {
-            request.Resource = request.Resource.SetQueryParameter("workspace", workspaceRequest.WorkspaceId);
+            if (!request.Resource.Contains("?"))
+            {
+                request.Resource = request.Resource.SetQueryParameter("workspace", workspaceRequest.WorkspaceId);
+            }
         }
         
         var items = await Client.Paginate<AsanaEntity>(request);

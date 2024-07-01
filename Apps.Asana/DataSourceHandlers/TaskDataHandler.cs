@@ -20,10 +20,5 @@ public class TaskDataHandler : AsyncDataHandler
         {
             throw new("You should specify 'Project ID' first");
         }
-
-        if (string.IsNullOrEmpty(_request.WorkspaceId))
-        {
-            throw new("You should specify 'Workspace ID' first");
-        }
     }
 }
