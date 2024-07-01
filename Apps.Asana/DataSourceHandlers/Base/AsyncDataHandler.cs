@@ -25,7 +25,7 @@ public abstract class AsyncDataHandler(InvocationContext invocationContext, Work
         var request = new AsanaRequest(Endpoint, Method.Get, Creds);
         if (!string.IsNullOrEmpty(workspaceRequest.WorkspaceId))
         {
-            if (!request.Resource.Contains("?"))
+            if (!Endpoint.Contains("?project="))
             {
                 request.Resource = request.Resource.SetQueryParameter("workspace", workspaceRequest.WorkspaceId);
             }

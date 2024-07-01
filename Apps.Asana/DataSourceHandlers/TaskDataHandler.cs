@@ -7,7 +7,7 @@ namespace Apps.Asana.DataSourceHandlers;
 
 public class TaskDataHandler : AsyncDataHandler
 {
-    protected override string Endpoint => $"tasks?project={_request.ProjectId}";
+    protected override string Endpoint => $"/tasks?project={_request.ProjectId}";
 
     private readonly TaskRequest _request;
 
