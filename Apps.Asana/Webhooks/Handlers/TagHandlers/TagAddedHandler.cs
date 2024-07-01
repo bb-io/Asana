@@ -1,10 +1,10 @@
-﻿using Apps.Asana.Models.Workspaces.Requests;
+﻿using Apps.Asana.Models.Tasks.Requests;
 using Blackbird.Applications.Sdk.Common.Webhooks;
 
 namespace Apps.Asana.Webhooks.Handlers.TagHandlers;
 
-public class TagAddedHandler([WebhookParameter(true)] WorkspaceRequest r)
-    : BaseWebhookHandler(r.WorkspaceId, ResourceType, Action)
+public class TagAddedHandler([WebhookParameter(true)] TaskRequest r)
+    : BaseWebhookHandler(r.TaskId, ResourceType, Action)
 {
     const string ResourceType = "tag";
     const string Action = "added";

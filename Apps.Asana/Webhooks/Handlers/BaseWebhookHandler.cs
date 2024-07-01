@@ -45,17 +45,17 @@ public class BaseWebhookHandler : IWebhookEventHandler
             var request = new AsanaRequest(ApiEndpoints.Webhooks, Method.Post, creds)
                 .WithJsonBody(new
                 {
-                    data = new AddWebhookRequest
+                    data = new
                     {
-                        Resource = _resourceId,
-                        Target = values["payloadUrl"],
-                        ResourceSubtype = _subType,
-                        Filters = new Filter[]
+                        resource = _resourceId,
+                        target = values["payloadUrl"],
+                        filters = new[]
                         {
-                            new()
+                            new
                             {
-                                Action = _action,
-                                ResourceType = _resourceType
+                                action = _action,
+                                resource_type = _resourceType,
+                                resource_subtype = _subType,
                             }
                         }
                     }

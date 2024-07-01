@@ -1220,7 +1220,7 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
             return CreatePreflightResponse<TeamsResponse>();
         }
 
-        payload.Events = payload.Events.Where(x => x.Action == "added").ToList();
+        payload.Events = payload.Events.Where(x => x.Action == "added" && x.Resource.ResourceType == "team").ToList();
         var teams = await GetTeamsFromPayload(payload);
         return new WebhookResponse<TeamsResponse>
         {
