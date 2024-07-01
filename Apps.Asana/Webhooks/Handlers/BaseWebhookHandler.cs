@@ -45,7 +45,6 @@ public class BaseWebhookHandler : IWebhookEventHandler
                         {
                             action = _action,
                             resource_type = _resourceType,
-                            resource_subtype = _subType ?? string.Empty,
                         }
                     }
                 }
