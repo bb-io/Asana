@@ -66,7 +66,74 @@ Asana is a project management and team collaboration platform. Its suite of feat
 
 ## Events
 
-- **On project changed** is triggered when any project was changed.
+### Projects 
+- **On projects added** is triggered when projects are added.
+- **On projects changed** is triggered when projects are changed.
+- **On projects deleted** is triggered when projects are deleted.
+- **On projects removed** is triggered when projects are removed.
+- **On projects undeleted** is triggered when projects are undeleted.
+
+### Tasks
+
+- **On tasks added** is triggered when tasks are added.
+- **On tasks changed** is triggered when tasks are changed.
+- **On tasks deleted** is triggered when tasks are deleted.
+- **On tasks removed** is triggered when tasks are removed.
+- **On tasks undeleted** is triggered when tasks are undeleted.
+
+### Tags
+
+- **On tags added** is triggered when tags are added.
+- **On tags changed** is triggered when tags are changed.
+- **On tags deleted** is triggered when tags are deleted.
+- **On tags undeleted** is triggered when tags are undeleted.
+
+### Sections
+
+- **On sections added** is triggered when sections are added.
+- **On sections changed** is triggered when sections are changed.
+- **On sections deleted** is triggered when sections are deleted.
+- **On sections undeleted** is triggered when sections are undeleted.
+
+### Stories
+
+- **On stories added** is triggered when stories are added.
+- **On stories removed** is triggered when stories are removed.
+- **On stories undeleted** is triggered when stories are undeleted.
+- **On stories comments added** is triggered when comments are added to stories.
+- **On stories comments changed** is triggered when comments on stories are changed.
+- **On stories comments removed** is triggered when comments are removed from stories.
+- **On stories comments undeleted** is triggered when comments on stories are undeleted.
+
+### Workspaces
+
+- **On workspaces changed** is triggered when changes are made to workspaces.
+
+### Goals
+
+- **On goals added** is triggered when goals are added.
+- **On goals changed** is triggered when goals are changed.
+- **On goals removed** is triggered when goals are removed.
+- **On goals deleted** is triggered when goals are deleted.
+- **On goals undeleted** is triggered when goals are undeleted.
+
+### Project memberships
+
+- **On project memberships added** is triggered when project memberships are added.
+- **On project memberships removed** is triggered when project memberships are removed.
+
+### Teams
+
+- **On teams added** is triggered when teams are added.
+- **On teams changed** is triggered when teams are changed.
+- **On teams deleted** is triggered when teams are deleted.
+- **On team memberships added** is triggered when team memberships are added.
+- **On team memberships removed** is triggered when team memberships are removed.
+
+### Workspace memberships
+
+- **On workspace memberships added** is triggered when workspace memberships are added.
+- **On workspace memberships removed** is triggered when workspace memberships are removed.
 
 ## Missing features
 

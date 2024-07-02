@@ -3,12 +3,9 @@ using Blackbird.Applications.Sdk.Common.Webhooks;
 
 namespace Apps.Asana.Webhooks.Handlers.ProjectHandlers;
 
-public class ProjectChangedHandler : BaseWebhookHandler
+public class ProjectChangedHandler([WebhookParameter(true)] ProjectRequest pr)
+    : BaseWebhookHandler(pr.ProjectId, ResourceType, Action)
 {
     const string ResourceType = "project";
     const string Action = "changed";
-
-    public ProjectChangedHandler([WebhookParameter(true)] ProjectRequest pr) : base(pr.ProjectId, ResourceType, Action)
-    {
-    }
 }

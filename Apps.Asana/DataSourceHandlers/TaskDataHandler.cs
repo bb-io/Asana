@@ -7,7 +7,7 @@ namespace Apps.Asana.DataSourceHandlers;
 
 public class TaskDataHandler : AsyncDataHandler
 {
-    protected override string Endpoint => $"tasks?project={_request.ProjectId}";
+    protected override string Endpoint => $"/tasks?project={_request.ProjectId}";
 
     private readonly TaskRequest _request;
 
@@ -19,11 +19,6 @@ public class TaskDataHandler : AsyncDataHandler
         if (string.IsNullOrWhiteSpace(_request.ProjectId))
         {
             throw new("You should specify 'Project ID' first");
-        }
-
-        if (string.IsNullOrEmpty(_request.WorkspaceId))
-        {
-            throw new("You should specify 'Workspace ID' first");
         }
     }
 }
