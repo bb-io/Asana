@@ -51,7 +51,7 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
         WebhookRequest webhookRequest, string action, Func<Payload, Task<List<TDto>>> getEntitiesFromPayload, Func<List<TDto>, TResponse> createResponse)
         where TResponse : class, new()
     {
-        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey) || webhookRequest.Headers.TryGetValue("x-hook-secret", out secretKey))
         {
             return CreatePreflightResponse<TResponse>(secretKey);
         }
@@ -77,7 +77,7 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
         WebhookRequest webhookRequest, string action)
         where TResponse : DeletedItemsResponse, new()
     {
-        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey))
+        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey) || webhookRequest.Headers.TryGetValue("x-hook-secret", out secretKey))
         {
             return CreatePreflightResponse<DeletedItemsResponse>(secretKey);
         }
