@@ -135,6 +135,12 @@ Asana is a project management and team collaboration platform. Its suite of feat
 - **On workspace memberships added** is triggered when workspace memberships are added.
 - **On workspace memberships removed** is triggered when workspace memberships are removed.
 
+## Example
+
+![Asana example](/README/images/example.png)
+
+In this example, we have a workflow that triggers when tasks are added to a project. The workflow then retrieves the task details and sends them to a Slack channel.
+
 ## Missing features
 
 In the future we can add actions for:
