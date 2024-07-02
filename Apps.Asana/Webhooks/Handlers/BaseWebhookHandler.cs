@@ -31,51 +31,33 @@ public class BaseWebhookHandler : IWebhookEventHandler
         IEnumerable<AuthenticationCredentialsProvider> creds,
         Dictionary<string, string> values)
     {
-        try
+        var filters = new Dictionary<string, object>
         {
-            var filters = new Dictionary<string, object>
-            {
-                { "action", _action },
-                { "resource_type", _resourceType }
-            };
+            { "action", _action },
+            { "resource_type", _resourceType }
+        };
 
-            if (!string.IsNullOrEmpty(_resourceSubType))
-            {
-                filters["resource_subtype"] = _resourceSubType;
-            }
-
-            var data = new Dictionary<string, object>
-            {
-                { "resource", _resourceId },
-                { "target", values["payloadUrl"] },
-                { "filters", new[] { filters } }
-            };
-
-            var obj = new Dictionary<string, object>
-            {
-                { "data", data }
-            };
-
-            await Logger.LogAsync(new
-            {
-                ResourceId = _resourceId,
-                ResourceType = _resourceType,
-                Action = _action,
-                Values = values,
-                Creds = creds,
-                Obj = obj
-            });
-
-            var request = new AsanaRequest(ApiEndpoints.Webhooks, Method.Post, creds)
-                .WithJsonBody(obj);
-
-            await _client.ExecuteWithErrorHandling(request);
-        }
-        catch (Exception e)
+        if (!string.IsNullOrEmpty(_resourceSubType))
         {
-            await Logger.LogException(e);
-            throw;
+            filters["resource_subtype"] = _resourceSubType;
         }
+
+        var data = new Dictionary<string, object>
+        {
+            { "resource", _resourceId },
+            { "target", values["payloadUrl"] },
+            { "filters", new[] { filters } }
+        };
+
+        var obj = new Dictionary<string, object>
+        {
+            { "data", data }
+        };
+
+        var request = new AsanaRequest(ApiEndpoints.Webhooks, Method.Post, creds)
+            .WithJsonBody(obj);
+
+        await _client.ExecuteWithErrorHandling(request);
     }
 
     public async Task UnsubscribeAsync(IEnumerable<AuthenticationCredentialsProvider> creds,

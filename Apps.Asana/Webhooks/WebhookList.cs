@@ -57,8 +57,6 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
         }
 
         var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
-        await Logger.LogAsync(new { Events = payload });
-
         if (payload == null || payload.Events == null || !payload.Events.Any())
         {
             return CreatePreflightResponse<TResponse>();
@@ -85,8 +83,6 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
         }
 
         var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
-        await Logger.LogAsync(new { Events = payload });
-
         if (payload == null || payload.Events == null || !payload.Events.Any())
         {
             return CreatePreflightResponse<DeletedItemsResponse>();
