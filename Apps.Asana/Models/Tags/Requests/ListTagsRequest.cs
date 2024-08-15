@@ -8,7 +8,7 @@ namespace Apps.Asana.Models.Tags.Requests;
 public class ListTagsRequest
 {
     [JsonProperty("workspace")]
-    [Display("Workspace")]
+    [Display("Workspace ID")]
     [DataSource(typeof(WorkspaceDataHandler))]
     public string? WorkspaceId { get; set; }
 }
