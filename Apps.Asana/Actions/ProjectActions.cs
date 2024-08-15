@@ -12,6 +12,7 @@ using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.Sdk.Utils.Extensions.Http;
 using Blackbird.Applications.Sdk.Utils.Extensions.String;
+using Blackbird.Applications.Sdk.Utils.Extensions.Sdk;
 
 namespace Apps.Asana.Actions;
 
@@ -121,5 +122,13 @@ public class ProjectActions : AsanaActions
         {
             Updates = updates
         };
+    }
+
+    [Action("Debug", Description = "Debug")]
+    public async Task<string> Debug(
+        [ActionParameter] ProjectRequest input)
+    {
+        var res = InvocationContext.AuthenticationCredentialsProviders.Get(CredsNames.AccessToken);
+        return res.Value;
     }
 }
