@@ -28,6 +28,15 @@ public abstract class AsyncDataHandler(InvocationContext invocationContext, Work
             if (!Endpoint.Contains("?project="))
             {
                 request.Resource = request.Resource.SetQueryParameter("workspace", workspaceRequest.WorkspaceId);
+                
+                if (!workspaceRequest.IncludeArchived.HasValue || !workspaceRequest.IncludeArchived.Value)
+                {
+                    request.Resource = request.Resource.SetQueryParameter("archived", "false");
+                }
+                if(workspaceRequest.TeamId != null)
+                {
+                    request.Resource = request.Resource.SetQueryParameter("team", workspaceRequest.TeamId);
+                }
             }
         }
         

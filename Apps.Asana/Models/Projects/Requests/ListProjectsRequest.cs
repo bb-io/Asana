@@ -10,7 +10,7 @@ public class ListProjectsRequest
     [JsonProperty("workspace")]
     [Display("Workspace")]
     [DataSource(typeof(WorkspaceDataHandler))]
-    public string? Workspace { get; set; }
+    public string Workspace { get; set; }
     
     [JsonProperty("team")]
     [Display("Team ID")]
