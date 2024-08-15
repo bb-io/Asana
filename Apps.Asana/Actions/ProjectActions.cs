@@ -29,7 +29,7 @@ public class ProjectActions : AsanaActions
         var endpoint = ApiEndpoints.Projects.WithQuery(input);
         var request = new AsanaRequest(endpoint, Method.Get, Creds);
         
-        var projects = await Client.ExecuteWithErrorHandling<IEnumerable<AsanaEntity>>(request);
+        var projects = await Client.Paginate<AsanaEntity>(request);
 
         return new()
         {
