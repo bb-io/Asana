@@ -1,7 +1,6 @@
 ﻿using Apps.Asana.Api;
 using Apps.Asana.Constants;
 using Apps.Asana.Dtos.Base;
-using Apps.Asana.Webhooks.Models.Request;
 using Blackbird.Applications.Sdk.Common.Authentication;
 using Blackbird.Applications.Sdk.Common.Webhooks;
 using Blackbird.Applications.Sdk.Utils.Extensions.Http;
