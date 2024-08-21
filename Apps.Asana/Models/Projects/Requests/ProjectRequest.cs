@@ -9,5 +9,16 @@ public class ProjectRequest : WorkspaceRequest
 {
     [Display("Project ID")]
     [DataSource(typeof(ProjectDataHandler))]
-    public string ProjectId { get; set; }
+    public string? ProjectId { get; set; }  
+    
+    [Display("Manual project ID")]
+    public string? ManualProjectId { get; set; }
+    
+    public string GetProjectId()
+    {
+        if (!(ProjectId == null ^ ManualProjectId == null))
+            throw new("You should specify one value: Project ID or Manual project ID");
+
+        return ProjectId ?? ManualProjectId;
+    }
 }

@@ -7,7 +7,7 @@ namespace Apps.Asana.DataSourceHandlers;
 
 public class ProjectStatusDataHandler : AsyncDataHandler
 {
-    protected override string Endpoint => $"projects/{_request.ProjectId}/project_statuses";
+    protected override string Endpoint => $"projects/{_request.GetProjectId()}/project_statuses";
 
     private readonly GetProjectStatusRequest _request;
 
@@ -15,8 +15,5 @@ public class ProjectStatusDataHandler : AsyncDataHandler
         [ActionParameter] GetProjectStatusRequest request) : base(invocationContext, request)
     {
         _request = request;
-
-        if (string.IsNullOrWhiteSpace(_request.ProjectId))
-            throw new("You should specify Project ID first");
     }
 }

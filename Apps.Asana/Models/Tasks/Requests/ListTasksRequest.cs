@@ -7,11 +7,6 @@ namespace Apps.Asana.Models.Tasks.Requests;
 
 public class ListTasksRequest
 {
-    [JsonProperty("project")]
-    [Display("Project")]
-    [DataSource(typeof(ProjectDataHandler))]
-    public string? Project { get; set; }
-    
     [JsonProperty("assignee")]
     [Display("Assignee ID")]
     [DataSource(typeof(UserDataHandler))]

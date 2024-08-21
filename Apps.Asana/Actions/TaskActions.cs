@@ -4,6 +4,7 @@ using Apps.Asana.Constants;
 using Apps.Asana.Dtos;
 using Apps.Asana.Dtos.Base;
 using Apps.Asana.Models;
+using Apps.Asana.Models.Projects.Requests;
 using Apps.Asana.Models.Tags.Requests;
 using Apps.Asana.Models.Tasks.Requests;
 using Apps.Asana.Models.Tasks.Responses;
@@ -24,9 +25,15 @@ public class TaskActions : AsanaActions
     }
 
     [Action("List tasks", Description = "List all tasks")]
-    public async Task<ListTasksResponse> ListAllTasks([ActionParameter] ListTasksRequest input)
+    public async Task<ListTasksResponse> ListAllTasks([ActionParameter] ProjectRequest projectRequest,
+        [ActionParameter] ListTasksRequest input)
     {
+        var projectId = projectRequest.GetProjectId();
         var endpoint = ApiEndpoints.Tasks.WithQuery(input);
+
+        if (!string.IsNullOrEmpty(projectId))
+            endpoint.SetQueryParameter("project", projectId);
+        
         var request = new AsanaRequest(endpoint, Method.Get, Creds);
 
         var tasks = await Client.ExecuteWithErrorHandling<IEnumerable<AsanaEntity>>(request);

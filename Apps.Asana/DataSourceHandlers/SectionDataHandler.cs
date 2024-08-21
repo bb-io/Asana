@@ -7,7 +7,7 @@ namespace Apps.Asana.DataSourceHandlers;
 
 public class SectionDataHandler : AsyncDataHandler
 {
-    protected override string Endpoint => $"projects/{_request.ProjectId}/sections";
+    protected override string Endpoint => $"projects/{_request.GetProjectId()}/sections";
 
     private readonly SectionRequest _request;
 
@@ -15,8 +15,5 @@ public class SectionDataHandler : AsyncDataHandler
         [ActionParameter] SectionRequest request) : base(invocationContext, request)
     {
         _request = request;
-
-        if (string.IsNullOrWhiteSpace(_request.ProjectId))
-            throw new("You should specify Project ID first");
     }
 }

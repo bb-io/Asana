@@ -4,7 +4,7 @@ using Blackbird.Applications.Sdk.Common.Webhooks;
 namespace Apps.Asana.Webhooks.Handlers.StoryHandlers;
 
 public class StoriesUndeletedHandler([WebhookParameter(true)] ProjectRequest pr)
-    : BaseWebhookHandler(pr.ProjectId, ResourceType, Action)
+    : BaseWebhookHandler(pr.GetProjectId(), ResourceType, Action)
 {
     const string ResourceType = "story";
     const string Action = "undeleted";

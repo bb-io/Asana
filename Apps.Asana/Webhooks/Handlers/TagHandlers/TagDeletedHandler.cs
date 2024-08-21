@@ -1,5 +1,4 @@
-﻿using Apps.Asana.Models.Tags.Requests;
-using Apps.Asana.Models.Tasks.Requests;
+﻿using Apps.Asana.Models.Tasks.Requests;
 using Blackbird.Applications.Sdk.Common.Webhooks;
 
 namespace Apps.Asana.Webhooks.Handlers.TagHandlers;
