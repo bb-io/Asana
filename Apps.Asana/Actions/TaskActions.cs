@@ -29,7 +29,8 @@ public class TaskActions : AsanaActions
         [ActionParameter] ListTasksRequest input)
     {
         var projectId = projectRequest.GetProjectId();
-        var endpoint = ApiEndpoints.Tasks.WithQuery(input);
+        var endpoint = ApiEndpoints.Tasks.WithQuery(input)
+            .SetQueryParameter("workspace", projectRequest.WorkspaceId);
 
         if (!string.IsNullOrEmpty(projectId))
             endpoint.SetQueryParameter("project", projectId);
