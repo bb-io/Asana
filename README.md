@@ -26,6 +26,11 @@ Asana is a project management and team collaboration platform. Its suite of feat
 - **List attachments** returns all attachments of specified object. Object ID can stand for an ID of `Project`, `Project brief` or `Task`.
 - **Get/upload/delete attachment**.
 
+### Custom fields
+
+- **Get text/date/enum custom field** returns the value of a custom field with text/date/enum type for a specific task.
+- **Update text/date/enum custom field** sets the value of a custom field with text/date/enum type for a specific task.
+
 ### Projects
 
 - **List projects** returns all projects. You can also specify `Workspace` or `Team` to retrieve projects of specific workspace or team. Also you can `Archived` variable to retrieve only archived projects or vice versa.

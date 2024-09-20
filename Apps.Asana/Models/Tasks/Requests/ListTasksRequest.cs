@@ -16,11 +16,6 @@ public class ListTasksRequest
     [Display("Section ID")]
     public string? Section { get; set; }
     
-    [JsonProperty("workspace")]
-    [Display("Workspace")]
-    [DataSource(typeof(WorkspaceDataHandler))]
-    public string? Workspace { get; set; }
-    
     [JsonProperty("tag")]
     [Display("Tag")]
     [DataSource(typeof(TagDataHandler))]
