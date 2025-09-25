@@ -1,6 +1,6 @@
 {
   "ConnectionDefinition": {
-    "Authorization": ""
+    "AccessToken": ""
   },
   "TestFolder": "TestFiles"
 }
