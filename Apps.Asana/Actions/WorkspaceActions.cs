@@ -40,10 +40,4 @@ public class WorkspaceActions : AsanaActions
         
         return Client.ExecuteWithErrorHandling<WorkspaceDto>(request);
     }
-
-    [Action("Debug", Description = "Can be used only for debugging purposes.")]
-    public List<AuthenticationCredentialsProvider> GetAuthenticationCredentialsProviders()
-    {
-        return InvocationContext.AuthenticationCredentialsProviders.ToList();
-    }
 }
