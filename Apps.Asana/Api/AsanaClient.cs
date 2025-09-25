@@ -1,6 +1,7 @@
 ﻿using Apps.Asana.Constants;
 using Apps.Asana.Models;
 using Apps.Asana.Models.Error.Response;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Utils.Extensions.String;
 using Blackbird.Applications.Sdk.Utils.RestSharp;
 using Newtonsoft.Json;
@@ -19,12 +20,27 @@ public class AsanaClient : BlackBirdRestClient
     {
     }
 
-    public new async Task<T> ExecuteWithErrorHandling<T>(RestRequest request)
+    public override async Task<T> ExecuteWithErrorHandling<T>(RestRequest request)
     {
-        var response = await ExecuteWithErrorHandling(request);
+        string content = (await ExecuteWithErrorHandling(request)).Content;
+        T val = JsonConvert.DeserializeObject<T>(content, JsonSettings);
+        if (val == null)
+        {
+            throw new Exception($"Could not parse {content} to {typeof(T)}");
+        }
 
-        var data = JsonConvert.DeserializeObject<ResponseWrapper<T>>(response.Content, JsonConfig.Settings);
-        return data.Data;
+        return val;
+    }
+
+    public override async Task<RestResponse> ExecuteWithErrorHandling(RestRequest request)
+    {
+        RestResponse restResponse = await ExecuteAsync(request);
+        if (!restResponse.IsSuccessStatusCode)
+        {
+            throw ConfigureErrorException(restResponse);
+        }
+
+        return restResponse;
     }
 
     public async Task<List<T>> Paginate<T>(RestRequest request)
@@ -58,6 +74,6 @@ public class AsanaClient : BlackBirdRestClient
         var errors = JsonConvert.DeserializeObject<ErrorResponse>(response.Content);
         var messages = errors.Errors.Select(x => x.Message).ToArray();
 
-        return new(string.Join("; ", messages));
+       throw new PluginApplicationException(string.Join("; ", messages));
     }
 }

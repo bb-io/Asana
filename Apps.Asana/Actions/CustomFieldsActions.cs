@@ -6,6 +6,7 @@ using Apps.Asana.Models.CustomFields.Requests;
 using Apps.Asana.Models.CustomFields.Responses;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.Sdk.Utils.Extensions.Http;
 using RestSharp;
@@ -24,7 +25,7 @@ public class CustomFieldsActions : AsanaActions
     {
         var task = await GetTask(input.TaskId);
         var customField = task.CustomFields.FirstOrDefault(x => x.Gid == input.CustomFieldId) ??
-                          throw new("Custom field with the provided ID was not found");
+                          throw new PluginApplicationException ("Custom field with the provided ID was not found");
 
         return new()
         {
@@ -38,7 +39,7 @@ public class CustomFieldsActions : AsanaActions
     {
         var task = await GetTask(input.TaskId);
         var customField = task.CustomFields.FirstOrDefault(x => x.Gid == input.CustomFieldId) ??
-                          throw new("Custom field with the provided ID was not found");
+                          throw new PluginApplicationException("Custom field with the provided ID was not found");
 
         return new()
         {
@@ -52,7 +53,7 @@ public class CustomFieldsActions : AsanaActions
     {
         var task = await GetTask(input.TaskId);
         var customField = task.CustomFields.FirstOrDefault(x => x.Gid == input.CustomFieldId) ??
-                          throw new("Custom field with the provided ID was not found");
+                          throw new PluginApplicationException("Custom field with the provided ID was not found");
 
         return new()
         {
