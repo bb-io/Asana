@@ -57,6 +57,9 @@ Asana is a project management and team collaboration platform. Its suite of feat
 - **Get tasks by tag** returns all tasks with the given tag.
 - **Assign tag to task** adds a tag to a task.
 
+> Whenever you use dropdowns to select `Task ID`, please specify `Workspace ID` and `Project ID` or `Manual project ID`
+
+
 ### Users
 
 - **List users** returns all users. You can also specify `Workspace` or `Team` to retrieve users of specific workspace or team.

@@ -2,6 +2,7 @@
 using Apps.Asana.DataSourceHandlers.Base;
 using Apps.Asana.Models.Workspaces.Requests;
 using Blackbird.Applications.Sdk.Common;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 
 namespace Apps.Asana.DataSourceHandlers;
@@ -14,7 +15,7 @@ public class ProjectDataHandler : AsyncDataHandler
     {
         if (string.IsNullOrEmpty(request.WorkspaceId))
         {
-            throw new("You should specify 'Workspace ID' first");
+            throw new PluginMisconfigurationException("You should specify 'Workspace ID' first");
         }
     }
 }

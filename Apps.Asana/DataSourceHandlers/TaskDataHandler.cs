@@ -14,6 +14,10 @@ public class TaskDataHandler : AsyncDataHandler
     public TaskDataHandler(InvocationContext invocationContext,
         [ActionParameter] TaskRequest request) : base(invocationContext, request)
     {
+        if (string.IsNullOrEmpty(request.WorkspaceId))
+        {
+            throw new("You should specify 'Project ID' or 'Manual project ID'");
+        }
         _request = request;
     }
 }

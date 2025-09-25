@@ -6,7 +6,7 @@ namespace Tests.Asana
     public class ActionTest : TestBase
     {
         [TestMethod]
-        public async Task GenerateText_IssSuccess()
+        public async Task _IssSuccess()
         {
 
         }
