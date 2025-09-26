@@ -16,14 +16,14 @@ using Blackbird.Applications.Sdk.Utils.Extensions.Sdk;
 
 namespace Apps.Asana.Actions;
 
-[ActionList]
+[ActionList("Project")]
 public class ProjectActions : AsanaActions
 {
     public ProjectActions(InvocationContext invocationContext) : base(invocationContext)
     {
     }
 
-    [Action("List projects", Description = "List all projects")]
+    [Action("Search projects", Description = "List all projects")]
     public async Task<ListProjectsResponse> ListAllProjects([ActionParameter] ListProjectsRequest input)
     {
         var endpoint = ApiEndpoints.Projects.WithQuery(input);

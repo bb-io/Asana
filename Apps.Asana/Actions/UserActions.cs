@@ -13,14 +13,14 @@ using Blackbird.Applications.Sdk.Utils.Extensions.String;
 
 namespace Apps.Asana.Actions;
 
-[ActionList]
+[ActionList("User")]
 public class UserActions : AsanaActions
 {
     public UserActions(InvocationContext invocationContext) : base(invocationContext)
     {
     }
     
-    [Action("List users", Description = "List all users")]
+    [Action("Search users", Description = "List all users")]
     public async Task<ListUsersResponse> ListUsers([ActionParameter] ListUsersRequest input)
     {
         var endpoint = ApiEndpoints.Users.WithQuery(input);

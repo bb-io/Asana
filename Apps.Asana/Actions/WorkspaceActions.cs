@@ -13,14 +13,14 @@ using Blackbird.Applications.Sdk.Common.Authentication;
 
 namespace Apps.Asana.Actions;
 
-[ActionList]
+[ActionList("Workspace")]
 public class WorkspaceActions : AsanaActions
 {
     public WorkspaceActions(InvocationContext invocationContext) : base(invocationContext)
     {
     }
 
-    [Action("List workspaces", Description = "List workspaces")]
+    [Action("Search workspaces", Description = "List workspaces")]
     public async Task<ListWorkspacesResponse> ListAllWorkspaces()
     {
         var request = new AsanaRequest(ApiEndpoints.Workspaces, Method.Get, Creds);

@@ -15,14 +15,14 @@ using RestSharp;
 
 namespace Apps.Asana.Actions;
 
-[ActionList]
+[ActionList("Section")]
 public class SectionActions : AsanaActions
 {
     public SectionActions(InvocationContext invocationContext) : base(invocationContext)
     {
     }
 
-    [Action("List sections", Description = "List all project sections")]
+    [Action("Search sections", Description = "List all project sections")]
     public async Task<ListSectionsResponse> ListSections([ActionParameter] ProjectRequest input)
     {
         var endpoint = $"{ApiEndpoints.Projects}/{input.GetProjectId()}{ApiEndpoints.Sections}";

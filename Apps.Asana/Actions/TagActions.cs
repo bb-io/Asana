@@ -15,14 +15,14 @@ using RestSharp;
 
 namespace Apps.Asana.Actions;
 
-[ActionList]
+[ActionList("Tag")]
 public class TagActions : AsanaActions
 {
     public TagActions(InvocationContext invocationContext) : base(invocationContext)
     {
     }
 
-    [Action("List tags", Description = "List all tags")]
+    [Action("Search tags", Description = "List all tags")]
     public async Task<ListTagsResponse> ListAllTags([ActionParameter] ListTagsRequest input)
     {
         var endpoint = ApiEndpoints.Tags.WithQuery(input);

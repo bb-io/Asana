@@ -10,6 +10,7 @@ using Apps.Asana.Models.Tasks.Requests;
 using Apps.Asana.Models.Tasks.Responses;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.Sdk.Utils.Extensions.Http;
 using Blackbird.Applications.Sdk.Utils.Extensions.String;
@@ -17,33 +18,90 @@ using RestSharp;
 
 namespace Apps.Asana.Actions;
 
-[ActionList]
+[ActionList("Task")]
 public class TaskActions : AsanaActions
 {
     public TaskActions(InvocationContext invocationContext) : base(invocationContext)
     {
     }
 
-    [Action("List tasks", Description = "List all tasks")]
+    [Action("Search tasks", Description = "List all tasks")]
     public async Task<ListTasksResponse> ListAllTasks([ActionParameter] ProjectRequest projectRequest,
         [ActionParameter] ListTasksRequest input)
     {
+        if (input.CreatedAfter.HasValue && input.CreatedBefore.HasValue &&
+            input.CreatedAfter > input.CreatedBefore)
+            throw new PluginMisconfigurationException("'Created after' must be earlier than 'Created before'.");
+
+        if (input.ModifiedAfter.HasValue && input.ModifiedBefore.HasValue &&
+            input.ModifiedAfter > input.ModifiedBefore)
+            throw new PluginMisconfigurationException("'Modified after' must be earlier than 'Modified before'.");
+
+        if (!string.IsNullOrWhiteSpace(input.TextCustomFieldContains) &&
+            string.IsNullOrWhiteSpace(input.TextCustomFieldId))
+            throw new PluginMisconfigurationException("Provide 'Text custom fields ID' when using 'Text custom fields contains'.");
+
+        if (!string.IsNullOrWhiteSpace(input.EnumOptionId) &&
+            string.IsNullOrWhiteSpace(input.EnumCustomFieldId))
+            throw new PluginMisconfigurationException("Provide 'Enum custom fields ID' when using 'Enum option ID'.");
+
         var projectId = projectRequest.GetProjectId();
-        var endpoint = ApiEndpoints.Tasks.WithQuery(input)
-            .SetQueryParameter("workspace", projectRequest.WorkspaceId);
+
+        string endpoint = $"/workspaces/{projectRequest.WorkspaceId}/tasks/search";
 
         if (!string.IsNullOrEmpty(projectId))
-            endpoint.SetQueryParameter("project", projectId);
-        
-        var request = new AsanaRequest(endpoint, Method.Get, Creds);
+            endpoint.SetQueryParameter("projects.any", projectId);
 
+        if (!string.IsNullOrEmpty(input.Assignee))
+            endpoint.SetQueryParameter("assignee.any", input.Assignee);
+
+        if (!string.IsNullOrEmpty(input.Tag))
+            endpoint.SetQueryParameter("tags.any", input.Tag);
+
+        if (!string.IsNullOrEmpty(input.Section))
+            endpoint.SetQueryParameter("sections.any", input.Section);
+
+        if (!string.IsNullOrEmpty(input.UserTaskList))
+            endpoint.SetQueryParameter("user_task_lists.any", input.UserTaskList);
+
+        if (input.CreatedAfter.HasValue)
+            endpoint.SetQueryParameter("created_at.after", IsoUtc(input.CreatedAfter.Value));
+
+        if (input.CreatedBefore.HasValue)
+            endpoint.SetQueryParameter("created_at.before", IsoUtc(input.CreatedBefore.Value));
+
+        if (input.ModifiedAfter.HasValue)
+            endpoint.SetQueryParameter("modified_at.after", IsoUtc(input.ModifiedAfter.Value));
+
+        if (input.ModifiedBefore.HasValue)
+            endpoint.SetQueryParameter("modified_at.before", IsoUtc(input.ModifiedBefore.Value));
+
+        if (!string.IsNullOrWhiteSpace(input.TextCustomFieldId) &&
+            !string.IsNullOrWhiteSpace(input.TextCustomFieldContains))
+        {
+            endpoint.SetQueryParameter(
+                $"custom_fields.{input.TextCustomFieldId}.text_value.contains",
+                input.TextCustomFieldContains);
+        }
+
+        if (!string.IsNullOrWhiteSpace(input.EnumCustomFieldId) &&
+            !string.IsNullOrWhiteSpace(input.EnumOptionId))
+        {
+            endpoint.SetQueryParameter(
+                $"custom_fields.{input.EnumCustomFieldId}.enum_value",
+                input.EnumOptionId);
+        }
+
+        endpoint.SetQueryParameter("opt_fields",
+            "gid,name,assignee.gid,projects.gid,created_at,modified_at,custom_fields,custom_fields.enum_value.gid,custom_fields.text_value");
+
+        var request = new AsanaRequest(endpoint, Method.Get, Creds);
         var tasks = await Client.ExecuteWithErrorHandling<IEnumerable<AsanaEntity>>(request);
 
-        return new()
-        {
-            Tasks = tasks
-        };
+        return new ListTasksResponse { Tasks = tasks };
     }
+
+    private static string IsoUtc(DateTime dt) => dt.ToUniversalTime().ToString("o");
 
     [Action("Get task", Description = "Get task by ID")]
     public Task<TaskDto> GetTask([ActionParameter] TaskRequest input)
