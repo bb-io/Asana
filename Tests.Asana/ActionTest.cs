@@ -28,9 +28,11 @@ namespace Tests.Asana
         {
             var action = new Apps.Asana.Actions.TaskActions(InvocationContext);
 
-            var result = await action.ListAllTasks(new Apps.Asana.Models.Projects.Requests.ProjectRequest { },new ListTasksRequest
+            var result = await action.ListAllTasks(new Apps.Asana.Models.Projects.Requests.ProjectRequest { WorkspaceId = "11329706322538", ProjectId = "1112702425163154" }, 
+            new ListTasksRequest
             {
-               
+                CreatedBefore = DateTime.Now,
+
             });
 
             var json = Newtonsoft.Json.JsonConvert.SerializeObject(result);

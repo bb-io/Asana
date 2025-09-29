@@ -45,41 +45,32 @@ public class TaskActions : AsanaActions
             string.IsNullOrWhiteSpace(input.EnumCustomFieldId))
             throw new PluginMisconfigurationException("Provide 'Enum custom fields ID' when using 'Enum option ID'.");
 
-        var projectId = projectRequest.GetProjectId();
-
         string endpoint = $"/workspaces/{projectRequest.WorkspaceId}/tasks/search";
 
-        if (!string.IsNullOrEmpty(projectId))
-            endpoint.SetQueryParameter("projects.any", projectId);
+        var request = new AsanaRequest(endpoint, Method.Get, Creds);
 
-        if (!string.IsNullOrEmpty(input.Assignee))
-            endpoint.SetQueryParameter("assignee.any", input.Assignee);
+        static void AddIf(RestRequest r, string name, string? value)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+                r.AddQueryParameter(name, value);
+        }
+        static string IsoUtc(DateTime dt) => dt.ToUniversalTime().ToString("o");
 
-        if (!string.IsNullOrEmpty(input.Tag))
-            endpoint.SetQueryParameter("tags.any", input.Tag);
+        AddIf(request, "projects.any", projectRequest.ProjectId);
+        AddIf(request, "assignee.any", input.Assignee);
+        AddIf(request, "tags.any", input.Tag);
+        AddIf(request, "sections.any", input.Section);
+        AddIf(request, "user_task_lists.any", input.UserTaskList);
 
-        if (!string.IsNullOrEmpty(input.Section))
-            endpoint.SetQueryParameter("sections.any", input.Section);
-
-        if (!string.IsNullOrEmpty(input.UserTaskList))
-            endpoint.SetQueryParameter("user_task_lists.any", input.UserTaskList);
-
-        if (input.CreatedAfter.HasValue)
-            endpoint.SetQueryParameter("created_at.after", IsoUtc(input.CreatedAfter.Value));
-
-        if (input.CreatedBefore.HasValue)
-            endpoint.SetQueryParameter("created_at.before", IsoUtc(input.CreatedBefore.Value));
-
-        if (input.ModifiedAfter.HasValue)
-            endpoint.SetQueryParameter("modified_at.after", IsoUtc(input.ModifiedAfter.Value));
-
-        if (input.ModifiedBefore.HasValue)
-            endpoint.SetQueryParameter("modified_at.before", IsoUtc(input.ModifiedBefore.Value));
+        if (input.CreatedAfter.HasValue) request.AddQueryParameter("created_at.after", IsoUtc(input.CreatedAfter.Value));
+        if (input.CreatedBefore.HasValue) request.AddQueryParameter("created_at.before", IsoUtc(input.CreatedBefore.Value));
+        if (input.ModifiedAfter.HasValue) request.AddQueryParameter("modified_at.after", IsoUtc(input.ModifiedAfter.Value));
+        if (input.ModifiedBefore.HasValue) request.AddQueryParameter("modified_at.before", IsoUtc(input.ModifiedBefore.Value));
 
         if (!string.IsNullOrWhiteSpace(input.TextCustomFieldId) &&
             !string.IsNullOrWhiteSpace(input.TextCustomFieldContains))
         {
-            endpoint.SetQueryParameter(
+            request.AddQueryParameter(
                 $"custom_fields.{input.TextCustomFieldId}.text_value.contains",
                 input.TextCustomFieldContains);
         }
@@ -87,16 +78,14 @@ public class TaskActions : AsanaActions
         if (!string.IsNullOrWhiteSpace(input.EnumCustomFieldId) &&
             !string.IsNullOrWhiteSpace(input.EnumOptionId))
         {
-            endpoint.SetQueryParameter(
+            request.AddQueryParameter(
                 $"custom_fields.{input.EnumCustomFieldId}.enum_value",
                 input.EnumOptionId);
         }
-
-        endpoint.SetQueryParameter("opt_fields",
+        request.AddQueryParameter("opt_fields",
             "gid,name,assignee.gid,projects.gid,created_at,modified_at,custom_fields,custom_fields.enum_value.gid,custom_fields.text_value");
 
-        var request = new AsanaRequest(endpoint, Method.Get, Creds);
-        var tasks = await Client.ExecuteWithErrorHandling<IEnumerable<AsanaEntity>>(request);
+        var tasks = await Client.Paginate<AsanaEntity>(request);
 
         return new ListTasksResponse { Tasks = tasks };
     }

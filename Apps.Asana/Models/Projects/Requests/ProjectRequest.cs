@@ -2,6 +2,7 @@
 using Apps.Asana.Models.Workspaces.Requests;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Dynamic;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 
 namespace Apps.Asana.Models.Projects.Requests;
 
@@ -17,7 +18,7 @@ public class ProjectRequest : WorkspaceRequest
     public string GetProjectId()
     {
         if (!(ProjectId == null ^ ManualProjectId == null))
-            throw new("You should specify one value: Project ID or Manual project ID");
+            throw new PluginMisconfigurationException("You should specify one value: Project ID or Manual project ID");
 
         return ProjectId ?? ManualProjectId;
     }
