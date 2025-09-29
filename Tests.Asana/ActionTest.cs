@@ -1,4 +1,5 @@
-﻿using Tests.Asana.Base;
+﻿using Apps.Asana.Models.Tasks.Requests;
+using Tests.Asana.Base;
 
 namespace Tests.Asana
 {
@@ -22,6 +23,21 @@ namespace Tests.Asana
             Assert.IsNotNull(result);
         }
 
+        [TestMethod]
+        public async Task SearchTasks_IssSuccess()
+        {
+            var action = new Apps.Asana.Actions.TaskActions(InvocationContext);
 
+            var result = await action.ListAllTasks(new Apps.Asana.Models.Projects.Requests.ProjectRequest { WorkspaceId = "11329706322538", ProjectId = "1112702425163154" }, 
+            new ListTasksRequest
+            {
+                CreatedBefore = DateTime.Now,
+
+            });
+
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(result);
+            Console.WriteLine(json);
+            Assert.IsNotNull(result);
+        }
     }
 }

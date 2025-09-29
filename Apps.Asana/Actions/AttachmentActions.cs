@@ -16,7 +16,7 @@ using Blackbird.Applications.Sdk.Utils.Extensions.String;
 
 namespace Apps.Asana.Actions;
 
-[ActionList]
+[ActionList("Atachment")]
 public class AttachmentActions : AsanaActions
 {
     private readonly IFileManagementClient _fileManagementClient;
@@ -27,7 +27,7 @@ public class AttachmentActions : AsanaActions
         _fileManagementClient = fileManagementClient;
     }
 
-    [Action("List attachments", Description = "List attachments from object")]
+    [Action("Search attachments", Description = "List attachments from object")]
     public async Task<GetAttachmentsResponse> ListAttachments(
         [ActionParameter] ListAttachmentsRequest input)
     {

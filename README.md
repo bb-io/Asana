@@ -23,7 +23,7 @@ Asana is a project management and team collaboration platform. Its suite of feat
 
 ### Attachments
 
-- **List attachments** returns all attachments of specified object. Object ID can stand for an ID of `Project`, `Project brief` or `Task`.
+- **Search attachments** returns all attachments of specified object. Object ID can stand for an ID of `Project`, `Project brief` or `Task`.
 - **Get/upload/delete attachment**.
 
 ### Custom fields
@@ -33,7 +33,7 @@ Asana is a project management and team collaboration platform. Its suite of feat
 
 ### Projects
 
-- **List projects** returns all projects. You can also specify `Workspace` or `Team` to retrieve projects of specific workspace or team. Also you can `Archived` variable to retrieve only archived projects or vice versa.
+- **Search projects** returns all projects. You can also specify `Workspace` or `Team` to retrieve projects of specific workspace or team. Also you can `Archived` variable to retrieve only archived projects or vice versa.
 - **Get/create/update/delete project**.
 - **Get project sections** returns all sections in the specified project.
 - **Get project status** returns complete record for a single status update
@@ -41,17 +41,17 @@ Asana is a project management and team collaboration platform. Its suite of feat
 
 ### Sections
 
-- **List sections** returns all sections of specified project.
+- **Search sections** returns all sections of specified project.
 - **Get/create/update/delete section**.
 
 ### Tags
 
-- **List tags** returns all tags. You can also specify `Workspace` to retrieve tags of specific workspace.
+- **Search tags** returns all tags. You can also specify `Workspace` to retrieve tags of specific workspace.
 - **Get/create/update/delete tag**.
 
 ### Tasks
 
-- **List tasks** returns all tasks of specified `Workspace`, `Project`, `Tag`, `Section` or `User task list`.
+- **Search tasks** returns all tasks of specified `Workspace`, `Project`, `Tag`, `Section` or `User task list`.
 - **Get/create/update/delete task**.
 - **Get tasks from a user task list** returns list of tasks in a user’s My Tasks list.
 - **Get tasks by tag** returns all tasks with the given tag.
@@ -62,14 +62,14 @@ Asana is a project management and team collaboration platform. Its suite of feat
 
 ### Users
 
-- **List users** returns all users. You can also specify `Workspace` or `Team` to retrieve users of specific workspace or team.
+- **Search users** returns all users. You can also specify `Workspace` or `Team` to retrieve users of specific workspace or team.
 - **Get user** returns details of a specified user.
 - **Get user's task list** returns full record for a user's task list.
 - **Get user's teams** returns all teams to which the given user is assigned.
 
 ### Workspaces
 
-- **List workspaces** returns all workspaces visible to the authorized user.
+- **Search workspaces** returns all workspaces visible to the authorized user.
 - **Get workspace** returns details of a specified workspace
 
 ## Events

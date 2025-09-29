@@ -13,7 +13,7 @@ using RestSharp;
 
 namespace Apps.Asana.Actions;
 
-[ActionList]
+[ActionList("Custom fields")]
 public class CustomFieldsActions : AsanaActions
 {
     public CustomFieldsActions(InvocationContext invocationContext) : base(invocationContext)
