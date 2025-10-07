@@ -20,11 +20,11 @@ public abstract class AsyncDataHandler(InvocationContext invocationContext, Work
 
     protected abstract string Endpoint { get; }
 
-    public Task<Dictionary<string, string>> GetDataAsync(DataSourceContext context,
+    public async Task<Dictionary<string, string>> GetDataAsync(DataSourceContext context,
         CancellationToken cancellationToken)
     {
         var request = PrepareRequest();
-        return GetPaginatedData(request, context);
+        return await GetPaginatedData(request, context);
     }
 
     protected virtual async Task<Dictionary<string, string>> GetPaginatedData(AsanaRequest request,
