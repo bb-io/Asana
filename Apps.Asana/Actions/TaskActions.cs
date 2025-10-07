@@ -56,7 +56,8 @@ public class TaskActions : AsanaActions
         }
         static string IsoUtc(DateTime dt) => dt.ToUniversalTime().ToString("o");
 
-        AddIf(request, "projects.any", projectRequest.ProjectId);
+        var projectId = projectRequest.ProjectId ?? projectRequest.ManualProjectId;
+        AddIf(request, "projects.any", projectId);
         AddIf(request, "assignee.any", input.Assignee);
         AddIf(request, "tags.any", input.Tag);
         AddIf(request, "sections.any", input.Section);
@@ -79,7 +80,7 @@ public class TaskActions : AsanaActions
             !string.IsNullOrWhiteSpace(input.EnumOptionId))
         {
             request.AddQueryParameter(
-                $"custom_fields.{input.CustomFieldId}.enum_value",
+                $"custom_fields.{input.CustomFieldId}.value",
                 input.EnumOptionId);
         }
         request.AddQueryParameter("opt_fields",
