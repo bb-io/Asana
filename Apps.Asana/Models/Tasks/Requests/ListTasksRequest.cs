@@ -1,5 +1,6 @@
 ﻿using Apps.Asana.DataSourceHandlers;
 using Apps.Asana.DataSourceHandlers.CustomFields;
+using Apps.Asana.DataSourceHandlers.CustomFields.Values;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Dynamic;
 using Newtonsoft.Json;
@@ -37,6 +38,7 @@ public class ListTasksRequest
     [DataSource(typeof(EnumCustomFieldDataHandler))]
     public string? EnumCustomFieldId { get; set; }
 
+    [DataSource(typeof(EnumCustomFieldValueDataHandler))]
     [Display("Enum option ID")]
     public string? EnumOptionId { get; set; }
 
