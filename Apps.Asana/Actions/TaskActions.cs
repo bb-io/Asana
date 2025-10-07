@@ -42,7 +42,7 @@ public class TaskActions : AsanaActions
             throw new PluginMisconfigurationException("Provide 'Text custom fields ID' when using 'Text custom fields contains'.");
 
         if (!string.IsNullOrWhiteSpace(input.EnumOptionId) &&
-            string.IsNullOrWhiteSpace(input.EnumCustomFieldId))
+            string.IsNullOrWhiteSpace(input.CustomFieldId))
             throw new PluginMisconfigurationException("Provide 'Enum custom fields ID' when using 'Enum option ID'.");
 
         string endpoint = $"/workspaces/{projectRequest.WorkspaceId}/tasks/search";
@@ -75,11 +75,11 @@ public class TaskActions : AsanaActions
                 input.TextCustomFieldContains);
         }
 
-        if (!string.IsNullOrWhiteSpace(input.EnumCustomFieldId) &&
+        if (!string.IsNullOrWhiteSpace(input.CustomFieldId) &&
             !string.IsNullOrWhiteSpace(input.EnumOptionId))
         {
             request.AddQueryParameter(
-                $"custom_fields.{input.EnumCustomFieldId}.enum_value",
+                $"custom_fields.{input.CustomFieldId}.enum_value",
                 input.EnumOptionId);
         }
         request.AddQueryParameter("opt_fields",

@@ -27,16 +27,16 @@ public class ListTasksRequest
     [Display("User task list ID")]
     public string? UserTaskList { get; set; }
 
-    [Display("Text custom fields ID")]
+    [Display("Text custom field ID")]
     [DataSource(typeof(TextCustomFieldDataHandler))]
     public string? TextCustomFieldId { get; set; }
 
-    [Display("Text custom fields contains")]
+    [Display("Text custom field contains")]
     public string? TextCustomFieldContains { get; set; }
 
-    [Display("Enum custom fields ID")]
+    [Display("Enum custom field ID")]
     [DataSource(typeof(EnumCustomFieldDataHandler))]
-    public string? EnumCustomFieldId { get; set; }
+    public string? CustomFieldId { get; set; }
 
     [DataSource(typeof(EnumCustomFieldValueDataHandler))]
     [Display("Enum option ID")]
