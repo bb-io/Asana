@@ -93,4 +93,18 @@ public class DataHandlerTests : TestBase
 
         Assert.IsNotNull(data);
     }
+
+    [TestMethod]
+    public async Task MultipleCustomFieldDataHandler_IsSuccess()
+    {
+        var handler = new MultipleCustomFieldDataHandler(InvocationContext, new MultipleCustomFieldRequest { WorkspaceId = "11329706322538" });
+        var data = await handler.GetDataAsync(new Blackbird.Applications.Sdk.Common.Dynamic.DataSourceContext { SearchString = "" }, CancellationToken.None);
+
+        foreach (var item in data)
+        {
+            Console.WriteLine($"{item.Value} - {item.Key}");
+        }
+
+        Assert.IsNotNull(data);
+    }
 }

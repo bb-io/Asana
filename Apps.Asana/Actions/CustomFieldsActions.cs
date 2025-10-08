@@ -62,6 +62,30 @@ public class CustomFieldsActions : AsanaActions
         };
     }
 
+    [Action("Get multi-enum custom field", Description = "Get values of a custom field with multi-enum type (returns option names)")]
+    public async Task<MultiEnumCustomFieldResponse> GetMultiEnumCustomField([ActionParameter] MultipleCustomFieldRequest input)
+    {
+        var request = new AsanaRequest($"{ApiEndpoints.Workspaces}/{input.WorkspaceId}{ApiEndpoints.CustomFields}?opt_fields=gid,name,type,enum_options.name",Method.Get, Creds);
+
+        var fields = await Client.Paginate<CustomFieldDto>(request);
+        var field = fields.FirstOrDefault(f => f.Gid == input.CustomFieldId)
+                    ?? throw new PluginApplicationException("Custom field with the provided ID was not found");
+
+        if (!string.Equals(field.Type, "multi_enum", StringComparison.OrdinalIgnoreCase))
+            throw new PluginApplicationException("Selected custom field is not of type 'multi_enum'.");
+
+        var names = (field.EnumOptions ?? Enumerable.Empty<CustomFieldEnumValueDto>())
+            .Select(o => o.Name)
+            .Where(n => !string.IsNullOrWhiteSpace(n))
+            .ToList();
+
+        return new MultiEnumCustomFieldResponse
+        {
+            Id = field.Gid,
+            Values = names
+        };
+    }
+
 
     [Action("Update text custom field", Description = "Update value of a custom field with text type")]
     public Task UpdateTextCustomField([ActionParameter] TextCustomFieldRequest input,

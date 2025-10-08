@@ -30,6 +30,7 @@ Asana is a project management and team collaboration platform. Its suite of feat
 
 - **Get text/date/enum custom field** returns the value of a custom field with text/date/enum type for a specific task.
 - **Update text/date/enum custom field** sets the value of a custom field with text/date/enum type for a specific task.
+- **Get multi-enum custom field** gets values of a custom field with multi-enum type (returns option names)
 
 ### Projects
 
