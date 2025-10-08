@@ -12,4 +12,7 @@ public class CustomFieldDto : AsanaEntity
     public IEnumerable<CustomFieldEnumValueDto>? EnumOptions { get; set; }
     public CustomFieldEnumValueDto? EnumValue { get; set; }
     public CustomFieldDateValueDto? DateValue { get; set; }
+
+    [JsonProperty("multi_enum_values")]
+    public IEnumerable<CustomFieldEnumValueDto>? MultiEnumValues { get; set; }
 }
