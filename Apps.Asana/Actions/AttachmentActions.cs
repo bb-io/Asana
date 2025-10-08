@@ -16,7 +16,7 @@ using Blackbird.Applications.Sdk.Utils.Extensions.String;
 
 namespace Apps.Asana.Actions;
 
-[ActionList("Atachment")]
+[ActionList("Attachment")]
 public class AttachmentActions : AsanaActions
 {
     private readonly IFileManagementClient _fileManagementClient;

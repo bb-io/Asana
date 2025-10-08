@@ -42,7 +42,7 @@ using RestSharp;
 
 namespace Apps.Asana.Webhooks;
 
-[WebhookList]
+[WebhookList("Webhooks")]
 public class WebhookList(InvocationContext invocationContext) : BaseInvocable(invocationContext)
 {
     const string SecretHeaderKey = "X-Hook-Secret";
