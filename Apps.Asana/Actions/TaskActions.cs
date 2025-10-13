@@ -5,6 +5,7 @@ using Apps.Asana.Dtos;
 using Apps.Asana.Dtos.Base;
 using Apps.Asana.Models;
 using Apps.Asana.Models.Projects.Requests;
+using Apps.Asana.Models.Sections.Requests;
 using Apps.Asana.Models.Tags.Requests;
 using Apps.Asana.Models.Tasks.Requests;
 using Apps.Asana.Models.Tasks.Responses;
@@ -26,7 +27,7 @@ public class TaskActions : AsanaActions
     }
 
     [Action("Search tasks", Description = "List all tasks")]
-    public async Task<ListTasksResponse> ListAllTasks([ActionParameter] ProjectRequest projectRequest,
+    public async Task<ListTasksResponse> ListAllTasks([ActionParameter] SectionRequest projectRequest,
         [ActionParameter] ListTasksRequest input)
     {
         if (input.CreatedAfter.HasValue && input.CreatedBefore.HasValue &&
