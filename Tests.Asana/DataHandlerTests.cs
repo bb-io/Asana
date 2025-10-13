@@ -1,6 +1,7 @@
 ﻿using Apps.Asana.DataSourceHandlers;
 using Apps.Asana.DataSourceHandlers.CustomFields;
 using Apps.Asana.Models.CustomFields.Requests;
+using Apps.Asana.Models.Sections.Requests;
 using Apps.Asana.Models.Workspaces.Requests;
 using Tests.Asana.Base;
 
@@ -98,6 +99,20 @@ public class DataHandlerTests : TestBase
     public async Task MultipleCustomFieldDataHandler_IsSuccess()
     {
         var handler = new MultipleCustomFieldDataHandler(InvocationContext, new MultipleCustomFieldRequest { WorkspaceId = "11329706322538" });
+        var data = await handler.GetDataAsync(new Blackbird.Applications.Sdk.Common.Dynamic.DataSourceContext { SearchString = "" }, CancellationToken.None);
+
+        foreach (var item in data)
+        {
+            Console.WriteLine($"{item.Value} - {item.Key}");
+        }
+
+        Assert.IsNotNull(data);
+    }
+
+    [TestMethod]
+    public async Task SectionDataHandlerDataHandler_IsSuccess()
+    {
+        var handler = new SectionDataHandler(InvocationContext, new SectionRequest { WorkspaceId = "11329706322538", SectionId="" });
         var data = await handler.GetDataAsync(new Blackbird.Applications.Sdk.Common.Dynamic.DataSourceContext { SearchString = "" }, CancellationToken.None);
 
         foreach (var item in data)

@@ -33,6 +33,9 @@ namespace Tests.Asana
             {
                 EnumOptionId= "1203932706107047",
                 CustomFieldId = "1203932706107045"
+
+
+
             });
 
             var json = Newtonsoft.Json.JsonConvert.SerializeObject(result);

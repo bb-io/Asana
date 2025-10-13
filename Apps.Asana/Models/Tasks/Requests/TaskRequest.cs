@@ -7,6 +7,10 @@ namespace Apps.Asana.Models.Tasks.Requests;
 
 public class TaskRequest : ProjectRequest
 {
+    [Display("Workspace ID")]
+    [DataSource(typeof(WorkspaceDataHandler))]
+    public string WorkspaceId { get; set; }
+
     [Display("Task ID")]
     [DataSource(typeof(TaskDataHandler))]
     public string TaskId { get; set; }

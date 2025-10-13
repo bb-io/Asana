@@ -104,6 +104,26 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
         };
     }
 
+    private async Task<List<TaskDto>> GetTasksFromPayload(Payload payload, SectionRequest? sectionFilter)
+    {
+        var tasks = await GetEntitiesFromPayload(
+            payload,
+            context => new TaskActions(context),
+            item => new TaskRequest { TaskId = item.Resource.Gid },
+            (action, request) => action.GetTask(request));
+
+        if (sectionFilter == null || string.IsNullOrWhiteSpace(sectionFilter.SectionId))
+            return tasks;
+
+        var sectionId = sectionFilter.SectionId;
+        var filtered = tasks.Where(t =>
+            (t.SectionId != null && t.SectionId == sectionId) ||
+            (t.Memberships?.Any(m => m?.Section?.Gid == sectionId) == true)
+        ).ToList();
+
+        return filtered;
+    }
+
     #region Projects
 
     [Webhook("On projects added", typeof(ProjectsAddedHandler), Description = "Triggered when projects are added")]
@@ -148,11 +168,12 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
     #region Tasks
 
     [Webhook("On tasks added", typeof(TaskAddedHandler), Description = "Triggered when tasks are added")]
-    public async Task<WebhookResponse<TasksResponse>> TasksAddedHandler(WebhookRequest webhookRequest) =>
+    public async Task<WebhookResponse<TasksResponse>> TasksAddedHandler(WebhookRequest webhookRequest,
+        [WebhookParameter] SectionRequest? sectionFilter) =>
         await HandleWebhookRequest(
             webhookRequest,
             "added",
-            GetTasksFromPayload,
+            payload => GetTasksFromPayload(payload, sectionFilter),
             tasks => new TasksResponse { Tasks = tasks });
 
     [Webhook("On tasks changed", typeof(TaskChangedHandler), Description = "Triggered when tasks are changed")]

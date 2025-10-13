@@ -4,6 +4,6 @@ namespace Apps.Asana.Models.Attachments.Requests;
 
 public class ListAttachmentsRequest
 {
-    [Display("Object ID")]
+    [Display("Task ID")]
     public string ObjectId { get; set; }
 }

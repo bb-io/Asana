@@ -1,3 +1,4 @@
+using Apps.Asana.DataSourceHandlers;
 using Apps.Asana.DataSourceHandlers.CustomFields;
 using Apps.Asana.DataSourceHandlers.CustomFields.Values;
 using Apps.Asana.Models.Tasks.Requests;
@@ -8,6 +9,10 @@ namespace Apps.Asana.Models.CustomFields.Requests;
 
 public class EnumCustomFieldValueRequest : TaskRequest
 {
+    [Display("Workspace ID")]
+    [DataSource(typeof(WorkspaceDataHandler))]
+    public string WorkspaceId { get; set; }
+
     [Display("Custom field"), DataSource(typeof(EnumCustomFieldDataHandler))]
     public string CustomFieldId { get; set; }  
     
