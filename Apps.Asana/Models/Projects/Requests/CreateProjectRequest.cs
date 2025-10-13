@@ -12,7 +12,7 @@ public class CreateProjectRequest
 
     [Display("Project name")] public string Name { get; set; }
 
-    [Display("Workspace")] 
+    [Display("Workspace ID")] 
     [DataSource(typeof(WorkspaceDataHandler))]
     public string? Workspace { get; set; }
 

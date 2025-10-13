@@ -8,7 +8,7 @@ namespace Apps.Asana.Models.Projects.Requests;
 public class ListProjectsRequest
 {
     [JsonProperty("workspace")]
-    [Display("Workspace")]
+    [Display("Workspace ID")]
     [DataSource(typeof(WorkspaceDataHandler))]
     public string Workspace { get; set; }
     
