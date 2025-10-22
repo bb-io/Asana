@@ -1,6 +1,12 @@
+using Newtonsoft.Json;
+
 namespace Apps.Asana.Dtos;
 
 public class CustomFieldDateValueDto
 {
-    public DateTime? DateTime { get; set; }
+    [JsonProperty("date")]
+    public string? Date { get; set; }
+
+    [JsonProperty("date_time")]
+    public string? DateTime { get; set; }
 }

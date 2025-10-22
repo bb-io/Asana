@@ -41,10 +41,24 @@ public class CustomFieldsActions : AsanaActions
         var customField = task.CustomFields.FirstOrDefault(x => x.Gid == input.CustomFieldId) ??
                           throw new PluginApplicationException("Custom field with the provided ID was not found");
 
+        DateTime? parsedDateTime = null;
+
+        if (!string.IsNullOrEmpty(customField.DateValue.DateTime) &&
+            DateTime.TryParse(customField.DateValue.DateTime, out var dt))
+        {
+            parsedDateTime = dt;
+        }
+
+        else if (!string.IsNullOrEmpty(customField.DateValue.Date) &&
+                 DateTime.TryParse(customField.DateValue.Date, out var d))
+        {
+            parsedDateTime = d;
+        }
+
         return new()
         {
             Id = customField.Gid,
-            Value = customField.DateValue?.DateTime
+            Value = parsedDateTime
         };
     }
 
@@ -65,11 +79,9 @@ public class CustomFieldsActions : AsanaActions
     [Action("Get multi-enum custom field", Description = "Get values of a custom field with multi-enum type (returns option names)")]
     public async Task<MultiEnumCustomFieldResponse> GetMultiEnumCustomField([ActionParameter] MultipleCustomFieldRequest input)
     {
-        var request = new AsanaRequest($"{ApiEndpoints.Workspaces}/{input.WorkspaceId}{ApiEndpoints.CustomFields}?opt_fields=gid,name,type,enum_options.name",Method.Get, Creds);
-
-        var fields = await Client.Paginate<CustomFieldDto>(request);
-        var field = fields.FirstOrDefault(f => f.Gid == input.CustomFieldId)
-                    ?? throw new PluginApplicationException("Custom field with the provided ID was not found");
+        var task = await GetTask(input.TaskId);
+        var field = task.CustomFields.FirstOrDefault(x => x.Gid == input.CustomFieldId) ??
+                          throw new PluginApplicationException("Custom field with the provided ID was not found");
 
         if (!string.Equals(field.Type, "multi_enum", StringComparison.OrdinalIgnoreCase))
             throw new PluginApplicationException("Selected custom field is not of type 'multi_enum'.");

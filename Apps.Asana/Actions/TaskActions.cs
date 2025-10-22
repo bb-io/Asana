@@ -57,7 +57,7 @@ public class TaskActions : AsanaActions
         }
         static string IsoUtc(DateTime dt) => dt.ToUniversalTime().ToString("o");
 
-        var projectId = projectRequest.ProjectId ?? projectRequest.ManualProjectId;
+        var projectId = projectRequest.ProjectId;
         AddIf(request, "projects.any", projectId);
         AddIf(request, "assignee.any", input.Assignee);
         AddIf(request, "tags.any", input.Tag);

@@ -25,7 +25,7 @@ public class SectionActions : AsanaActions
     [Action("Search sections", Description = "List all project sections")]
     public async Task<ListSectionsResponse> ListSections([ActionParameter] ProjectRequest input)
     {
-        var endpoint = $"{ApiEndpoints.Projects}/{input.GetProjectId()}{ApiEndpoints.Sections}";
+        var endpoint = $"{ApiEndpoints.Projects}/{input.ProjectId}{ApiEndpoints.Sections}";
         var request = new AsanaRequest(endpoint, Method.Get, Creds);
 
         var sections = await Client.ExecuteWithErrorHandling<IEnumerable<AsanaEntity>>(request);
@@ -72,7 +72,7 @@ public class SectionActions : AsanaActions
             Data = input
         };
 
-        var endpoint = $"{ApiEndpoints.Projects}/{project.GetProjectId()}{ApiEndpoints.Sections}";
+        var endpoint = $"{ApiEndpoints.Projects}/{project.ProjectId}{ApiEndpoints.Sections}";
         var request = new AsanaRequest(endpoint, Method.Post, Creds)
             .WithJsonBody(payload, JsonConfig.Settings);
 
