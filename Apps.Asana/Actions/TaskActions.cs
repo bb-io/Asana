@@ -4,7 +4,6 @@ using Apps.Asana.Constants;
 using Apps.Asana.Dtos;
 using Apps.Asana.Dtos.Base;
 using Apps.Asana.Models;
-using Apps.Asana.Models.Projects.Requests;
 using Apps.Asana.Models.Sections.Requests;
 using Apps.Asana.Models.Tags.Requests;
 using Apps.Asana.Models.Tasks.Requests;
@@ -14,7 +13,6 @@ using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.Sdk.Utils.Extensions.Http;
-using Blackbird.Applications.Sdk.Utils.Extensions.String;
 using RestSharp;
 
 namespace Apps.Asana.Actions;
@@ -57,11 +55,11 @@ public class TaskActions : AsanaActions
         }
         static string IsoUtc(DateTime dt) => dt.ToUniversalTime().ToString("o");
 
-        var projectId = projectRequest.ProjectId ?? projectRequest.ManualProjectId;
+        var projectId = projectRequest.ProjectId;
         AddIf(request, "projects.any", projectId);
         AddIf(request, "assignee.any", input.Assignee);
         AddIf(request, "tags.any", input.Tag);
-        AddIf(request, "sections.any", input.Section);
+        AddIf(request, "sections.any", projectRequest.SectionId);
         AddIf(request, "user_task_lists.any", input.UserTaskList);
 
         if (input.CreatedAfter.HasValue) request.AddQueryParameter("created_at.after", IsoUtc(input.CreatedAfter.Value));

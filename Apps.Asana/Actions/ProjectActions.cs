@@ -40,7 +40,7 @@ public class ProjectActions : AsanaActions
     [Action("Get project", Description = "Get project by ID")]
     public Task<ProjectDto> GetProject([ActionParameter] ProjectRequest input)
     {
-        var endpoint = $"{ApiEndpoints.Projects}/{input.GetProjectId()}";
+        var endpoint = $"{ApiEndpoints.Projects}/{input.ProjectId}";
         var request = new AsanaRequest(endpoint, Method.Get, Creds);
 
         return Client.ExecuteWithErrorHandling<ProjectDto>(request);
@@ -51,7 +51,7 @@ public class ProjectActions : AsanaActions
         [ActionParameter] ProjectRequest project,
         [ActionParameter] UpdateProjectRequest input)
     {
-        var endpoint = $"{ApiEndpoints.Projects}/{project.GetProjectId()}";
+        var endpoint = $"{ApiEndpoints.Projects}/{project.ProjectId}";
 
         var payload = new ResponseWrapper<UpdateProjectRequest>
         {
@@ -79,7 +79,7 @@ public class ProjectActions : AsanaActions
     [Action("Delete project", Description = "Delete specific project")]
     public Task DeleteProject([ActionParameter] ProjectRequest input)
     {
-        var endpoint = $"{ApiEndpoints.Projects}/{input.GetProjectId()}";
+        var endpoint = $"{ApiEndpoints.Projects}/{input.ProjectId}";
         var request = new AsanaRequest(endpoint, Method.Delete, Creds);
 
         return Client.ExecuteWithErrorHandling(request);
@@ -89,7 +89,7 @@ public class ProjectActions : AsanaActions
     public async Task<GetProjectSectionsResponse> GetProjectSections(
         [ActionParameter] ProjectRequest input)
     {
-        var endpoint = $"{ApiEndpoints.Projects}/{input.GetProjectId()}/sections";
+        var endpoint = $"{ApiEndpoints.Projects}/{input.ProjectId}/sections";
         var request = new AsanaRequest(endpoint, Method.Get, Creds);
 
         var sections = await Client.ExecuteWithErrorHandling<IEnumerable<AsanaEntity>>(request);
@@ -113,7 +113,7 @@ public class ProjectActions : AsanaActions
     public async Task<GetProjectStatusUpdatesResponse> GetProjectStatusUpdates(
         [ActionParameter] ProjectRequest input)
     {
-        var endpoint = $"/status_updates?parent={input.GetProjectId()}";
+        var endpoint = $"/status_updates?parent={input.ProjectId}";
         var request = new AsanaRequest(endpoint, Method.Get, Creds);
 
         var updates = await Client.ExecuteWithErrorHandling<IEnumerable<ProjectStatusUpdateDto>>(request);

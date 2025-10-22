@@ -7,7 +7,7 @@ namespace Apps.Asana.DataSourceHandlers;
 
 public class ProjectStatusDataHandler : AsyncDataHandler
 {
-    protected override string Endpoint => $"projects/{_request.GetProjectId()}/project_statuses";
+    protected override string Endpoint => $"projects/{_request.ProjectId}/project_statuses";
 
     private readonly GetProjectStatusRequest _request;
 

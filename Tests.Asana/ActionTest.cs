@@ -14,8 +14,7 @@ namespace Tests.Asana
             var result = await action.GetTask(new Apps.Asana.Models.Tasks.Requests.TaskRequest
             {
                 TaskId = "1116269553954953",
-                WorkspaceId= "11329706322538",
-                ProjectId = "1112702425163154"
+                WorkspaceId= "11329706322538"
             });
 
             var json = Newtonsoft.Json.JsonConvert.SerializeObject(result);
@@ -28,7 +27,7 @@ namespace Tests.Asana
         {
             var action = new Apps.Asana.Actions.TaskActions(InvocationContext);
 
-            var result = await action.ListAllTasks(new Apps.Asana.Models.Projects.Requests.ProjectRequest { WorkspaceId = "11329706322538",  IncludeArchived=false }, 
+            var result = await action.ListAllTasks(new Apps.Asana.Models.Sections.Requests.SectionRequest { WorkspaceId = "11329706322538",  IncludeArchived=false }, 
             new ListTasksRequest
             {
                 EnumOptionId= "1203932706107047",

@@ -7,7 +7,7 @@ namespace Apps.Asana.DataSourceHandlers;
 
 public class SectionDataHandler : AsyncDataHandler
 {
-    protected override string Endpoint => $"projects/{_request.GetProjectId()}/sections";
+    protected override string Endpoint => $"projects/{_request.ProjectId}/sections";
 
     private readonly SectionRequest _request;
 
