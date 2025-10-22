@@ -10,6 +10,8 @@ public class CustomFieldDto : AsanaEntity
 
     [JsonProperty("enum_options")]
     public IEnumerable<CustomFieldEnumValueDto>? EnumOptions { get; set; }
+
+    [JsonProperty("enum_value")]
     public CustomFieldEnumValueDto? EnumValue { get; set; }
 
     [JsonProperty("date_value")]

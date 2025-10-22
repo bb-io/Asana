@@ -86,7 +86,7 @@ public class CustomFieldsActions : AsanaActions
         if (!string.Equals(field.Type, "multi_enum", StringComparison.OrdinalIgnoreCase))
             throw new PluginApplicationException("Selected custom field is not of type 'multi_enum'.");
 
-        var names = (field.EnumOptions ?? Enumerable.Empty<CustomFieldEnumValueDto>())
+        var names = (field.MultiEnumValues ?? Enumerable.Empty<CustomFieldEnumValueDto>())
             .Select(o => o.Name)
             .Where(n => !string.IsNullOrWhiteSpace(n))
             .ToList();
