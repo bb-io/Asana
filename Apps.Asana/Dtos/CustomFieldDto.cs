@@ -6,6 +6,8 @@ namespace Apps.Asana.Dtos;
 public class CustomFieldDto : AsanaEntity
 {
     public string Type { get; set; }
+
+    [JsonProperty("text_value")]
     public string TextValue { get; set; }
 
     [JsonProperty("enum_options")]
