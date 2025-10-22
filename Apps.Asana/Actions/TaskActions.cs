@@ -4,7 +4,6 @@ using Apps.Asana.Constants;
 using Apps.Asana.Dtos;
 using Apps.Asana.Dtos.Base;
 using Apps.Asana.Models;
-using Apps.Asana.Models.Projects.Requests;
 using Apps.Asana.Models.Sections.Requests;
 using Apps.Asana.Models.Tags.Requests;
 using Apps.Asana.Models.Tasks.Requests;
