@@ -13,11 +13,7 @@ public class ListTasksRequest
     [Display("Assignee ID")]
     [DataSource(typeof(UserDataHandler))]
     public string? Assignee { get; set; }
-    
-    [JsonProperty("section")]
-    [Display("Section ID")]
-    public string? Section { get; set; }
-    
+        
     [JsonProperty("tag")]
     [Display("Tag")]
     [DataSource(typeof(TagDataHandler))]

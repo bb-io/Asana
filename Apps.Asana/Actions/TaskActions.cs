@@ -59,7 +59,7 @@ public class TaskActions : AsanaActions
         AddIf(request, "projects.any", projectId);
         AddIf(request, "assignee.any", input.Assignee);
         AddIf(request, "tags.any", input.Tag);
-        AddIf(request, "sections.any", input.Section);
+        AddIf(request, "sections.any", projectRequest.SectionId);
         AddIf(request, "user_task_lists.any", input.UserTaskList);
 
         if (input.CreatedAfter.HasValue) request.AddQueryParameter("created_at.after", IsoUtc(input.CreatedAfter.Value));
