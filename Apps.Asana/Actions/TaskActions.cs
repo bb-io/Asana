@@ -116,9 +116,10 @@ public class TaskActions : AsanaActions
     }
 
     [Action("Update task", Description = "Update task by ID")]
-    public Task<TaskDto> UpdateTask(
-        [ActionParameter] TaskRequest task,
-        [ActionParameter] UpdateTaskRequest input)
+    public async Task<TaskDto> UpdateTask(
+    [ActionParameter] TaskRequest task,
+    [ActionParameter] UpdateTaskRequest input,
+    [ActionParameter] SectionRequest section)
     {
         var payload = new ResponseWrapper<UpdateTaskRequest>()
         {
@@ -129,7 +130,24 @@ public class TaskActions : AsanaActions
         var request = new AsanaRequest(endpoint, Method.Put, Creds)
             .WithJsonBody(payload, JsonConfig.Settings);
 
-        return Client.ExecuteWithErrorHandling<TaskDto>(request);
+        var updatedTask = await Client.ExecuteWithErrorHandling<TaskDto>(request);
+
+        if (!string.IsNullOrWhiteSpace(section.SectionId))
+        {
+            var sectionEndpoint = $"{ApiEndpoints.Sections}/{section.SectionId}/addTask";
+
+            var sectionPayload = new
+            {
+                data = new { task = task.TaskId }
+            };
+
+            var moveRequest = new AsanaRequest(sectionEndpoint, Method.Post, Creds)
+                .WithJsonBody(sectionPayload, JsonConfig.Settings);
+
+            await Client.ExecuteWithErrorHandling<object>(moveRequest);
+        }
+
+        return updatedTask;
     }
 
     [Action("Delete task", Description = "Delete specific task")]
