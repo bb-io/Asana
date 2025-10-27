@@ -144,7 +144,8 @@ public class TaskActions : AsanaActions
             var moveRequest = new AsanaRequest(sectionEndpoint, Method.Post, Creds)
                 .WithJsonBody(sectionPayload, JsonConfig.Settings);
 
-            await Client.ExecuteWithErrorHandling<object>(moveRequest);
+            updatedTask = await Client.ExecuteWithErrorHandling<TaskDto>(moveRequest);
+           
         }
 
         return updatedTask;
