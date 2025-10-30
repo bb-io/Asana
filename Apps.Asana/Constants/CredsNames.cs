@@ -6,4 +6,5 @@ public static class CredsNames
     public const string ExpiresIn = "ExpiresIn";
     public const string ExpiresAt = "ExpiresAt";
     public const string RefreshToken = "RefreshToken";
+    public const string ConnectionType = "ConnectionType";
 }

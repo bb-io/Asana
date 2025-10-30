@@ -1,4 +1,5 @@
-﻿using Blackbird.Applications.Sdk.Common.Authentication;
+﻿using Apps.Asana.Constants;
+using Blackbird.Applications.Sdk.Common.Authentication;
 using Blackbird.Applications.Sdk.Common.Connections;
 
 namespace Apps.Asana.Connections;
@@ -9,17 +10,37 @@ public class ConnectionDefinition : IConnectionDefinition
     {
         new()
         {
-            Name = "OAuth2",
+            Name = ConnectionTypes.OAuth2,
             AuthenticationType = ConnectionAuthenticationType.OAuth2,
-            ConnectionUsage = ConnectionUsage.Actions,
             ConnectionProperties = new List<ConnectionProperty>()
+        },
+        new()
+        {
+            Name = ConnectionTypes.PersonalAccessToken,
+            AuthenticationType = ConnectionAuthenticationType.Undefined,
+            ConnectionProperties = new List<ConnectionProperty>
+            {
+                new(CredsNames.AccessToken)
+                {
+                    DisplayName = "Personal Access Token",
+                    Description = "Asana Personal Access Token. You can create it in your Asana account settings.",
+                    Sensitive = true
+                }
+            }
         }
     };
 
     public IEnumerable<AuthenticationCredentialsProvider> CreateAuthorizationCredentialsProviders(
         Dictionary<string, string> values)
     {
-        return values.Select(x =>
-            new AuthenticationCredentialsProvider(AuthenticationCredentialsRequestLocation.Body, x.Key, x.Value));
+        var credentials = values.Select(x => new AuthenticationCredentialsProvider(x.Key, x.Value)).ToList();
+        var connectionType = values[nameof(ConnectionPropertyGroup)] switch
+        {
+            var ct when ConnectionTypes.SupportedConnectionTypes.Contains(ct) => ct,
+            _ => throw new Exception($"Unknown connection type: {values[nameof(ConnectionPropertyGroup)]}")
+        };
+        
+        credentials.Add(new AuthenticationCredentialsProvider(CredsNames.ConnectionType, connectionType));
+        return credentials;
     }
 }

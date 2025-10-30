@@ -22,7 +22,7 @@ public class AsanaClient : BlackBirdRestClient
 
     public override async Task<T> ExecuteWithErrorHandling<T>(RestRequest request)
     {
-        string content = (await ExecuteWithErrorHandling(request)).Content;
+        string content = (await ExecuteWithErrorHandling(request))!.Content!;
         var val = JsonConvert.DeserializeObject<ResponseWrapper<T>>(content, JsonSettings);
         if (val == null)
         {
