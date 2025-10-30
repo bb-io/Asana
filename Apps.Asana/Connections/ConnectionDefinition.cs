@@ -22,7 +22,7 @@ public class ConnectionDefinition : IConnectionDefinition
             {
                 new(CredsNames.AccessToken)
                 {
-                    DisplayName = "Personal Access Token",
+                    DisplayName = "Personal access token",
                     Description = "Asana Personal Access Token. You can create it in your Asana account settings.",
                     Sensitive = true
                 }
