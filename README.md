@@ -10,6 +10,10 @@ Asana is a project management and team collaboration platform. Its suite of feat
 
 ## Connecting
 
+Our app supports 2 types of authentication: Personal Access Token and OAuth 2.0. Prefer whatever suits your needs.
+
+### Personal access token (PAT) authentication
+
 1.  Navigate to apps and search for Asana. If you cannot find Asana then click _Add App_ in the top right corner, select Asana and add the app to your Blackbird environment.
 2.  Click _Add Connection_.
 3.  Name your connection for future reference e.g. 'My client'.
@@ -18,6 +22,16 @@ Asana is a project management and team collaboration platform. Its suite of feat
 6.  Copy API token and paste it to the appropriate field in the BlackBird
 7.  Click _Connect_.
 8.  Confirm that the connection has appeared and the status is _Connected_.
+
+### OAuth 2.0 authentication
+
+1.  Navigate to apps and search for Asana. If you cannot find Asana then click _Add App_ in the top right corner, select Asana and add the app to your Blackbird environment.
+2. Click _Add Connection_.
+3. Name your connection for future reference e.g. 'My client'.
+4. Click _Connect_.
+5. You will be redirected to Asana's website to authorize Blackbird to access your data.
+6. After authorization, you will be redirected back to Blackbird.
+7. Confirm that the connection has appeared and the status is _Connected_.
 
 ## Actions
 
