@@ -9,10 +9,6 @@ namespace Apps.Asana.Models.CustomFields.Requests
 {
     public class MultipleCustomFieldRequest : TaskRequest
     {
-        [Display("Workspace ID")]
-        [DataSource(typeof(WorkspaceDataHandler))]
-        public string WorkspaceId { get; set; }
-
         [Display("Custom field ID")]
         [DataSource(typeof(MultipleCustomFieldDataHandler))]
         [JsonProperty("custom_field_id")]

@@ -8,10 +8,6 @@ namespace Apps.Asana.Models.CustomFields.Requests;
 
 public class DateCustomFieldRequest : TaskRequest
 {
-    [Display("Workspace ID")]
-    [DataSource(typeof(WorkspaceDataHandler))]
-    public string WorkspaceId { get; set; }
-
     [Display("Custom field"), DataSource(typeof(DateCustomFieldDataHandler))]
     public string CustomFieldId { get; set; }
 }
