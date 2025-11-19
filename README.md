@@ -10,7 +10,7 @@ Asana is a project management and team collaboration platform. Its suite of feat
 
 ## Connecting
 
-Our app supports 2 types of authentication: Personal Access Token and OAuth 2.0. Prefer whatever suits your needs.
+Our app supports 2 types of authentication: Personal Access Token and OAuth 2.0. Choose whatever suits your needs.
 
 ### Personal access token (PAT) authentication
 
@@ -18,8 +18,8 @@ Our app supports 2 types of authentication: Personal Access Token and OAuth 2.0.
 2.  Click _Add Connection_.
 3.  Name your connection for future reference e.g. 'My client'.
 4.  Go to Asana developer console (https://app.asana.com/0/my-apps) and click _Create token_.
-5.  Input its name, agree to Asana's terms
-6.  Copy API token and paste it to the appropriate field in the BlackBird
+5.  Input its name and agree to Asana's terms.
+6.  Copy the API token and paste it into the appropriate field in Blackbird.
 7.  Click _Connect_.
 8.  Confirm that the connection has appeared and the status is _Connected_.
 
@@ -33,25 +33,48 @@ Our app supports 2 types of authentication: Personal Access Token and OAuth 2.0.
 6. After authorization, you will be redirected back to Blackbird.
 7. Confirm that the connection has appeared and the status is _Connected_.
 
+### OAuth 2.0 with your own app
+
+In Asana you can limit the use of third-party apps and allow only your own OAuth apps created from the developer console (https://app.asana.com/0/my-apps). In this case, you will not be able to use our default OAuth authentication method and will have to create your own OAuth app in Asana and use its credentials to connect.
+
+1. Go to Asana developer console (https://app.asana.com/0/my-apps) and click _Create new app_.
+2. Input all mandatory fields and add Redirect URL: `https://bridge-dev.blackbird.io/api/AuthorizationCode`
+3. Select the needed scopes for your app. They depend on your use case, so specify them based on the actions you are going to use.
+4. After creating the app, copy its Client ID and Client Secret.
+5. Go to Blackbird and start the authentication process.
+
+Blackbird side authentication steps:
+
+1. Navigate to apps and search for Asana. If you cannot find Asana then click _Add App_ in the top right corner, select Asana and add the app to your Blackbird environment.
+2. Click _Add Connection_.
+3. Name your connection for future reference e.g. 'My client'.
+4. Select `OAuth 2.0 (own app)` authentication type.
+5. Input the Client ID and Client Secret you received from Asana developer console.
+6. Input the Scope(s) you specified for your app in Asana developer console. They should be separated by spaces, e.g. `attachments:read custom_fields:read projects:read`.
+7. Click _Connect_.
+8. You will be redirected to Asana's website to authorize Blackbird to access your data.
+9. After authorization, you will be redirected back to Blackbird.
+10. Confirm that the connection has appeared and the status is _Connected_.
+
 ## Actions
 
 ### Attachments
 
-- **Search attachments** returns all attachments of specified object. Object ID can stand for an ID of `Project`, `Project brief` or `Task`.
+- **Search attachments** returns all attachments of the specified object. Object ID can stand for an ID of `Project`, `Project brief` or `Task`.
 - **Get/upload/delete attachment**.
 
 ### Custom fields
 
 - **Get text/date/enum custom field** returns the value of a custom field with text/date/enum type for a specific task.
 - **Update text/date/enum custom field** sets the value of a custom field with text/date/enum type for a specific task.
-- **Get multi-enum custom field** gets values of a custom field with multi-enum type (returns option names)
+- **Get multi-enum custom field** gets values of a custom field with multi-enum type (returns option names).
 
 ### Projects
 
-- **Search projects** returns all projects. You can also specify `Workspace` or `Team` to retrieve projects of specific workspace or team. Also you can `Archived` variable to retrieve only archived projects or vice versa.
+- **Search projects** returns all projects. You can also specify `Workspace` or `Team` to retrieve projects of a specific workspace or team. You can also use the `Archived` variable to retrieve only archived projects or vice versa.
 - **Get/create/update/delete project**.
 - **Get project sections** returns all sections in the specified project.
-- **Get project status** returns complete record for a single status update
+- **Get project status** returns a complete record for a single status update.
 - **Get project status updates** returns status update records for all updates on the project
 
 ### Sections
@@ -66,7 +89,7 @@ Our app supports 2 types of authentication: Personal Access Token and OAuth 2.0.
 
 ### Tasks
 
-- **Search tasks** returns all tasks of specified `Workspace`, `Project`, `Tag`, `Section` or `User task list`.
+- **Search tasks** returns all tasks of the specified `Workspace`, `Project`, `Tag`, `Section` or `User task list`.
 - **Get/create/update/delete task**.
 - **Get tasks from a user task list** returns list of tasks in a user’s My Tasks list.
 - **Get tasks by tag** returns all tasks with the given tag.
