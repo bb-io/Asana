@@ -1,4 +1,6 @@
-﻿namespace Apps.Asana.Models.Entities;
+﻿using Apps.Asana.Constants;
+
+namespace Apps.Asana.Models.Entities;
 
 public class OAuthCredentials
 {
@@ -10,9 +12,9 @@ public class OAuthCredentials
 
     public static OAuthCredentials GetOAuthCredentials(Dictionary<string, string> values)
     {
-        var clientId = values.GetValueOrDefault("ClientId") ?? ApplicationConstants.ClientId;
-        var clientSecret = values.GetValueOrDefault("ClientSecret") ?? ApplicationConstants.ClientSecret;
-        var scope = values.GetValueOrDefault("Scope") ?? ApplicationConstants.Scope;
+        var clientId = values.GetValueOrDefault(CredsNames.OwnAppClientId) ?? ApplicationConstants.ClientId;
+        var clientSecret = values.GetValueOrDefault(CredsNames.OwnAppClientSecret) ?? ApplicationConstants.ClientSecret;
+        var scope = values.GetValueOrDefault(CredsNames.OwnAppScopes) ?? ApplicationConstants.Scope;
         
         return new OAuthCredentials
         {

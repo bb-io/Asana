@@ -41,14 +41,14 @@ public class ConnectionDefinition : IConnectionDefinition
                 },
                 new(CredsNames.OwnAppClientSecret)
                 {
-                    DisplayName = "Client Secret",
+                    DisplayName = "Client secret",
                     Description = "Asana Client Secret from your own app registration.",
                     Sensitive = true
                 },
                 new(CredsNames.OwnAppScopes)
                 {
                     DisplayName = "Scopes",
-                    Description = "Asana OAuth2 scopes separated by space. Leave empty to use default scopes."
+                    Description = "Asana OAuth2 scopes separated by space."
                 }    
             }
         },
