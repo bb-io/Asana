@@ -10,7 +10,7 @@ Asana is a project management and team collaboration platform. Its suite of feat
 
 ## Connecting
 
-Our app supports 2 types of authentication: Personal Access Token and OAuth 2.0. Choose whatever suits your needs.
+Our app supports 3 types of authentication: Personal Access Token and OAuth 2.0, and OAuth 2.0 with your own app. Choose whatever suits your needs.
 
 ### Personal access token (PAT) authentication
 
