@@ -6,5 +6,7 @@ public class ConnectionTypes
     
     public const string PersonalAccessToken = "Personal access token";
     
-    public static readonly IEnumerable<string> SupportedConnectionTypes = [OAuth2, PersonalAccessToken];
+    public const string OAuth2WithOwnApp = "OAuth 2.0 (own app)";
+    
+    public static readonly IEnumerable<string> SupportedConnectionTypes = [OAuth2, PersonalAccessToken, OAuth2WithOwnApp];
 }

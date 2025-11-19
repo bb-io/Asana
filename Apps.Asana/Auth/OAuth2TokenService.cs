@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using Apps.Asana.Constants;
 using Apps.Asana.Models;
+using Apps.Asana.Models.Entities;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Authentication.OAuth2;
 using Blackbird.Applications.Sdk.Common.Invocation;
@@ -9,12 +10,9 @@ using Newtonsoft.Json;
 
 namespace Apps.Asana.Auth;
 
-public class OAuth2TokenService : BaseInvocable, IOAuth2TokenService
+public class OAuth2TokenService(InvocationContext invocationContext)
+    : BaseInvocable(invocationContext), IOAuth2TokenService
 {
-    public OAuth2TokenService(InvocationContext invocationContext) : base(invocationContext)
-    {
-    }
-
     public bool IsRefreshToken(Dictionary<string, string> values)
     {
         var expiresAt = DateTime.Parse(values[CredsNames.ExpiresAt]);
@@ -24,11 +22,12 @@ public class OAuth2TokenService : BaseInvocable, IOAuth2TokenService
     public async Task<Dictionary<string, string>> RefreshToken(Dictionary<string, string> values,
         CancellationToken cancellationToken)
     {
+        var oAuthCredentials = OAuthCredentials.GetOAuthCredentials(values);
         var bodyParameters = new Dictionary<string, string>
         {
             { "grant_type", "refresh_token" },
-            { "client_id", ApplicationConstants.ClientId },
-            { "client_secret", ApplicationConstants.ClientSecret },
+            { "client_id", oAuthCredentials.ClientId },
+            { "client_secret", oAuthCredentials.ClientSecret },
             { "refresh_token", values[CredsNames.RefreshToken] },
         };
         
@@ -44,11 +43,12 @@ public class OAuth2TokenService : BaseInvocable, IOAuth2TokenService
         Dictionary<string, string> values,
         CancellationToken cancellationToken)
     {
+        var oAuthCredentials = OAuthCredentials.GetOAuthCredentials(values);
         var bodyParameters = new Dictionary<string, string>
         {
             { "grant_type", "authorization_code" },
-            { "client_id", ApplicationConstants.ClientId },
-            { "client_secret", ApplicationConstants.ClientSecret },
+            { "client_id", oAuthCredentials.ClientId },
+            { "client_secret", oAuthCredentials.ClientSecret },
             { "redirect_uri", $"{InvocationContext.UriInfo.BridgeServiceUrl.ToString().TrimEnd('/')}/AuthorizationCode" },
             { "code", code },
         };

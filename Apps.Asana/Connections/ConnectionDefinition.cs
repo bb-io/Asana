@@ -27,7 +27,31 @@ public class ConnectionDefinition : IConnectionDefinition
                     Sensitive = true
                 }
             }
-        }
+        },
+        new()
+        {
+            Name = ConnectionTypes.OAuth2WithOwnApp,
+            AuthenticationType = ConnectionAuthenticationType.OAuth2,
+            ConnectionProperties = new List<ConnectionProperty>
+            {
+                new(CredsNames.OwnAppClientId)
+                {
+                    DisplayName = "Client ID",
+                    Description = "Asana Client ID from your own app registration."
+                },
+                new(CredsNames.OwnAppClientSecret)
+                {
+                    DisplayName = "Client Secret",
+                    Description = "Asana Client Secret from your own app registration.",
+                    Sensitive = true
+                },
+                new(CredsNames.OwnAppScopes)
+                {
+                    DisplayName = "Scopes",
+                    Description = "Asana OAuth2 scopes separated by space. Leave empty to use default scopes."
+                }    
+            }
+        },
     };
 
     public IEnumerable<AuthenticationCredentialsProvider> CreateAuthorizationCredentialsProviders(
