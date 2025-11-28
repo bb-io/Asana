@@ -37,9 +37,19 @@ public class CustomFieldsActions : AsanaActions
     [Action("Get date custom field", Description = "Get value of a custom field with date type")]
     public async Task<DateCustomFieldResponse> GetDateCustomField([ActionParameter] DateCustomFieldRequest input)
     {
-        var task = await GetTask(input.TaskId);
+        var task = await GetTask(input.TaskId) ?? throw new PluginApplicationException("Task with the provided ID was not found");
+
         var customField = task.CustomFields.FirstOrDefault(x => x.Gid == input.CustomFieldId) ??
                           throw new PluginApplicationException("Custom field with the provided ID was not found");
+
+        if (customField.DateValue == null)
+        {
+            return new()
+            {
+                Id = customField.Gid,
+                Value = null
+            };
+        }
 
         DateTime? parsedDateTime = null;
 
