@@ -1,18 +1,19 @@
-﻿using System.Net.Mime;
-using Apps.Asana.Actions.Base;
+﻿using Apps.Asana.Actions.Base;
 using Apps.Asana.Api;
 using Apps.Asana.Constants;
 using Apps.Asana.Dtos;
 using Apps.Asana.Dtos.Base;
-using Blackbird.Applications.Sdk.Common;
-using RestSharp;
 using Apps.Asana.Models.Attachments.Requests;
 using Apps.Asana.Models.Attachments.Responses;
+using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
-using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using Blackbird.Applications.Sdk.Utils.Extensions.String;
+using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
+using RestSharp;
+using System.Net.Http.Headers;
+using System.Net.Mime;
 
 namespace Apps.Asana.Actions;
 
@@ -53,9 +54,20 @@ public class AttachmentActions : AsanaActions
         var contentType = MimeTypes.TryGetMimeType(response.Name, out var mimeType)
             ? mimeType
             : MediaTypeNames.Application.Octet;
+
+        using var httpClient = new HttpClient();
+        using var httpRequest = new HttpRequestMessage(HttpMethod.Get, response.DownloadUrl);
+
+        using var httpResponse = await httpClient.SendAsync(httpRequest,HttpCompletionOption.ResponseHeadersRead);
+
+        httpResponse.EnsureSuccessStatusCode();
+
+        await using var stream = await httpResponse.Content.ReadAsStreamAsync();
+        var uploaded = await _fileManagementClient.UploadAsync(stream, contentType, response.Name);
+
         return new(response)
         {
-            File = new FileReference(new HttpRequestMessage(HttpMethod.Get, response.DownloadUrl), response.Name, contentType)
+            File = uploaded
         };
     }
 

@@ -1,4 +1,6 @@
-﻿using Apps.Asana.Models.Tasks.Requests;
+﻿using Apps.Asana.Actions;
+using Apps.Asana.Models.Attachments.Requests;
+using Apps.Asana.Models.Tasks.Requests;
 using Tests.Asana.Base;
 
 namespace Tests.Asana
@@ -51,6 +53,22 @@ namespace Tests.Asana
                 new Apps.Asana.Models.CustomFields.Requests.MultipleCustomFieldRequest { WorkspaceId = "11329706322538",
                 TaskId= "1199694846659121",
                     CustomFieldId = "1201483098611179"
+                });
+
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(result);
+            Console.WriteLine(json);
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod]
+        public async Task GetAttachment_IssSuccess()
+        {
+            var action = new AttachmentActions(InvocationContext, FileManager);
+
+            var result = await action.GetAttachment(
+                new AttachmentRequest
+                {
+                    AttachmentId = "1212348943017387",
                 });
 
             var json = Newtonsoft.Json.JsonConvert.SerializeObject(result);

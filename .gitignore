@@ -356,3 +356,4 @@ healthchecksdb
 *.env
 /Apps.Asana/ApplicationConstants.cs
 /Tests.Asana/appsettings.json
+/Tests.Asana/appsettings.json
