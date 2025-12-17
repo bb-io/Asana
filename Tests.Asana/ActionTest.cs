@@ -61,6 +61,23 @@ namespace Tests.Asana
         }
 
         [TestMethod]
+        public async Task SearchAttachment_IssSuccess()
+        {
+            var action = new AttachmentActions(InvocationContext, FileManager);
+
+            var result = await action.ListAttachments(
+                new ListAttachmentsRequest
+                {
+                   ObjectId = "1212502671744490",
+                    
+                });
+
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(result);
+            Console.WriteLine(json);
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod]
         public async Task GetAttachment_IssSuccess()
         {
             var action = new AttachmentActions(InvocationContext, FileManager);
@@ -68,7 +85,7 @@ namespace Tests.Asana
             var result = await action.GetAttachment(
                 new AttachmentRequest
                 {
-                    AttachmentId = "1212348943017387",
+                    AttachmentId = "1212464178656683",
                 });
 
             var json = Newtonsoft.Json.JsonConvert.SerializeObject(result);

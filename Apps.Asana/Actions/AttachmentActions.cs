@@ -58,12 +58,17 @@ public class AttachmentActions : AsanaActions
         using var httpClient = new HttpClient();
         using var httpRequest = new HttpRequestMessage(HttpMethod.Get, response.DownloadUrl);
 
-        using var httpResponse = await httpClient.SendAsync(httpRequest,HttpCompletionOption.ResponseHeadersRead);
+        using var httpResponse = await httpClient.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead);
 
         httpResponse.EnsureSuccessStatusCode();
 
-        await using var stream = await httpResponse.Content.ReadAsStreamAsync();
-        var uploaded = await _fileManagementClient.UploadAsync(stream, contentType, response.Name);
+        await using var netStream = await httpResponse.Content.ReadAsStreamAsync();
+
+        var ms = new MemoryStream();
+        await netStream.CopyToAsync(ms);
+        ms.Position = 0;
+
+        var uploaded = await _fileManagementClient.UploadAsync(ms, contentType, response.Name);
 
         return new(response)
         {
