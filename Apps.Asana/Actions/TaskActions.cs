@@ -119,7 +119,7 @@ public class TaskActions : AsanaActions
     public async Task<TaskDto> UpdateTask(
     [ActionParameter] TaskRequest task,
     [ActionParameter] UpdateTaskRequest input,
-    [ActionParameter] SectionRequest section)
+    [ActionParameter] TaskSectionRequest section)
     {
         var payload = new ResponseWrapper<UpdateTaskRequest>()
         {
