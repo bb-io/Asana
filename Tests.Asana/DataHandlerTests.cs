@@ -13,7 +13,7 @@ public class DataHandlerTests : TestBase
     [TestMethod]
     public async Task ProjectDataHandler_IsSuccess()
     {
-        var handler = new ProjectDataHandler(InvocationContext, new Apps.Asana.Models.Workspaces.Requests.WorkspaceRequest { WorkspaceId= "11329706322538" });
+        var handler = new ProjectDataHandler(InvocationContext, new Apps.Asana.Models.Workspaces.Requests.WorkspaceRequest { WorkspaceId= "1212502676955426" });
         var data = await handler.GetDataAsync(new Blackbird.Applications.Sdk.Common.Dynamic.DataSourceContext { SearchString=""}, CancellationToken.None);
 
         foreach (var item in data)
@@ -41,7 +41,7 @@ public class DataHandlerTests : TestBase
     [TestMethod]
     public async Task UserDataHandler_IsSuccess()
     {
-        var handler = new UserDataHandler(InvocationContext, new Apps.Asana.Models.Workspaces.Requests.WorkspaceRequest { WorkspaceId = "11329706322538" });
+        var handler = new UserDataHandler(InvocationContext, new Apps.Asana.Models.Workspaces.Requests.WorkspaceRequest { WorkspaceId = "1212502676955426" });
         var data = await handler.GetDataAsync(new Blackbird.Applications.Sdk.Common.Dynamic.DataSourceContext { SearchString = "" }, CancellationToken.None);
 
         foreach (var item in data)
@@ -99,6 +99,22 @@ public class DataHandlerTests : TestBase
     public async Task MultipleCustomFieldDataHandler_IsSuccess()
     {
         var handler = new MultipleCustomFieldDataHandler(InvocationContext, new MultipleCustomFieldRequest { WorkspaceId = "11329706322538" });
+        var data = await handler.GetDataAsync(new Blackbird.Applications.Sdk.Common.Dynamic.DataSourceContext { SearchString = "" }, CancellationToken.None);
+
+        foreach (var item in data)
+        {
+            Console.WriteLine($"{item.Value} - {item.Key}");
+        }
+
+        Assert.IsNotNull(data);
+    }
+
+    [TestMethod]
+    public async Task PeopleCustomFieldDataHandler_IsSuccess()
+    {
+        var handler = new PeopleCustomFieldDataHandler(InvocationContext, new PeopleCustomFieldRequest { WorkspaceId = "1212502676955426", 
+            ProjectId= "1212502671744475", TaskId= "1212502671744490"
+        });
         var data = await handler.GetDataAsync(new Blackbird.Applications.Sdk.Common.Dynamic.DataSourceContext { SearchString = "" }, CancellationToken.None);
 
         foreach (var item in data)
