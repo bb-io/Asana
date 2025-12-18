@@ -1,5 +1,6 @@
 ﻿using Apps.Asana.Actions;
 using Apps.Asana.Models.Attachments.Requests;
+using Apps.Asana.Models.CustomFields.Requests;
 using Apps.Asana.Models.Tasks.Requests;
 using Tests.Asana.Base;
 
@@ -34,9 +35,6 @@ namespace Tests.Asana
             {
                 EnumOptionId= "1203932706107047",
                 CustomFieldId = "1203932706107045"
-
-
-
             });
 
             var json = Newtonsoft.Json.JsonConvert.SerializeObject(result);
@@ -86,6 +84,41 @@ namespace Tests.Asana
                 new AttachmentRequest
                 {
                     AttachmentId = "1212464178656683",
+                });
+
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(result);
+            Console.WriteLine(json);
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod]
+        public async Task UpdatePeopleCustomField_IssSuccess()
+        {
+            var action = new CustomFieldsActions(InvocationContext);
+
+            await action.UpdatePeopleCustomField(
+                new PeopleCustomFieldRequest
+                {
+                    TaskId = "1212502671744490",
+                    ProjectId= "1212502671744475",
+                    CustomFieldId = "1212464178656695",
+                    userIds = new List<string> { "1212502676955414" }
+                });
+
+            Assert.IsTrue(true);
+        }
+
+        [TestMethod]
+        public async Task GetPeopleCustomField_IssSuccess()
+        {
+            var action = new CustomFieldsActions(InvocationContext);
+
+            var result = await action.GetPeopleCustomField(
+                new PeopleCustomFieldRequest
+                {
+                    ProjectId= "1212502671744475",
+                    TaskId = "1212502671744490",
+                    CustomFieldId = "1212464178656695",
                 });
 
             var json = Newtonsoft.Json.JsonConvert.SerializeObject(result);

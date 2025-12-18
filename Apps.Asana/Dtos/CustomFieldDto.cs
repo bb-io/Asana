@@ -22,5 +22,6 @@ public class CustomFieldDto : AsanaEntity
     [JsonProperty("multi_enum_values")]
     public IEnumerable<CustomFieldEnumValueDto>? MultiEnumValues { get; set; }
 
-
+    [JsonProperty("people_value")]
+    public CompactUserDto[]? PeopleValue { get; set; }
 }
