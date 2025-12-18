@@ -37,7 +37,7 @@ public class CustomFieldsActions : AsanaActions
     }
 
     [Action("Get people custom field", Description = "Get value of a custom field with people type (returns users)")]
-    public async Task<PeopleCustomFieldResponse> GetPeopleCustomField([ActionParameter] PeopleCustomFieldRequest input)
+    public async Task<PeopleCustomFieldResponse> GetPeopleCustomField([ActionParameter] GetPeopleCustomFieldRequest input)
     {
         var task = await GetTask(input.TaskId);
         var field = task.CustomFields.FirstOrDefault(x => x.Gid == input.CustomFieldId)
