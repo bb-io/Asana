@@ -102,7 +102,8 @@ namespace Tests.Asana
                     TaskId = "1212502671744490",
                     ProjectId= "1212502671744475",
                     CustomFieldId = "1212464178656695",
-                }, new List<string> { "1212502676955414" });
+                    userIds = new List<string> { "1212502676955414" }
+                });
 
             Assert.IsTrue(true);
         }

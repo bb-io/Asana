@@ -150,10 +150,9 @@ public class CustomFieldsActions : AsanaActions
 
     [Action("Update people custom field", Description = "Update value of a custom field with people type")]
     public Task UpdatePeopleCustomField(
-    [ActionParameter] PeopleCustomFieldRequest input,
-    [ActionParameter] [Display("People user IDs")] [DataSource(typeof(UserDataHandler))] IEnumerable<string> userIds)
+    [ActionParameter] PeopleCustomFieldRequest input)
     {
-        var ids = (userIds ?? Enumerable.Empty<string>())
+        var ids = (input.userIds ?? Enumerable.Empty<string>())
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Distinct(StringComparer.Ordinal)
             .ToArray();
