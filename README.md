@@ -58,6 +58,8 @@ Blackbird side authentication steps:
 
 ## Actions
 
+> **Note**: When you create or update items in Asana, there is a short delay before those changes are visible in our app. [Asana requires 10 to 60 seconds](https://developers.asana.com/reference/searchtasksforworkspace#user-content-eventual-consistency) to index new data and make it available via their API. If you don't see your recent changes immediately, please wait a minute and try again.
+
 ### Attachments
 
 - **Search attachments** returns all attachments of the specified object. Object ID can stand for an ID of `Project`, `Project brief` or `Task`.
