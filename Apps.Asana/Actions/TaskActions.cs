@@ -45,7 +45,6 @@ public class TaskActions : AsanaActions
             throw new PluginMisconfigurationException("Provide 'Enum custom fields ID' when using 'Enum option ID'.");
 
         string endpoint = $"/workspaces/{projectRequest.WorkspaceId}/tasks/search";
-
         var request = new AsanaRequest(endpoint, Method.Get, Creds);
 
         static void AddIf(RestRequest r, string name, string? value)
@@ -56,10 +55,15 @@ public class TaskActions : AsanaActions
         static string IsoUtc(DateTime dt) => dt.ToUniversalTime().ToString("o");
 
         var projectId = projectRequest.ProjectId;
-        AddIf(request, "projects.any", projectId);
+        var sectionId = projectRequest.SectionId;
+
+        if (!string.IsNullOrWhiteSpace(sectionId))
+            AddIf(request, "sections.any", sectionId);
+        else
+            AddIf(request, "projects.any", projectId);
+
         AddIf(request, "assignee.any", input.Assignee);
         AddIf(request, "tags.any", input.Tag);
-        AddIf(request, "sections.any", projectRequest.SectionId);
         AddIf(request, "user_task_lists.any", input.UserTaskList);
 
         if (input.CreatedAfter.HasValue) request.AddQueryParameter("created_at.after", IsoUtc(input.CreatedAfter.Value));
@@ -83,7 +87,9 @@ public class TaskActions : AsanaActions
                 input.EnumOptionId);
         }
         request.AddQueryParameter("opt_fields",
-            "gid,name,assignee.gid,projects.gid,created_at,modified_at,custom_fields,custom_fields.enum_value.gid,custom_fields.text_value");
+            "gid,name,assignee.gid,projects.gid,created_at,modified_at," +
+            "memberships.project.gid,memberships.section.gid," +
+            "custom_fields,custom_fields.enum_value.gid,custom_fields.text_value");
 
         var tasks = await Client.Paginate<AsanaEntity>(request);
 
