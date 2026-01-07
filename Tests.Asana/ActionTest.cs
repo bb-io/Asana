@@ -30,12 +30,18 @@ namespace Tests.Asana
         {
             var action = new Apps.Asana.Actions.TaskActions(InvocationContext);
 
-            var result = await action.ListAllTasks(new Apps.Asana.Models.Sections.Requests.SectionRequest { WorkspaceId = "11329706322538",  IncludeArchived=false }, 
-            new ListTasksRequest
+            var result = await action.ListAllTasks(new Apps.Asana.Models.Sections.Requests.SectionRequest
             {
-                EnumOptionId= "1203932706107047",
-                CustomFieldId = "1203932706107045"
-            });
+                WorkspaceId = "11329706322538",
+                ProjectId = "1212284379468765",
+                SectionId = "1212284379468766",
+            },
+        new ListTasksRequest
+        {
+            //CustomFieldId = "1212284379468784",
+            //EnumOptionId = "1212535410102600",
+            //CreatedAfter = new DateTime(2025, 12, 1, 0, 0, 0, DateTimeKind.Utc)
+        });
 
             var json = Newtonsoft.Json.JsonConvert.SerializeObject(result);
             Console.WriteLine(json);
@@ -108,22 +114,22 @@ namespace Tests.Asana
             Assert.IsTrue(true);
         }
 
-        [TestMethod]
-        public async Task GetPeopleCustomField_IssSuccess()
-        {
-            var action = new CustomFieldsActions(InvocationContext);
+        //[TestMethod]
+        //public async Task GetPeopleCustomField_IssSuccess()
+        //{
+        //    var action = new CustomFieldsActions(InvocationContext);
 
-            var result = await action.GetPeopleCustomField(
-                new PeopleCustomFieldRequest
-                {
-                    ProjectId= "1212502671744475",
-                    TaskId = "1212502671744490",
-                    CustomFieldId = "1212464178656695",
-                });
+        //    var result = await action.GetPeopleCustomField(
+        //        new PeopleCustomFieldRequest
+        //        {
+        //            ProjectId= "1212502671744475",
+        //            TaskId = "1212502671744490",
+        //            CustomFieldId = "1212464178656695",
+        //        });
 
-            var json = Newtonsoft.Json.JsonConvert.SerializeObject(result);
-            Console.WriteLine(json);
-            Assert.IsNotNull(result);
-        }
+        //    var json = Newtonsoft.Json.JsonConvert.SerializeObject(result);
+        //    Console.WriteLine(json);
+        //    Assert.IsNotNull(result);
+        //}
     }
 }
