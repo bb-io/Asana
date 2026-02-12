@@ -3,6 +3,7 @@ using Apps.Asana.Constants;
 using Apps.Asana.Models;
 using Apps.Asana.Models.Entities;
 using Blackbird.Applications.Sdk.Common;
+using Blackbird.Applications.Sdk.Common.Authentication;
 using Blackbird.Applications.Sdk.Common.Authentication.OAuth2;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.Sdk.Utils.Extensions.System;
@@ -11,12 +12,25 @@ using Newtonsoft.Json;
 namespace Apps.Asana.Auth;
 
 public class OAuth2TokenService(InvocationContext invocationContext)
-    : BaseInvocable(invocationContext), IOAuth2TokenService
+    : BaseInvocable(invocationContext), IOAuth2TokenService, ITokenRefreshable
 {
     public bool IsRefreshToken(Dictionary<string, string> values)
     {
         var expiresAt = DateTime.Parse(values[CredsNames.ExpiresAt]);
         return DateTime.UtcNow > expiresAt;
+    }
+
+    public int? GetRefreshTokenExprireInMinutes(Dictionary<string, string> values)
+    {
+        if (!values.TryGetValue(CredsNames.ExpiresAt, out var expireValue))
+            return null;
+
+        if (!DateTime.TryParse(expireValue, out var expireDate))
+            return null;
+
+        var difference = expireDate - DateTime.UtcNow;
+
+        return (int)difference.TotalMinutes - 5;
     }
 
     public async Task<Dictionary<string, string>> RefreshToken(Dictionary<string, string> values,
