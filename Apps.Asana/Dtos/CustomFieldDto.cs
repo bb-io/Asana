@@ -19,6 +19,9 @@ public class CustomFieldDto : AsanaEntity
     [JsonProperty("date_value")]
     public CustomFieldDateValueDto? DateValue { get; set; }
 
+    [JsonProperty("number_value")]
+    public double? NumberValue { get; set; }
+
     [JsonProperty("multi_enum_values")]
     public IEnumerable<CustomFieldEnumValueDto>? MultiEnumValues { get; set; }
 

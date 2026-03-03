@@ -101,7 +101,7 @@ public class TaskActions : AsanaActions
     [Action("Get task", Description = "Get task by ID")]
     public Task<TaskDto> GetTask([ActionParameter] TaskRequest input)
     {
-        var endpoint = $"{ApiEndpoints.Tasks}/{input.TaskId}";
+        var endpoint = $"{ApiEndpoints.Tasks}/{input.TaskId}?opt_fields=due_on,due_at";
         var request = new AsanaRequest(endpoint, Method.Get, Creds);
 
         return Client.ExecuteWithErrorHandling<TaskDto>(request);

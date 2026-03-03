@@ -1,6 +1,7 @@
 ﻿using Apps.Asana.Dtos.Base;
 using Apps.Asana.Models.Tasks.Responses;
 using Blackbird.Applications.Sdk.Common;
+using Newtonsoft.Json;
 
 namespace Apps.Asana.Dtos;
 
@@ -15,6 +16,18 @@ public class TaskDto : AsanaEntity
 
     [Display("Created at")] public DateTime CreatedAt { get; set; }
     [Display("Permalink URL")] public string PermalinkUrl { get; set; }
+
+    [DefinitionIgnore]
+    [JsonProperty("due_on")]
+    public DateTime? DueOn { get; set; }
+
+    [DefinitionIgnore]
+    [JsonProperty("due_at")]
+    public DateTime? DueAt { get; set; }
+
+    [JsonIgnore]
+    [Display("Due date")]
+    public DateTime? DueDate => DueAt ?? DueOn;
 
     public IEnumerable<TaskMembershipDto> Memberships { get; set; }
 
