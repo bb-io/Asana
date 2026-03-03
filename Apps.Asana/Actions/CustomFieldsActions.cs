@@ -108,6 +108,23 @@ public class CustomFieldsActions : AsanaActions
         };
     }
 
+    [Action("Get number custom field", Description = "Get value of a custom field with number type")]
+    public async Task<NumberCustomFieldResponse> GetNumberCustomField([ActionParameter] NumberCustomFieldRequest input)
+    {
+        var task = await GetTask(input.TaskId)
+            ?? throw new PluginApplicationException("Task with the provided ID was not found");
+
+        var customField = task.CustomFields
+            .FirstOrDefault(x => x.Gid == input.CustomFieldId)
+            ?? throw new PluginApplicationException("Custom field with the provided ID was not found");
+
+        return new NumberCustomFieldResponse
+        {
+            Id = customField.Gid,
+            Value = customField.NumberValue
+        };
+    }
+
     [Action("Get multi-enum custom field", Description = "Get values of a custom field with multi-enum type (returns option names)")]
     public async Task<MultiEnumCustomFieldResponse> GetMultiEnumCustomField([ActionParameter] MultipleCustomFieldRequest input)
     {
@@ -146,6 +163,14 @@ public class CustomFieldsActions : AsanaActions
         {
             date_time = value.ToString("yyyy-MM-ddTHH:mm:sszzz")
         });
+    }
+
+    [Action("Update number custom field", Description = "Update value of a custom field with number type")]
+    public Task UpdateNumberCustomField(
+    [ActionParameter] NumberCustomFieldRequest input,
+    [ActionParameter, Display("Value")] double value)
+    {
+        return UpdateCustomField(input.TaskId, input.CustomFieldId, value);
     }
 
     [Action("Update people custom field", Description = "Update value of a custom field with people type")]
