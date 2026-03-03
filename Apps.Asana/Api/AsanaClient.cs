@@ -71,9 +71,23 @@ public class AsanaClient : BlackBirdRestClient
 
     protected override Exception ConfigureErrorException(RestResponse response)
     {
+        if (IsHtmlResponse(response))
+        {
+            var statusCode = (int)response.StatusCode;
+            var statusDescription = response.StatusDescription ?? response.StatusCode.ToString();
+            throw new PluginApplicationException(
+                $"Request failed with status code {statusCode} ({statusDescription}). The server returned an HTML response instead of JSON, which typically indicates a server-side issue.");
+        }
+
         var errors = JsonConvert.DeserializeObject<ErrorResponse>(response.Content);
         var messages = errors.Errors.Select(x => x.Message).ToArray();
 
        throw new PluginApplicationException(string.Join("; ", messages));
+    }
+    
+    private bool IsHtmlResponse(RestResponse response)
+    {
+        var contentType = response.ContentType ?? string.Empty;
+        return contentType.Contains("text/html", StringComparison.OrdinalIgnoreCase);
     }
 }
