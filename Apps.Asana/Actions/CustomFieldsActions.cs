@@ -108,8 +108,8 @@ public class CustomFieldsActions : AsanaActions
         };
     }
 
-    public async Task<NumberCustomFieldResponse> GetNumberCustomField(
-    [ActionParameter] NumberCustomFieldRequest input)
+    [Action("Get number custom field", Description = "Get value of a custom field with number type")]
+    public async Task<NumberCustomFieldResponse> GetNumberCustomField([ActionParameter] NumberCustomFieldRequest input)
     {
         var task = await GetTask(input.TaskId)
             ?? throw new PluginApplicationException("Task with the provided ID was not found");
