@@ -4,7 +4,7 @@ using Blackbird.Applications.Sdk.Common.Webhooks;
 namespace Apps.Asana.Webhooks.Handlers.TaskHandlers;
 
 public class TaskUndeletedHandler([WebhookParameter(true)] TaskRequest tr)
-    : BaseWebhookHandler(tr.TaskId, ResourceType, Action)
+    : BaseWebhookHandler(tr.TaskId, ResourceType, Action, workspaceId: tr.WorkspaceId)
 {
     const string ResourceType = "task";
     const string Action = "undeleted";
