@@ -4,7 +4,7 @@ using Blackbird.Applications.Sdk.Common.Webhooks;
 namespace Apps.Asana.Webhooks.Handlers.GoalHandlers;
 
 public class GoalsAddedHandler([WebhookParameter(true)] WorkspaceRequest pr)
-    : BaseWebhookHandler(pr.WorkspaceId, ResourceType, Action)
+    : BaseWebhookHandler(pr.WorkspaceId, ResourceType, Action, pr.WorkspaceId)
 {
     const string ResourceType = "goal";
     const string Action = "added";
