@@ -1,6 +1,7 @@
 ﻿using Apps.Asana.Api;
 using Apps.Asana.Constants;
 using Apps.Asana.Dtos.Base;
+using Apps.Asana.Webhooks.Models.Payload;
 using Blackbird.Applications.Sdk.Common.Authentication;
 using Blackbird.Applications.Sdk.Common.Webhooks;
 using Blackbird.Applications.Sdk.Utils.Extensions.Http;
@@ -30,56 +31,104 @@ public class BaseWebhookHandler : IWebhookEventHandler
         IEnumerable<AuthenticationCredentialsProvider> creds,
         Dictionary<string, string> values)
     {
-        var filters = new Dictionary<string, object>
-        {
-            { "action", _action },
-            { "resource_type", _resourceType }
-        };
+        var target = values["payloadUrl"];
 
-        if (!string.IsNullOrEmpty(_resourceSubType))
+        var desiredFilter = BuildFilter();
+
+        var existing = (await GetAllWebhooks(creds))
+            .FirstOrDefault(w => string.Equals(w.Target, target, StringComparison.OrdinalIgnoreCase));
+
+        if (existing is null)
         {
-            filters["resource_subtype"] = _resourceSubType;
+            await CreateWebhook(creds, target, new[] { desiredFilter });
+            return;
         }
 
-        var data = new Dictionary<string, object>
-        {
-            { "resource", _resourceId },
-            { "target", values["payloadUrl"] },
-            { "filters", new[] { filters } }
-        };
+        if (existing.Filters?.Any(f => FilterEquals(f, desiredFilter)) == true)
+            return;
 
-        var obj = new Dictionary<string, object>
-        {
-            { "data", data }
-        };
+        var merged = (existing.Filters ?? new List<Dictionary<string, object>>())
+            .Concat(new[] { desiredFilter })
+            .ToArray();
 
-        var request = new AsanaRequest(ApiEndpoints.Webhooks, Method.Post, creds)
-            .WithJsonBody(obj);
-
-        await _client.ExecuteWithErrorHandling(request);
+        await DeleteWebhook(creds, existing.Gid);
+        await CreateWebhook(creds, target, merged);
     }
 
     public async Task UnsubscribeAsync(IEnumerable<AuthenticationCredentialsProvider> creds,
         Dictionary<string, string> values)
     {
-        var webhooks = await GetAllWebhooks(creds);
-        var webhookGId = webhooks.FirstOrDefault()?.Gid;
+        var target = values["payloadUrl"];
+        var filterToRemove = BuildFilter();
 
-        if (webhookGId is null)
+        var existing = (await GetAllWebhooks(creds))
+            .FirstOrDefault(w => string.Equals(w.Target, target, StringComparison.OrdinalIgnoreCase));
+
+        if (existing is null)
             return;
 
-        var endpoint = $"{ApiEndpoints.Webhooks}/{webhookGId}";
-        var request = new AsanaRequest(endpoint, Method.Delete, creds);
+        var remaining = (existing.Filters ?? new List<Dictionary<string, object>>())
+             .Where(f => !FilterEquals(f, filterToRemove))
+             .ToArray();
+
+        if (!remaining.Any())
+        {
+            await DeleteWebhook(creds, existing.Gid);
+            return;
+        }
+
+        await DeleteWebhook(creds, existing.Gid);
+        await CreateWebhook(creds, target, remaining);
+    }
+
+    private Dictionary<string, object> BuildFilter()
+    {
+        var filter = new Dictionary<string, object>
+        {
+            ["action"] = _action,
+            ["resource_type"] = _resourceType
+        };
+
+        if (!string.IsNullOrEmpty(_resourceSubType))
+            filter["resource_subtype"] = _resourceSubType;
+
+        return filter;
+    }
+
+    private static bool FilterEquals(Dictionary<string, object> a, Dictionary<string, object> b)
+    {
+        string? Get(Dictionary<string, object> d, string k) => d.TryGetValue(k, out var v) ? v?.ToString() : null;
+
+        return string.Equals(Get(a, "action"), Get(b, "action"), StringComparison.OrdinalIgnoreCase)
+            && string.Equals(Get(a, "resource_type"), Get(b, "resource_type"), StringComparison.OrdinalIgnoreCase)
+            && string.Equals(Get(a, "resource_subtype"), Get(b, "resource_subtype"), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task CreateWebhook(IEnumerable<AuthenticationCredentialsProvider> creds, string target,
+        IEnumerable<Dictionary<string, object>> filters)
+    {
+        var data = new Dictionary<string, object>
+        {
+            ["resource"] = _resourceId,
+            ["target"] = target,
+            ["filters"] = filters.ToArray()
+        };
+
+        var request = new AsanaRequest(ApiEndpoints.Webhooks, Method.Post, creds)
+            .WithJsonBody(new Dictionary<string, object> { ["data"] = data });
 
         await _client.ExecuteWithErrorHandling(request);
     }
 
-    private Task<IEnumerable<AsanaEntity>> GetAllWebhooks(
-        IEnumerable<AuthenticationCredentialsProvider> creds)
+    private async Task DeleteWebhook(IEnumerable<AuthenticationCredentialsProvider> creds, string webhookGid)
     {
-        var endpoint = $"{ApiEndpoints.Webhooks}/{_resourceId}";
-        var request = new AsanaRequest(endpoint, Method.Get, creds);
+        var request = new AsanaRequest($"{ApiEndpoints.Webhooks}/{webhookGid}", Method.Delete, creds);
+        await _client.ExecuteWithErrorHandling(request);
+    }
 
-        return _client.ExecuteWithErrorHandling<IEnumerable<AsanaEntity>>(request);
+    private Task<IEnumerable<WebhookSubscription>> GetAllWebhooks(IEnumerable<AuthenticationCredentialsProvider> creds)
+    {
+        var request = new AsanaRequest($"{ApiEndpoints.Webhooks}/{_resourceId}", Method.Get, creds);
+        return _client.ExecuteWithErrorHandling<IEnumerable<WebhookSubscription>>(request);
     }
 }
