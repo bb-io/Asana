@@ -5,6 +5,7 @@ using Apps.Asana.Webhooks.Models.Payload;
 using Blackbird.Applications.Sdk.Common.Authentication;
 using Blackbird.Applications.Sdk.Common.Webhooks;
 using Blackbird.Applications.Sdk.Utils.Extensions.Http;
+using Newtonsoft.Json.Linq;
 using RestSharp;
 
 namespace Apps.Asana.Webhooks.Handlers;
@@ -35,8 +36,8 @@ public class BaseWebhookHandler : IWebhookEventHandler
 
         var desiredFilter = BuildFilter();
 
-        var existing = (await GetAllWebhooks(creds))
-            .FirstOrDefault(w => string.Equals(w.Target, target, StringComparison.OrdinalIgnoreCase));
+        var existing = (await GetAllWebhooks(creds, values))
+    .FirstOrDefault(w => string.Equals(w.Target, target, StringComparison.OrdinalIgnoreCase));
 
         if (existing is null)
         {
@@ -61,8 +62,8 @@ public class BaseWebhookHandler : IWebhookEventHandler
         var target = values["payloadUrl"];
         var filterToRemove = BuildFilter();
 
-        var existing = (await GetAllWebhooks(creds))
-            .FirstOrDefault(w => string.Equals(w.Target, target, StringComparison.OrdinalIgnoreCase));
+        var existing = (await GetAllWebhooks(creds, values))
+                .FirstOrDefault(w => string.Equals(w.Target, target, StringComparison.OrdinalIgnoreCase));
 
         if (existing is null)
             return;
@@ -126,9 +127,18 @@ public class BaseWebhookHandler : IWebhookEventHandler
         await _client.ExecuteWithErrorHandling(request);
     }
 
-    private Task<IEnumerable<WebhookSubscription>> GetAllWebhooks(IEnumerable<AuthenticationCredentialsProvider> creds)
+    private async Task<IEnumerable<WebhookSubscription>> GetAllWebhooks(
+    IEnumerable<AuthenticationCredentialsProvider> creds,
+    Dictionary<string, string> values)
     {
-        var request = new AsanaRequest($"{ApiEndpoints.Webhooks}/{_resourceId}", Method.Get, creds);
-        return _client.ExecuteWithErrorHandling<IEnumerable<WebhookSubscription>>(request);
+        var endpoint = $"{ApiEndpoints.Webhooks}?resource={_resourceId}";
+
+        if (values.TryGetValue("workspace", out var workspace) && !string.IsNullOrWhiteSpace(workspace))
+            endpoint += $"&workspace={workspace}";
+
+        var request = new AsanaRequest(endpoint, Method.Get, creds);
+
+        var response = await _client.ExecuteWithErrorHandling<ListResponse<WebhookSubscription>>(request);
+        return response.Data;
     }
 }
