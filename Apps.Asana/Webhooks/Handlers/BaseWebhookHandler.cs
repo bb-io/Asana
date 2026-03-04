@@ -130,21 +130,26 @@ public class BaseWebhookHandler : IWebhookEventHandler
     }
 
     public async Task<IEnumerable<WebhookSubscription>> GetAllWebhooks(
-    IEnumerable<AuthenticationCredentialsProvider> creds,
-    Dictionary<string, string> values)
+     IEnumerable<AuthenticationCredentialsProvider> creds,
+     Dictionary<string, string> values)
     {
-        if (!string.IsNullOrWhiteSpace(_workspaceId))
-        {
-            var endpoint = _resourceId == _workspaceId
-                ? $"{ApiEndpoints.Webhooks}?workspace={_workspaceId}"
-                : $"{ApiEndpoints.Webhooks}?workspace={_workspaceId}&resource={_resourceId}";
+        var workspaceId = _workspaceId;
 
-            var request = new AsanaRequest(endpoint, Method.Get, creds);
-            return await _client.ExecuteWithErrorHandling<List<WebhookSubscription>>(request);
+        if (string.IsNullOrWhiteSpace(workspaceId) && values != null)
+        {
+            var caseInsensitive = new Dictionary<string, string>(values, StringComparer.OrdinalIgnoreCase);
+
+            if (caseInsensitive.TryGetValue("workspaceId", out var v1)) workspaceId = v1;
+            else if (caseInsensitive.TryGetValue("workspaceGid", out var v2)) workspaceId = v2;
+            else if (caseInsensitive.TryGetValue("workspace", out var v3)) workspaceId = v3;
         }
 
-        var fallbackEndpoint = $"{ApiEndpoints.Webhooks}?resource={_resourceId}";
-        var fallbackRequest = new AsanaRequest(fallbackEndpoint, Method.Get, creds);
-        return await _client.ExecuteWithErrorHandling<List<WebhookSubscription>>(fallbackRequest);
+        if (string.IsNullOrWhiteSpace(workspaceId))
+            throw new Exception("workspaceId is required for listing webhooks (not provided to handler constructor).");
+
+        var endpoint = $"{ApiEndpoints.Webhooks}?workspace={workspaceId}&resource={_resourceId}";
+        var request = new AsanaRequest(endpoint, Method.Get, creds);
+
+        return await _client.ExecuteWithErrorHandling<List<WebhookSubscription>>(request);
     }
 }
