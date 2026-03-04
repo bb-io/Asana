@@ -127,18 +127,17 @@ public class BaseWebhookHandler : IWebhookEventHandler
         await _client.ExecuteWithErrorHandling(request);
     }
 
-    private async Task<IEnumerable<WebhookSubscription>> GetAllWebhooks(
+    public async Task<IEnumerable<WebhookSubscription>> GetAllWebhooks(
     IEnumerable<AuthenticationCredentialsProvider> creds,
     Dictionary<string, string> values)
     {
-        var endpoint = $"{ApiEndpoints.Webhooks}?resource={_resourceId}";
+        if (!values.TryGetValue("workspaceGid", out var workspaceGid) || string.IsNullOrWhiteSpace(workspaceGid))
+            throw new Exception("workspaceGid is required.");
 
-        if (values.TryGetValue("workspace", out var workspace) && !string.IsNullOrWhiteSpace(workspace))
-            endpoint += $"&workspace={workspace}";
-
+        var endpoint = $"{ApiEndpoints.Webhooks}?workspace={workspaceGid}&resource={_resourceId}";
         var request = new AsanaRequest(endpoint, Method.Get, creds);
 
-        var response = await _client.ExecuteWithErrorHandling<ListResponse<WebhookSubscription>>(request);
-        return response.Data;
+        var webhooks = await _client.ExecuteWithErrorHandling<List<WebhookSubscription>>(request);
+        return webhooks;
     }
 }
