@@ -130,17 +130,20 @@ public class BaseWebhookHandler : IWebhookEventHandler
     }
 
     public async Task<IEnumerable<WebhookSubscription>> GetAllWebhooks(
-        IEnumerable<AuthenticationCredentialsProvider> creds,
-        Dictionary<string, string> values)
+    IEnumerable<AuthenticationCredentialsProvider> creds,
+    Dictionary<string, string> values)
     {
         if (!string.IsNullOrWhiteSpace(_workspaceId))
         {
-            var endpoint = $"{ApiEndpoints.Webhooks}?workspace={_workspaceId}&resource={_resourceId}";
+            var endpoint = _resourceId == _workspaceId
+                ? $"{ApiEndpoints.Webhooks}?workspace={_workspaceId}"
+                : $"{ApiEndpoints.Webhooks}?workspace={_workspaceId}&resource={_resourceId}";
+
             var request = new AsanaRequest(endpoint, Method.Get, creds);
             return await _client.ExecuteWithErrorHandling<List<WebhookSubscription>>(request);
         }
 
-        var fallbackEndpoint = $"{ApiEndpoints.Webhooks}/{_resourceId}";
+        var fallbackEndpoint = $"{ApiEndpoints.Webhooks}?resource={_resourceId}";
         var fallbackRequest = new AsanaRequest(fallbackEndpoint, Method.Get, creds);
         return await _client.ExecuteWithErrorHandling<List<WebhookSubscription>>(fallbackRequest);
     }
