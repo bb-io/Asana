@@ -131,13 +131,16 @@ public class BaseWebhookHandler : IWebhookEventHandler
     IEnumerable<AuthenticationCredentialsProvider> creds,
     Dictionary<string, string> values)
     {
-        if (!values.TryGetValue("workspaceGid", out var workspaceGid) || string.IsNullOrWhiteSpace(workspaceGid))
-            throw new Exception("workspaceGid is required.");
+        var caseInsensitiveValues = values is null
+       ? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+       : new Dictionary<string, string>(values, StringComparer.OrdinalIgnoreCase);
 
-        var endpoint = $"{ApiEndpoints.Webhooks}?workspace={workspaceGid}&resource={_resourceId}";
+        if (!caseInsensitiveValues.TryGetValue("workspaceId", out var workspaceId) || string.IsNullOrWhiteSpace(workspaceId))
+            throw new Exception($"workspaceId is required. Available keys: {string.Join(", ", caseInsensitiveValues.Keys)}");
+
+        var endpoint = $"{ApiEndpoints.Webhooks}?workspace={workspaceId}&resource={_resourceId}";
         var request = new AsanaRequest(endpoint, Method.Get, creds);
 
-        var webhooks = await _client.ExecuteWithErrorHandling<List<WebhookSubscription>>(request);
-        return webhooks;
+        return await _client.ExecuteWithErrorHandling<List<WebhookSubscription>>(request);
     }
 }
