@@ -3,6 +3,7 @@ using Apps.Asana.DataSourceHandlers.CustomFields;
 using Apps.Asana.Models.CustomFields.Requests;
 using Apps.Asana.Models.Sections.Requests;
 using Apps.Asana.Models.Workspaces.Requests;
+using Apps.Asana.Webhooks.Handlers;
 using Tests.Asana.Base;
 
 namespace Tests.Asana;
@@ -134,6 +135,27 @@ public class DataHandlerTests : TestBase
         foreach (var item in data)
         {
             Console.WriteLine($"{item.Value} - {item.Key}");
+        }
+
+        Assert.IsNotNull(data);
+    }
+
+
+    [TestMethod]
+    public async Task Webhook_IsSuccess()
+    {
+        const string workspaceGid = "1213537037291432";
+        const string resourceGid = "1213531557188098";
+        var handler = new BaseWebhookHandler(
+        resourceGid,
+        "task",
+        "changed",
+        null);
+        var data = await handler.GetAllWebhooks(InvocationContext.AuthenticationCredentialsProviders, new Dictionary<string, string> { ["workspaceGid"] = workspaceGid });
+
+        foreach (var item in data)
+        {
+            Console.WriteLine($"{item.Name} - {item.Gid}");
         }
 
         Assert.IsNotNull(data);
