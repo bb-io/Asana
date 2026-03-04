@@ -16,9 +16,10 @@ public class BaseWebhookHandler : IWebhookEventHandler
     private readonly string _resourceType;
     private readonly string _action;
     private readonly string? _resourceSubType;
+    private readonly string? _workspaceId;
     private readonly AsanaClient _client;
 
-    public BaseWebhookHandler(string resourceId, string resourceType, string action, string? resourceSubType = null)
+    public BaseWebhookHandler(string resourceId, string resourceType, string action, string? resourceSubType = null, string? workspaceId = null)
     {
         _resourceId = resourceId;
         _resourceType = resourceType;
@@ -26,6 +27,7 @@ public class BaseWebhookHandler : IWebhookEventHandler
         _resourceSubType = resourceSubType;
 
         _client = new();
+        _workspaceId = workspaceId;
     }
 
     public async Task SubscribeAsync(
@@ -128,19 +130,18 @@ public class BaseWebhookHandler : IWebhookEventHandler
     }
 
     public async Task<IEnumerable<WebhookSubscription>> GetAllWebhooks(
-    IEnumerable<AuthenticationCredentialsProvider> creds,
-    Dictionary<string, string> values)
+        IEnumerable<AuthenticationCredentialsProvider> creds,
+        Dictionary<string, string> values)
     {
-        var caseInsensitiveValues = values is null
-       ? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-       : new Dictionary<string, string>(values, StringComparer.OrdinalIgnoreCase);
+        if (!string.IsNullOrWhiteSpace(_workspaceId))
+        {
+            var endpoint = $"{ApiEndpoints.Webhooks}?workspace={_workspaceId}&resource={_resourceId}";
+            var request = new AsanaRequest(endpoint, Method.Get, creds);
+            return await _client.ExecuteWithErrorHandling<List<WebhookSubscription>>(request);
+        }
 
-        if (!caseInsensitiveValues.TryGetValue("workspaceId", out var workspaceId) || string.IsNullOrWhiteSpace(workspaceId))
-            throw new Exception($"workspaceId is required. Available keys: {string.Join(", ", caseInsensitiveValues.Keys)}");
-
-        var endpoint = $"{ApiEndpoints.Webhooks}?workspace={workspaceId}&resource={_resourceId}";
-        var request = new AsanaRequest(endpoint, Method.Get, creds);
-
-        return await _client.ExecuteWithErrorHandling<List<WebhookSubscription>>(request);
+        var fallbackEndpoint = $"{ApiEndpoints.Webhooks}/{_resourceId}";
+        var fallbackRequest = new AsanaRequest(fallbackEndpoint, Method.Get, creds);
+        return await _client.ExecuteWithErrorHandling<List<WebhookSubscription>>(fallbackRequest);
     }
 }
