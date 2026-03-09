@@ -16,12 +16,8 @@ using RestSharp;
 namespace Apps.Asana.Actions;
 
 [ActionList("Tag")]
-public class TagActions : AsanaActions
+public class TagActions(InvocationContext invocationContext) : AsanaActions(invocationContext)
 {
-    public TagActions(InvocationContext invocationContext) : base(invocationContext)
-    {
-    }
-
     [Action("Search tags", Description = "List all tags")]
     public async Task<ListTagsResponse> ListAllTags([ActionParameter] ListTagsRequest input)
     {

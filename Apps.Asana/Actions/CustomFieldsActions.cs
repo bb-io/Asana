@@ -1,13 +1,11 @@
 using Apps.Asana.Actions.Base;
 using Apps.Asana.Api;
 using Apps.Asana.Constants;
-using Apps.Asana.DataSourceHandlers;
 using Apps.Asana.Dtos;
 using Apps.Asana.Models.CustomFields.Requests;
 using Apps.Asana.Models.CustomFields.Responses;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
-using Blackbird.Applications.Sdk.Common.Dynamic;
 using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.Sdk.Utils.Extensions.Http;
@@ -16,12 +14,8 @@ using RestSharp;
 namespace Apps.Asana.Actions;
 
 [ActionList("Custom fields")]
-public class CustomFieldsActions : AsanaActions
+public class CustomFieldsActions(InvocationContext invocationContext) : AsanaActions(invocationContext)
 {
-    public CustomFieldsActions(InvocationContext invocationContext) : base(invocationContext)
-    {
-    }
-
     [Action("Get text custom field", Description = "Get value of a custom field with text type")]
     public async Task<TextCustomFieldResponse> GetTextCustomField([ActionParameter] TextCustomFieldRequest input)
     {

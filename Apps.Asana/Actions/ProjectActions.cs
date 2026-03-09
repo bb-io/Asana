@@ -17,12 +17,8 @@ using Blackbird.Applications.Sdk.Utils.Extensions.Sdk;
 namespace Apps.Asana.Actions;
 
 [ActionList("Project")]
-public class ProjectActions : AsanaActions
+public class ProjectActions(InvocationContext invocationContext) : AsanaActions(invocationContext)
 {
-    public ProjectActions(InvocationContext invocationContext) : base(invocationContext)
-    {
-    }
-
     [Action("Search projects", Description = "List all projects")]
     public async Task<ListProjectsResponse> ListAllProjects([ActionParameter] ListProjectsRequest input)
     {

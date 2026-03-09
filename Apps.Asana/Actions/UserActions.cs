@@ -14,12 +14,8 @@ using Blackbird.Applications.Sdk.Utils.Extensions.String;
 namespace Apps.Asana.Actions;
 
 [ActionList("User")]
-public class UserActions : AsanaActions
+public class UserActions(InvocationContext invocationContext) : AsanaActions(invocationContext)
 {
-    public UserActions(InvocationContext invocationContext) : base(invocationContext)
-    {
-    }
-    
     [Action("Search users", Description = "List all users")]
     public async Task<ListUsersResponse> ListUsers([ActionParameter] ListUsersRequest input)
     {

@@ -7,27 +7,18 @@ using Apps.Asana.Models.Attachments.Requests;
 using Apps.Asana.Models.Attachments.Responses;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
-using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.Sdk.Utils.Extensions.String;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using RestSharp;
-using System.Net.Http.Headers;
 using System.Net.Mime;
 
 namespace Apps.Asana.Actions;
 
 [ActionList("Attachment")]
-public class AttachmentActions : AsanaActions
+public class AttachmentActions(InvocationContext invocationContext, IFileManagementClient fileManagementClient) 
+    : AsanaActions(invocationContext)
 {
-    private readonly IFileManagementClient _fileManagementClient;
-
-    public AttachmentActions(InvocationContext invocationContext, IFileManagementClient fileManagementClient) : base(
-        invocationContext)
-    {
-        _fileManagementClient = fileManagementClient;
-    }
-
     [Action("Search attachments", Description = "List attachments from object")]
     public async Task<GetAttachmentsResponse> ListAttachments(
         [ActionParameter] ListAttachmentsRequest input)
@@ -68,7 +59,7 @@ public class AttachmentActions : AsanaActions
         await netStream.CopyToAsync(ms);
         ms.Position = 0;
 
-        var uploaded = await _fileManagementClient.UploadAsync(ms, contentType, response.Name);
+        var uploaded = await fileManagementClient.UploadAsync(ms, contentType, response.Name);
 
         return new(response)
         {
@@ -91,7 +82,7 @@ public class AttachmentActions : AsanaActions
     {
         var request = new AsanaRequest(ApiEndpoints.Attachments, Method.Post, Creds);
 
-        var file = await _fileManagementClient.DownloadAsync(input.File);
+        var file = await fileManagementClient.DownloadAsync(input.File);
         request.AddFile("file", () => file, input.FileName ?? input.File.Name!);
         request.AddParameter("parent", input.ParentId);
 
