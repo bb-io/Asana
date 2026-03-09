@@ -18,12 +18,8 @@ using RestSharp;
 namespace Apps.Asana.Actions;
 
 [ActionList("Task")]
-public class TaskActions : AsanaActions
+public class TaskActions(InvocationContext invocationContext) : AsanaActions(invocationContext)
 {
-    public TaskActions(InvocationContext invocationContext) : base(invocationContext)
-    {
-    }
-
     [Action("Search tasks", Description = "List all tasks")]
     public async Task<ListTasksResponse> ListAllTasks([ActionParameter] SectionRequest projectRequest,
         [ActionParameter] ListTasksRequest input)
@@ -95,8 +91,6 @@ public class TaskActions : AsanaActions
 
         return new ListTasksResponse { Tasks = tasks };
     }
-
-    private static string IsoUtc(DateTime dt) => dt.ToUniversalTime().ToString("o");
 
     [Action("Get task", Description = "Get task by ID")]
     public Task<TaskDto> GetTask([ActionParameter] TaskRequest input)

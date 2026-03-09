@@ -9,17 +9,12 @@ using Apps.Asana.Models.Workspaces.Responses;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Invocation;
-using Blackbird.Applications.Sdk.Common.Authentication;
 
 namespace Apps.Asana.Actions;
 
 [ActionList("Workspace")]
-public class WorkspaceActions : AsanaActions
+public class WorkspaceActions(InvocationContext invocationContext) : AsanaActions(invocationContext)
 {
-    public WorkspaceActions(InvocationContext invocationContext) : base(invocationContext)
-    {
-    }
-
     [Action("Search workspaces", Description = "List workspaces")]
     public async Task<ListWorkspacesResponse> ListAllWorkspaces()
     {

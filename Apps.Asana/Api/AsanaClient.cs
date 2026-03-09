@@ -23,11 +23,8 @@ public class AsanaClient : BlackBirdRestClient
     public override async Task<T> ExecuteWithErrorHandling<T>(RestRequest request)
     {
         string content = (await ExecuteWithErrorHandling(request))!.Content!;
-        var val = JsonConvert.DeserializeObject<ResponseWrapper<T>>(content, JsonSettings);
-        if (val == null)
-        {
+        var val = JsonConvert.DeserializeObject<ResponseWrapper<T>>(content, JsonSettings) ??
             throw new Exception($"Could not parse {content} to {typeof(T)}");
-        }
 
         return val.Data;
     }
@@ -40,7 +37,7 @@ public class AsanaClient : BlackBirdRestClient
             throw ConfigureErrorException(restResponse);
         }
 
-        return restResponse;
+        return restResponse;    
     }
 
     public async Task<List<T>> Paginate<T>(RestRequest request)
@@ -71,21 +68,27 @@ public class AsanaClient : BlackBirdRestClient
 
     protected override Exception ConfigureErrorException(RestResponse response)
     {
+        int statusCode = (int)response.StatusCode;
+        string statusDescription = response.StatusDescription ?? response.StatusCode.ToString();
+        string baseMessage = $"Request failed with status code {statusCode} ({statusDescription}).";
+
         if (IsHtmlResponse(response))
         {
-            var statusCode = (int)response.StatusCode;
-            var statusDescription = response.StatusDescription ?? response.StatusCode.ToString();
             throw new PluginApplicationException(
-                $"Request failed with status code {statusCode} ({statusDescription}). The server returned an HTML response instead of JSON, which typically indicates a server-side issue.");
+                $"{baseMessage} The server returned an HTML response instead of JSON, " +
+                $"which typically indicates a server-side issue.");
         }
 
-        var errors = JsonConvert.DeserializeObject<ErrorResponse>(response.Content);
-        var messages = errors.Errors.Select(x => x.Message).ToArray();
+        if (string.IsNullOrWhiteSpace(response.Content) || response.Content.Trim().Equals("undefined"))
+            throw new PluginApplicationException($"{baseMessage} The server did not return any content");
 
-       throw new PluginApplicationException(string.Join("; ", messages));
+        var errors = JsonConvert.DeserializeObject<ErrorResponse>(response.Content);
+        var messages = errors?.Errors.Select(x => x.Message).ToArray();
+
+       throw new PluginApplicationException(string.Join("; ", messages ?? []));
     }
     
-    private bool IsHtmlResponse(RestResponse response)
+    private static bool IsHtmlResponse(RestResponse response)
     {
         var contentType = response.ContentType ?? string.Empty;
         return contentType.Contains("text/html", StringComparison.OrdinalIgnoreCase);

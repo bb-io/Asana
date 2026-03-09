@@ -16,12 +16,8 @@ using RestSharp;
 namespace Apps.Asana.Actions;
 
 [ActionList("Section")]
-public class SectionActions : AsanaActions
+public class SectionActions(InvocationContext invocationContext) : AsanaActions(invocationContext)
 {
-    public SectionActions(InvocationContext invocationContext) : base(invocationContext)
-    {
-    }
-
     [Action("Search sections", Description = "List all project sections")]
     public async Task<ListSectionsResponse> ListSections([ActionParameter] ProjectRequest input)
     {
