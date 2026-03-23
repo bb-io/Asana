@@ -4,7 +4,7 @@ using Blackbird.Applications.Sdk.Common.Webhooks;
 namespace Apps.Asana.Webhooks.Handlers.TagHandlers;
 
 public class TagDeletedHandler([WebhookParameter(true)] TaskRequest tr)
-    : BaseWebhookHandler(tr.TaskId, ResourceType, Action)
+    : BaseWebhookHandler(tr.TaskId, ResourceType, Action, workspaceId: tr.WorkspaceId)
 {
     const string ResourceType = "tag";
     const string Action = "deleted";
