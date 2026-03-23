@@ -331,8 +331,7 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
 
     [Webhook("On stories comments undeleted", typeof(StoriesCommentsUndeletedHandler),
         Description = "Triggered when comments on stories are undeleted")]
-    public async Task<WebhookResponse<StoriesResponse>>
-        StoriesCommentsUndeletedHandler(WebhookRequest webhookRequest) =>
+    public async Task<WebhookResponse<StoriesResponse>> StoriesCommentsUndeletedHandler(WebhookRequest webhookRequest) =>
         await HandleWebhookRequest(
             webhookRequest,
             "undeleted",
