@@ -1,11 +1,9 @@
 ﻿using Apps.Asana.Api;
 using Apps.Asana.Constants;
-using Apps.Asana.Dtos.Base;
 using Apps.Asana.Webhooks.Models.Payload;
 using Blackbird.Applications.Sdk.Common.Authentication;
 using Blackbird.Applications.Sdk.Common.Webhooks;
 using Blackbird.Applications.Sdk.Utils.Extensions.Http;
-using Newtonsoft.Json.Linq;
 using RestSharp;
 
 namespace Apps.Asana.Webhooks.Handlers;
@@ -84,7 +82,7 @@ public class BaseWebhookHandler : IWebhookEventHandler
         await CreateWebhook(creds, target, remaining);
     }
 
-    private Dictionary<string, object> BuildFilter()
+    protected virtual Dictionary<string, object> BuildFilter()
     {
         var filter = new Dictionary<string, object>
         {
@@ -98,7 +96,7 @@ public class BaseWebhookHandler : IWebhookEventHandler
         return filter;
     }
 
-    private static bool FilterEquals(Dictionary<string, object> a, Dictionary<string, object> b)
+    protected virtual bool FilterEquals(Dictionary<string, object> a, Dictionary<string, object> b)
     {
         string? Get(Dictionary<string, object> d, string k) => d.TryGetValue(k, out var v) ? v?.ToString() : null;
 
