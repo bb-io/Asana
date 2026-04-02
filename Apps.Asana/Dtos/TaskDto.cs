@@ -33,4 +33,7 @@ public class TaskDto : AsanaEntity
 
     [Display("Section ID")]
     public string? SectionId => Memberships?.FirstOrDefault()?.Section?.Gid;
+
+    [Display("Custom fields"), JsonProperty("custom_fields")]
+    public IEnumerable<AsanaEntity> CustomFields { get; set; } = [];
 }

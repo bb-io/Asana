@@ -12,9 +12,8 @@ public class TaskChangedHandler([WebhookParameter(true)] OnTasksChangedRequest t
     protected override Dictionary<string, object> BuildFilter()
     {
         var filter = base.BuildFilter();
-
-        if (tr.CustomFields != null && tr.CustomFields.Any())
-            filter["fields"] = tr.CustomFields.ToArray();
+        if (tr.CustomFieldIds != null && tr.CustomFieldIds.Any())
+            filter["fields"] = new[] { "custom_fields" };
 
         return filter;
     }
