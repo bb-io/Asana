@@ -1,11 +1,7 @@
-﻿using Apps.Asana.Dtos;
-using Apps.Asana.Webhooks.Handlers.ProjectHandlers;
-using Blackbird.Applications.Sdk.Common.Webhooks;
-using Newtonsoft.Json;
-using System.Net;
-using Apps.Asana.Actions;
+﻿using Apps.Asana.Actions;
 using Apps.Asana.Api;
 using Apps.Asana.Constants;
+using Apps.Asana.Dtos;
 using Apps.Asana.Dtos.Base;
 using Apps.Asana.Models.Goals;
 using Apps.Asana.Models.ProjectMemberships.Responses;
@@ -19,6 +15,7 @@ using Apps.Asana.Models.Teams.Responses;
 using Apps.Asana.Models.WorkspaceMemberships.Responses;
 using Apps.Asana.Models.Workspaces.Requests;
 using Apps.Asana.Webhooks.Handlers.GoalHandlers;
+using Apps.Asana.Webhooks.Handlers.ProjectHandlers;
 using Apps.Asana.Webhooks.Handlers.ProjectMemberships;
 using Apps.Asana.Webhooks.Handlers.SectionHandlers;
 using Apps.Asana.Webhooks.Handlers.StoryCommentHandlers;
@@ -38,7 +35,10 @@ using Apps.Asana.Webhooks.Models.Responses.Tasks;
 using Apps.Asana.Webhooks.Models.Responses.Workspaces;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Invocation;
+using Blackbird.Applications.Sdk.Common.Webhooks;
+using Newtonsoft.Json;
 using RestSharp;
+using System.Net;
 
 namespace Apps.Asana.Webhooks;
 
@@ -103,7 +103,7 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
             ReceivedWebhookRequestType = WebhookRequestType.Default
         };
     }
-
+    
     private async Task<List<TaskDto>> GetTasksFromPayload(Payload payload, SectionRequest? sectionFilter)
     {
         var tasks = await GetEntitiesFromPayload(
@@ -123,7 +123,7 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
 
         return filtered;
     }
-
+        
     #region Projects
 
     [Webhook("On projects added", typeof(ProjectsAddedHandler), Description = "Triggered when projects are added")]
@@ -177,12 +177,15 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
             tasks => new TasksResponse { Tasks = tasks });
 
     [Webhook("On tasks changed", typeof(TaskChangedHandler), Description = "Triggered when tasks are changed")]
-    public async Task<WebhookResponse<TasksResponse>> TasksChangedHandler(WebhookRequest webhookRequest) =>
-        await HandleWebhookRequest(
+    public async Task<WebhookResponse<TasksResponse>> TasksChangedHandler(WebhookRequest webhookRequest,
+        [WebhookParameter] TaskCustomFieldsRequest fieldsRequest)
+    {
+        return await HandleWebhookRequest(
             webhookRequest,
             "changed",
-            GetTasksFromPayload,
+            payload => GetTasksFromPayload(payload, fieldsRequest),
             tasks => new TasksResponse { Tasks = tasks });
+    }
 
     [Webhook("On tasks deleted", typeof(TaskDeletedHandler), Description = "Triggered when tasks are deleted")]
     public async Task<WebhookResponse<DeletedItemsResponse>> TasksDeletedHandler(WebhookRequest webhookRequest) =>
@@ -533,6 +536,32 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
     private async Task<List<TaskDto>> GetTasksFromPayload(Payload payload) =>
         await GetEntitiesFromPayload(payload, context => new TaskActions(context),
             item => new TaskRequest { TaskId = item.Resource.Gid }, (action, request) => action.GetTask(request));
+    
+    private async Task<List<TaskDto>> GetTasksFromPayload(Payload payload, TaskCustomFieldsRequest request)
+    {
+        if (request.CustomFieldIds != null && request.CustomFieldIds.Any())
+        {
+            payload.Events = payload.Events?.Where(e =>
+            {
+                if (e.Change?.Field != "custom_fields")
+                    return false;
+
+                var changeJson = JsonConvert.SerializeObject(e.Change);
+                return request.CustomFieldIds.Any(targetId => changeJson.Contains(targetId));
+            }).ToList();
+        }
+
+        if (payload.Events == null || payload.Events.Count == 0)
+            return [];
+
+        var tasks = await GetEntitiesFromPayload(
+            payload,
+            context => new TaskActions(context),
+            item => new TaskRequest { TaskId = item.Resource.Gid },
+            (action, req) => action.GetTask(req));
+
+        return tasks;
+    }
 
     private async Task<List<TagDto>> GetTagsFromPayload(Payload payload) =>
         await GetEntitiesFromPayload(payload, context => new TagActions(context),
