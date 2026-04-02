@@ -3,11 +3,7 @@ using Apps.Asana.DataSourceHandlers.CustomFields;
 using Apps.Asana.Models.CustomFields.Requests;
 using Apps.Asana.Models.Sections.Requests;
 using Apps.Asana.Models.Tasks.Requests;
-using Apps.Asana.Models.Workspaces.Requests;
 using Apps.Asana.Webhooks.Handlers;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using Tests.Asana.Base;
 
 namespace Tests.Asana;
@@ -144,6 +140,26 @@ public class DataHandlerTests : TestBase
         Assert.IsNotNull(data);
     }
 
+    [TestMethod]
+    public async Task TaskCustomFieldsDataHandler_IsSuccess()
+    {
+        // Arrange
+        var taskRequest = new TaskRequest
+        {
+            TaskId = "1213906646152790",
+            ProjectId = "1213906558317288",
+            WorkspaceId = "1213860509004971"
+        };
+        var handler = new TaskCustomFieldsDataHandler(InvocationContext, taskRequest);
+
+        // Act
+        var result = await handler.GetDataAsync(new(), default);
+
+        // Assert
+        foreach (var item in result)
+            Console.WriteLine($"{item.Value} - {item.DisplayName}");
+        Assert.IsNotNull(result);
+    }
 
     [TestMethod]
     public async Task Webhook_IsSuccess()
