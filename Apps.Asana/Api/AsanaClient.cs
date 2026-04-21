@@ -1,4 +1,5 @@
 ﻿using Apps.Asana.Constants;
+using Apps.Asana.Extensions;
 using Apps.Asana.Models;
 using Apps.Asana.Models.Error.Response;
 using Blackbird.Applications.Sdk.Common.Exceptions;
@@ -9,22 +10,21 @@ using RestSharp;
 
 namespace Apps.Asana.Api;
 
-public class AsanaClient : BlackBirdRestClient
+public class AsanaClient() : BlackBirdRestClient(new RestClientOptions
+{
+    BaseUrl = Urls.ApiUrl.ToUri()
+})
 {
     private const int Limit = 100;
 
-    public AsanaClient() : base(new RestClientOptions
-    {
-        BaseUrl = Urls.ApiUrl.ToUri()
-    })
-    {
-    }
-
     public override async Task<T> ExecuteWithErrorHandling<T>(RestRequest request)
     {
-        string content = (await ExecuteWithErrorHandling(request))!.Content!;
-        var val = JsonConvert.DeserializeObject<ResponseWrapper<T>>(content, JsonSettings) ??
-            throw new Exception($"Could not parse {content} to {typeof(T)}");
+        var response = await ExecuteWithErrorHandling(request);
+        response.EnsureValidJsonContent();
+        
+        string content = response.Content!;
+        var val = JsonConvert.DeserializeObject<ResponseWrapper<T>>(content, JsonSettings) ?? 
+                  throw new Exception($"Could not parse {content} to {typeof(T)}");
 
         return val.Data;
     }
@@ -56,6 +56,8 @@ public class AsanaClient : BlackBirdRestClient
                     .SetQueryParameter("offset", offset);
 
             var response = await ExecuteWithErrorHandling(request);
+            response.EnsureValidJsonContent();
+            
             var responseData =
                 JsonConvert.DeserializeObject<ResponseWrapper<IEnumerable<T>>>(response.Content, JsonConfig.Settings);
 
@@ -68,6 +70,8 @@ public class AsanaClient : BlackBirdRestClient
 
     protected override Exception ConfigureErrorException(RestResponse response)
     {
+        response.EnsureValidJsonContent();
+        
         int statusCode = (int)response.StatusCode;
         string statusDescription = response.StatusDescription ?? response.StatusCode.ToString();
         string baseMessage = $"Request failed with status code {statusCode} ({statusDescription}).";
@@ -79,10 +83,7 @@ public class AsanaClient : BlackBirdRestClient
                 $"which typically indicates a server-side issue.");
         }
 
-        if (string.IsNullOrWhiteSpace(response.Content) || response.Content.Trim().Equals("undefined"))
-            throw new PluginApplicationException($"{baseMessage} The server did not return any content");
-
-        var errors = JsonConvert.DeserializeObject<ErrorResponse>(response.Content);
+        var errors = JsonConvert.DeserializeObject<ErrorResponse>(response.Content!);
         var messages = errors?.Errors.Select(x => x.Message).ToArray();
 
        throw new PluginApplicationException(string.Join("; ", messages ?? []));
