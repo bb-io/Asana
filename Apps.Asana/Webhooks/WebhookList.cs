@@ -498,7 +498,7 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
     {
         var responseMessage = new HttpResponseMessage { StatusCode = HttpStatusCode.OK };
 
-        if (!string.IsNullOrEmpty(secretKey))
+        if (!string.IsNullOrWhiteSpace(secretKey))
         {
             responseMessage.Headers.Add(SecretHeaderKey, secretKey);
         }
@@ -506,7 +506,7 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
         return new WebhookResponse<T>
         {
             HttpResponseMessage = responseMessage,
-            Result = null,
+            Result = default!,
             ReceivedWebhookRequestType = WebhookRequestType.Preflight
         };
     }
