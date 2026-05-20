@@ -52,8 +52,7 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
         Func<List<TDto>, TResponse> createResponse)
         where TResponse : class, new()
     {
-        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey) ||
-            webhookRequest.Headers.TryGetValue("x-hook-secret", out secretKey))
+        if (TryGetHookSecret(webhookRequest, out var secretKey))
         {
             return CreatePreflightResponse<TResponse>(secretKey);
         }
@@ -79,8 +78,7 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
         WebhookRequest webhookRequest, string action)
         where TResponse : DeletedItemsResponse, new()
     {
-        if (webhookRequest.Headers.TryGetValue(SecretHeaderKey, out var secretKey) ||
-            webhookRequest.Headers.TryGetValue("x-hook-secret", out secretKey))
+        if (TryGetHookSecret(webhookRequest, out var secretKey))
         {
             return CreatePreflightResponse<DeletedItemsResponse>(secretKey);
         }
@@ -493,6 +491,23 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
     #endregion
 
     #region Utils
+
+    private bool TryGetHookSecret(WebhookRequest webhookRequest, out string? secretKey)
+    {
+        secretKey = null;
+
+        if (webhookRequest.Headers == null || webhookRequest.Headers.Count == 0)
+            return false;
+
+        var header = webhookRequest.Headers
+            .FirstOrDefault(x => string.Equals(x.Key, SecretHeaderKey, StringComparison.OrdinalIgnoreCase));
+
+        if (string.IsNullOrWhiteSpace(header.Key) || string.IsNullOrWhiteSpace(header.Value))
+            return false;
+
+        secretKey = header.Value;
+        return true;
+    }
 
     private WebhookResponse<T> CreatePreflightResponse<T>(string? secretKey = null) where T : class
     {
