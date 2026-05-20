@@ -497,8 +497,9 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
     private WebhookResponse<T> CreatePreflightResponse<T>(string? secretKey = null) where T : class
     {
         var responseMessage = new HttpResponseMessage { StatusCode = HttpStatusCode.OK };
+        responseMessage.Content = new StringContent(string.Empty);
 
-        if (!string.IsNullOrWhiteSpace(secretKey))
+        if (!string.IsNullOrEmpty(secretKey))
         {
             responseMessage.Headers.Add(SecretHeaderKey, secretKey);
         }
@@ -506,7 +507,7 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
         return new WebhookResponse<T>
         {
             HttpResponseMessage = responseMessage,
-            Result = default!,
+            Result = null,
             ReceivedWebhookRequestType = WebhookRequestType.Preflight
         };
     }
