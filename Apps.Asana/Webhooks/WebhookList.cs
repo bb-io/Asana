@@ -3,7 +3,6 @@ using Apps.Asana.Api;
 using Apps.Asana.Constants;
 using Apps.Asana.Dtos;
 using Apps.Asana.Dtos.Base;
-using Apps.Asana.Models.CustomFields.Requests;
 using Apps.Asana.Models.Goals;
 using Apps.Asana.Models.ProjectMemberships.Responses;
 using Apps.Asana.Models.Projects.Requests;
@@ -35,7 +34,6 @@ using Apps.Asana.Webhooks.Models.Responses.Tags;
 using Apps.Asana.Webhooks.Models.Responses.Tasks;
 using Apps.Asana.Webhooks.Models.Responses.Workspaces;
 using Blackbird.Applications.Sdk.Common;
-using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.Sdk.Common.Webhooks;
 using Newtonsoft.Json;
@@ -104,10 +102,7 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
         };
     }
     
-    private async Task<List<TaskDto>> GetTasksFromPayload(
-        Payload payload,
-        SectionRequest? sectionFilter,
-        MultipleCustomFieldFilterRequest? multipleCustomFieldFilter)
+    private async Task<List<TaskDto>> GetTasksFromPayload(Payload payload, SectionRequest? sectionFilter)
     {
         var tasks = await GetEntitiesFromPayload(
             payload,
@@ -115,41 +110,16 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
             item => new TaskRequest { TaskId = item.Resource.Gid },
             (action, request) => action.GetTask(request));
 
-        return tasks
-            .Where(MatchesSectionFilter)
-            .Where(MatchesMultipleCustomFieldFilter)
-            .ToList();
+        if (sectionFilter == null || string.IsNullOrWhiteSpace(sectionFilter.SectionId))
+            return tasks;
 
-        bool MatchesSectionFilter(TaskDto task)
-        {
-            if (string.IsNullOrWhiteSpace(sectionFilter?.SectionId))
-                return true;
+        var sectionId = sectionFilter.SectionId;
+        var filtered = tasks.Where(t =>
+            (t.SectionId != null && t.SectionId == sectionId) ||
+            (t.Memberships?.Any(m => m?.Section?.Gid == sectionId) == true)
+        ).ToList();
 
-            var sectionId = sectionFilter.SectionId;
-
-            return task.SectionId == sectionId ||
-                   task.Memberships?.Any(m => m?.Section?.Gid == sectionId) == true;
-        }
-
-        bool MatchesMultipleCustomFieldFilter(TaskDto task)
-        {
-            if (string.IsNullOrWhiteSpace(multipleCustomFieldFilter?.CustomFieldValue) && string.IsNullOrWhiteSpace(multipleCustomFieldFilter?.CustomFieldId))
-                throw new PluginMisconfigurationException("Custom field ID and value should be either both specified or both omitted.");
-
-            if (string.IsNullOrWhiteSpace(multipleCustomFieldFilter?.CustomFieldId))
-                return true;
-
-            var customFieldId = multipleCustomFieldFilter.CustomFieldId;
-
-            var field = task.CustomFields.FirstOrDefault(customField => customField.Gid == customFieldId) as CustomFieldDto
-                ?? throw new PluginApplicationException("Custom field with the provided ID was not found.");
-
-            if (!string.Equals(field.Type, "multi_enum", StringComparison.OrdinalIgnoreCase))
-                throw new PluginApplicationException("Selected custom field is not of type 'multi_enum'.");
-
-            return field.MultiEnumValues?.Any(value =>
-                string.Equals(value?.Name, multipleCustomFieldFilter.CustomFieldValue, StringComparison.OrdinalIgnoreCase)) == true;
-        }
+        return filtered;
     }
         
     #region Projects
@@ -197,15 +167,12 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
 
     [Webhook("On tasks added", typeof(TaskAddedHandler), Description = "Triggered when tasks are added")]
     public async Task<WebhookResponse<TasksResponse>> TasksAddedHandler(WebhookRequest webhookRequest,
-        [WebhookParameter] SectionRequest? sectionFilter,
-        [WebhookParameter] MultipleCustomFieldFilterRequest? multipleCustomFieldFilter)
-    {
-        return await HandleWebhookRequest(
+        [WebhookParameter] SectionRequest? sectionFilter) =>
+        await HandleWebhookRequest(
             webhookRequest,
             "added",
-            payload => GetTasksFromPayload(payload, sectionFilter, multipleCustomFieldFilter),
+            payload => GetTasksFromPayload(payload, sectionFilter),
             tasks => new TasksResponse { Tasks = tasks });
-    }
 
     [Webhook("On tasks changed", typeof(TaskChangedHandler), Description = "Triggered when tasks are changed")]
     public async Task<WebhookResponse<TasksResponse>> TasksChangedHandler(WebhookRequest webhookRequest,
