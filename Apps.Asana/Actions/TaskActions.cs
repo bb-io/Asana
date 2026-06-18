@@ -75,6 +75,14 @@ public class TaskActions(InvocationContext invocationContext) : AsanaActions(inv
                 input.TextCustomFieldContains);
         }
 
+        if (!string.IsNullOrWhiteSpace(input.TextCustomFieldId) &&
+            !string.IsNullOrWhiteSpace(input.TextCustomFieldEquals))
+        {
+            request.AddQueryParameter(
+                $"custom_fields.{input.TextCustomFieldId}.value",
+                input.TextCustomFieldEquals);
+        }
+
         if (!string.IsNullOrWhiteSpace(input.CustomFieldId) &&
             !string.IsNullOrWhiteSpace(input.EnumOptionId))
         {
