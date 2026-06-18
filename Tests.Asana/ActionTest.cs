@@ -49,6 +49,28 @@ namespace Tests.Asana
         }
 
         [TestMethod]
+        public async Task SearchTasks_WithTextField_IsSuccess()
+        {
+            var action = new Apps.Asana.Actions.TaskActions(InvocationContext);
+
+            var result = await action.ListAllTasks(new Apps.Asana.Models.Sections.Requests.SectionRequest
+            {
+                WorkspaceId = "11329706322538",
+                ProjectId = "1212284379468765",
+                SectionId = "1212284379468766",
+            },
+        new ListTasksRequest
+        {
+            TextCustomFieldId = "",
+            TextCustomFieldContains = "",
+        });
+
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(result);
+            Console.WriteLine(json);
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod]
         public async Task GetMultiEnumCustomField_IssSuccess()
         {
             var action = new Apps.Asana.Actions.CustomFieldsActions(InvocationContext);
