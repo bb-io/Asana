@@ -71,7 +71,7 @@ public class TaskActions(InvocationContext invocationContext) : AsanaActions(inv
             !string.IsNullOrWhiteSpace(input.TextCustomFieldContains))
         {
             request.AddQueryParameter(
-                $"custom_fields.{input.TextCustomFieldId}.text_value.contains",
+                $"custom_fields.{input.TextCustomFieldId}.contains",
                 input.TextCustomFieldContains);
         }
 
