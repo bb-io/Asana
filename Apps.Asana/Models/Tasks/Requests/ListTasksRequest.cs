@@ -30,7 +30,7 @@ public class ListTasksRequest
     [Display("Text custom field contains")]
     public string? TextCustomFieldContains { get; set; }
 
-    [Display("Text custom field contains")]
+    [Display("Text custom field equals")]
     public string? TextCustomFieldEquals { get; set; }
 
     [Display("Enum custom field ID")]
