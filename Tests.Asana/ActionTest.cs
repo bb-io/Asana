@@ -57,13 +57,13 @@ namespace Tests.Asana
             {
                 WorkspaceId = "11329706322538",
                 ProjectId = "1212284379468765",
-                SectionId = "1212284379468766",
+                //SectionId = "1212284379468766",
             },
-        new ListTasksRequest
-        {
-            TextCustomFieldId = "",
-            TextCustomFieldContains = "",
-        });
+            new ListTasksRequest
+            {
+                TextCustomFieldId = "",
+                TextCustomFieldEquals = "",
+            });
 
             var json = Newtonsoft.Json.JsonConvert.SerializeObject(result);
             Console.WriteLine(json);
