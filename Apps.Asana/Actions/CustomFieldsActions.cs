@@ -188,11 +188,78 @@ public class CustomFieldsActions(InvocationContext invocationContext) : AsanaAct
         return UpdateCustomField(input.TaskId, input.CustomFieldId, input.EnumOptionId);
     }
 
+    [Action("Set multi-enum custom field", Description = "Set values of a custom field with multi-enum type")]
+    public async Task SetMultiEnumCustomField([ActionParameter] SetMultiEnumCustomFieldRequest input)
+    {
+        var choiceIds = (input.ChoiceIds ?? Enumerable.Empty<string>())
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+
+        var choiceNames = (input.ChoiceNames ?? Enumerable.Empty<string>())
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Select(x => x.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (!choiceIds.Any() && !choiceNames.Any())
+            throw new PluginMisconfigurationException("Provide at least one of 'Choice IDs' or 'Choice names'.");
+
+        if (choiceNames.Any())
+        {
+            var customField = await GetCustomField(input.CustomFieldId);
+
+            if (!string.Equals(customField.Type, "multi_enum", StringComparison.OrdinalIgnoreCase))
+                throw new PluginApplicationException("Selected custom field is not of type 'multi_enum'.");
+
+            var options = (customField.EnumOptions ?? Enumerable.Empty<CustomFieldEnumValueDto>())
+                .Where(x => !string.IsNullOrWhiteSpace(x.Name) && !string.IsNullOrWhiteSpace(x.Gid))
+                .ToList();
+
+            var ambiguousNames = options
+                .GroupBy(x => x.Name.Trim(), StringComparer.OrdinalIgnoreCase)
+                .Where(g => g.Select(x => x.Gid).Distinct(StringComparer.Ordinal).Skip(1).Any())
+                .Select(g => g.Key)
+                .OrderBy(x => x)
+                .ToArray();
+
+            if (ambiguousNames.Any())
+                throw new PluginApplicationException(
+                    $"Unable to match choice names uniquely for custom field '{customField.Name}'. Duplicate option names found: {string.Join(", ", ambiguousNames)}.");
+
+            var optionMap = options.ToDictionary(x => x.Name.Trim(), x => x.Gid, StringComparer.OrdinalIgnoreCase);
+
+            var missingNames = choiceNames
+                .Where(x => !optionMap.ContainsKey(x))
+                .OrderBy(x => x)
+                .ToArray();
+
+            if (missingNames.Any())
+                throw new PluginApplicationException(
+                    $"The following choice names were not found for custom field '{customField.Name}': {string.Join(", ", missingNames)}.");
+
+            choiceIds.AddRange(choiceNames.Select(x => optionMap[x]));
+        }
+
+        var values = choiceIds
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        await UpdateCustomField(input.TaskId, input.CustomFieldId, values);
+    }
+
     private Task<TaskDtoWithCustomFields> GetTask(string taskId)
     {
         var request = new AsanaRequest($"{ApiEndpoints.Tasks}/{taskId}?opt_fields=custom_fields", Method.Get, Creds);
 
         return Client.ExecuteWithErrorHandling<TaskDtoWithCustomFields>(request);
+    }
+
+    private Task<CustomFieldDto> GetCustomField(string customFieldId)
+    {
+        var request = new AsanaRequest($"{ApiEndpoints.CustomFields}/{customFieldId}", Method.Get, Creds);
+
+        return Client.ExecuteWithErrorHandling<CustomFieldDto>(request);
     }
 
     private Task UpdateCustomField(string taskId, string customFieldId, object customFieldValue)

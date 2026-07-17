@@ -70,6 +70,7 @@ Blackbird side authentication steps:
 - **Get text/date/number/enum/people custom field** returns the value of a custom field with text/date/enum type for a specific task.
 - **Update text/date/enum/number/people custom field** sets the value of a custom field with text/date/enum type for a specific task.
 - **Get multi-enum custom field** gets values of a custom field with multi-enum type (returns option names).
+- **Set multi-enum custom field** sets values of a custom field with multi-enum type. You can pass either choice IDs, choice names, or both.
 
 ### Projects
 
