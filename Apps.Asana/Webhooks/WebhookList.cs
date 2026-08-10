@@ -39,6 +39,7 @@ using Blackbird.Applications.Sdk.Common.Webhooks;
 using Newtonsoft.Json;
 using RestSharp;
 using System.Net;
+using Apps.Asana.Api.Exceptions;
 
 namespace Apps.Asana.Webhooks;
 
@@ -167,12 +168,21 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
 
     [Webhook("On tasks added", typeof(TaskAddedHandler), Description = "Triggered when tasks are added")]
     public async Task<WebhookResponse<TasksResponse>> TasksAddedHandler(WebhookRequest webhookRequest,
-        [WebhookParameter] SectionRequest? sectionFilter) =>
-        await HandleWebhookRequest(
-            webhookRequest,
-            "added",
-            payload => GetTasksFromPayload(payload, sectionFilter),
-            tasks => new TasksResponse { Tasks = tasks });
+        [WebhookParameter] SectionRequest? sectionFilter)
+    {
+        try
+        {
+            return await HandleWebhookRequest(
+                webhookRequest,
+                "added",
+                payload => GetTasksFromPayload(payload, sectionFilter),
+                tasks => new TasksResponse { Tasks = tasks });
+        }
+        catch (AsanaResourceNotFoundException)
+        {
+            return CreatePreflightResponse<TasksResponse>();
+        }
+    }
 
     [Webhook("On tasks changed", typeof(TaskChangedHandler), Description = "Triggered when tasks are changed")]
     public async Task<WebhookResponse<TasksResponse>> TasksChangedHandler(WebhookRequest webhookRequest,

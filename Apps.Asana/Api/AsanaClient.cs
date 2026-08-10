@@ -7,6 +7,8 @@ using Blackbird.Applications.Sdk.Utils.Extensions.String;
 using Blackbird.Applications.Sdk.Utils.RestSharp;
 using Newtonsoft.Json;
 using RestSharp;
+using System.Net;
+using Apps.Asana.Api.Exceptions;
 
 namespace Apps.Asana.Api;
 
@@ -70,11 +72,16 @@ public class AsanaClient() : BlackBirdRestClient(new RestClientOptions
 
     protected override Exception ConfigureErrorException(RestResponse response)
     {
-        response.EnsureValidJsonContent();
-        
         int statusCode = (int)response.StatusCode;
         string statusDescription = response.StatusDescription ?? response.StatusCode.ToString();
         string baseMessage = $"Request failed with status code {statusCode} ({statusDescription}).";
+
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            throw new AsanaResourceNotFoundException(TryGetErrorMessages(response) ?? baseMessage);
+        }
+
+        response.EnsureValidJsonContent();
 
         if (IsHtmlResponse(response))
         {
@@ -88,7 +95,25 @@ public class AsanaClient() : BlackBirdRestClient(new RestClientOptions
 
        throw new PluginApplicationException(string.Join("; ", messages ?? []));
     }
-    
+
+    private static string? TryGetErrorMessages(RestResponse response)
+    {
+        if (string.IsNullOrWhiteSpace(response.Content) || IsHtmlResponse(response))
+            return null;
+
+        try
+        {
+            var errors = JsonConvert.DeserializeObject<ErrorResponse>(response.Content);
+            var messages = errors?.Errors?.Select(x => x.Message).Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+
+            return messages is { Length: > 0 } ? string.Join("; ", messages) : null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
     private static bool IsHtmlResponse(RestResponse response)
     {
         var contentType = response.ContentType ?? string.Empty;
