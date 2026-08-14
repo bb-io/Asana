@@ -2,8 +2,10 @@
 using Apps.Asana.Constants;
 using Apps.Asana.Models;
 using Apps.Asana.Models.Entities;
+using Apps.Asana.Models.Error.Response;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Authentication;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Authentication.OAuth2;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.Sdk.Utils.Extensions.System;
@@ -78,28 +80,103 @@ public class OAuth2TokenService(InvocationContext invocationContext)
     private async Task<Dictionary<string, string>> GetToken(Dictionary<string, string> parameters,
         CancellationToken token)
     {
-        var responseContent = await ExecuteTokenRequest(parameters, token);
-        var resultDictionary = JsonConvert.DeserializeObject<AuthData>(responseContent, JsonConfig.Settings)
-            ?.AsDictionary();
+        var tokenResponse = await ExecuteTokenRequest(parameters, token);
+        var authData = DeserializeTokenResponse(tokenResponse);
 
-        if (resultDictionary is null)
-            throw new InvalidOperationException(
-                $"Invalid response content: {responseContent}");
+        var resultDictionary = authData.AsDictionary();
+        if (!resultDictionary.TryGetValue(CredsNames.ExpiresIn, out var expiresInValue) ||
+            !int.TryParse(expiresInValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var expiresIn))
+        {
+            throw new PluginApplicationException(
+                "The authorization server did not return a valid token expiration time. " +
+                "Please try reconnecting; if the problem persists, contact Blackbird support.");
+        }
 
-        var expiresIn = int.Parse(resultDictionary[CredsNames.ExpiresIn]);
         var expiresAt = DateTime.UtcNow.AddSeconds(expiresIn);
-        resultDictionary.Add(CredsNames.ExpiresAt, expiresAt.ToString(CultureInfo.InvariantCulture));
+        resultDictionary[CredsNames.ExpiresAt] = expiresAt.ToString(CultureInfo.InvariantCulture);
 
         return resultDictionary;
     }
 
-    private async Task<string> ExecuteTokenRequest(Dictionary<string, string> parameters,
+    public static AuthData DeserializeTokenResponse(TokenHttpEntity tokenEntity)
+    {
+        EnsureJsonContent(tokenEntity);
+
+        if (!tokenEntity.IsSuccessStatusCode)
+            throw BuildFailedRequestException(tokenEntity);
+
+        var authData = Deserialize<AuthData>(tokenEntity);
+        if (authData is null || string.IsNullOrWhiteSpace(authData.AccessToken))
+            throw new PluginApplicationException(
+                $"The authorization server did not return an access token (status code " +
+                $"{tokenEntity.StatusDescription}): {Truncate(tokenEntity.Content!)}");
+
+        return authData;
+    }
+
+    private static void EnsureJsonContent(TokenHttpEntity tokenEntity)
+    {
+        if (string.IsNullOrWhiteSpace(tokenEntity.Content))
+            throw new PluginApplicationException(
+                $"The authorization server returned status code {tokenEntity.StatusDescription} " +
+                "without any content. Please try again later.");
+
+        if (tokenEntity.IsHtmlContent)
+            throw new PluginApplicationException(
+                "The authorization server returned an HTML response instead of JSON " +
+                $"(status code {tokenEntity.StatusDescription}). This usually indicates a temporary Asana " +
+                "outage or an invalid token endpoint. Please try again later.");
+    }
+
+    private static PluginApplicationException BuildFailedRequestException(TokenHttpEntity tokenEntity)
+    {
+        var error = Deserialize<OAuthErrorResponse>(tokenEntity);
+        if (error is null || string.IsNullOrWhiteSpace(error.Error))
+            return new PluginApplicationException(
+                $"The token request failed with status code {tokenEntity.StatusDescription}: " +
+                $"{Truncate(tokenEntity.Content!)}");
+
+        var details = string.IsNullOrWhiteSpace(error.ErrorDescription)
+            ? error.Error
+            : $"{error.Error}: {error.ErrorDescription}";
+
+        return new PluginApplicationException(
+            $"The authorization server rejected the token request ({details}). " +
+            "Please reconnect your Asana connection.");
+    }
+
+    private static T? Deserialize<T>(TokenHttpEntity tokenEntity) where T : class
+    {
+        try
+        {
+            return JsonConvert.DeserializeObject<T>(tokenEntity.Content!, JsonConfig.Settings);
+        }
+        catch (JsonException)
+        {
+            throw new PluginApplicationException(
+                $"The authorization server returned an unexpected response (status code " +
+                $"{tokenEntity.StatusDescription}): {Truncate(tokenEntity.Content!)}");
+        }
+    }
+
+    private static string Truncate(string content)
+    {
+        const int maxLength = 500;
+        var normalized = content.Trim();
+
+        return normalized.Length <= maxLength ? normalized : normalized[..maxLength] + "...";
+    }
+
+    private async Task<TokenHttpEntity> ExecuteTokenRequest(Dictionary<string, string> parameters,
         CancellationToken cancellationToken)
     {
         using var client = new HttpClient();
         using var content = new FormUrlEncodedContent(parameters);
         using var response = await client.PostAsync(Urls.TokenUrl, content, cancellationToken);
 
-        return await response.Content.ReadAsStringAsync(cancellationToken);
+        var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+
+        return new TokenHttpEntity(response.StatusCode, response.Content.Headers.ContentType?.MediaType,
+            responseContent);
     }
 }
