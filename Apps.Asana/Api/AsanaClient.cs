@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using RestSharp;
 using System.Net;
 using Apps.Asana.Api.Exceptions;
+using Polly;
 
 namespace Apps.Asana.Api;
 
@@ -18,6 +19,8 @@ public class AsanaClient() : BlackBirdRestClient(new RestClientOptions
 })
 {
     private const int Limit = 100;
+    private static readonly ResiliencePipeline<RestResponse> RateLimitPipeline =
+        AsanaPollyPolicies.CreateRateLimitPipeline();
 
     public override async Task<T> ExecuteWithErrorHandling<T>(RestRequest request)
     {
@@ -33,7 +36,19 @@ public class AsanaClient() : BlackBirdRestClient(new RestClientOptions
 
     public override async Task<RestResponse> ExecuteWithErrorHandling(RestRequest request)
     {
-        RestResponse restResponse = await ExecuteAsync(request);
+        RestResponse restResponse;
+        try
+        {
+            restResponse = await RateLimitPipeline.ExecuteAsync(
+                cancellationToken => new ValueTask<RestResponse>(ExecuteAsync(request, cancellationToken)));
+        }
+        catch (HttpRequestException exception) when (exception.StatusCode == HttpStatusCode.TooManyRequests)
+        {
+            throw new PluginApplicationException(
+                "Asana rate limit was exceeded after multiple retry attempts. Please try again later.",
+                exception);
+        }
+
         if (!restResponse.IsSuccessStatusCode)
         {
             throw ConfigureErrorException(restResponse);
