@@ -66,7 +66,10 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
 
         payload.Events = payload.Events.Where(x => x.Action == action).ToList();
         var entities = await getEntitiesFromPayload(payload);
-
+        
+        if (entities.Count == 0)
+            return CreatePreflightResponse<TResponse>();
+        
         return new WebhookResponse<TResponse>
         {
             HttpResponseMessage = new HttpResponseMessage { StatusCode = HttpStatusCode.OK },
@@ -94,6 +97,9 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
             .Where(x => x.Action == action && x.Resource?.Gid != null)
             .Select(x => x.Resource.Gid)
             .ToList();
+        
+        if (deletedIds.Count == 0)
+            return CreatePreflightResponse<DeletedItemsResponse>();
 
         return new WebhookResponse<DeletedItemsResponse>
         {

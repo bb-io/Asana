@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <Product>Asana</Product>
         <Description>Work management</Description>
-        <Version>1.2.35</Version>
+        <Version>1.2.36</Version>
         <AssemblyName>Apps.Asana</AssemblyName>
     </PropertyGroup>
     <ItemGroup>
@@ -23,5 +23,6 @@
     </ItemGroup>
     <ItemGroup>
         <EmbeddedResource CopyToOutputDirectory="Always" Include="image\icon.png" />
+        <EmbeddedResource CopyToOutputDirectory="Always" Include="..\README.md"/>
     </ItemGroup>
 </Project>
