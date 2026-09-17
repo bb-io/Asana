@@ -82,7 +82,7 @@ public class BaseWebhookHandler : IWebhookEventHandler
         await CreateWebhook(creds, target, remaining);
     }
 
-    protected virtual Dictionary<string, object> BuildFilter()
+    protected Dictionary<string, object> BuildFilter()
     {
         var filter = new Dictionary<string, object>
         {
