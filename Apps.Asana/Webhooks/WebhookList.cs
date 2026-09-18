@@ -36,7 +36,6 @@ using System.Net;
 using Apps.Asana.Api.Exceptions;
 using Apps.Asana.Extensions;
 using Apps.Asana.Webhooks.Models.Responses;
-using Blackbird.Applications.Sdk.Common.Exceptions;
 
 namespace Apps.Asana.Webhooks;
 
@@ -49,12 +48,6 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
         
         if (!request.TryGetHookSecret(secretHeaderKey, out var secretKey))
             return Task.FromResult<HttpResponseMessage?>(null);
-
-        if (string.IsNullOrWhiteSpace(secretKey))
-        {
-            throw new PluginApplicationException(
-                $"Asana sent an empty {secretHeaderKey} header. The webhook handshake could not be completed.");
-        }
         
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -65,7 +58,7 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
         return Task.FromResult<HttpResponseMessage?>(response);
     }
     
-    private static async Task<WebhookResponse<List<TDto>>> HandleWebhookRequest<TDto>(
+    private async Task<WebhookResponse<List<TDto>>> HandleWebhookRequest<TDto>(
         WebhookRequest webhookRequest, 
         string action, 
         Func<Payload, Task<List<TDto>>> getEntitiesFromPayload)
@@ -88,7 +81,7 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
         };
     }
 
-    private static WebhookResponse<List<DeletedItemResponse>> HandleDeletionWebhookRequest(
+    private WebhookResponse<List<DeletedItemResponse>> HandleDeletionWebhookRequest(
         WebhookRequest webhookRequest, 
         string action)
     {
