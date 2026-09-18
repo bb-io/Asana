@@ -191,8 +191,10 @@ public class BaseWebhookHandler : IWebhookEventHandler, IAsyncValidatableWebhook
         if (string.IsNullOrWhiteSpace(workspaceId))
             throw new Exception("workspaceId is required for listing webhooks (not provided to handler constructor).");
 
-        var endpoint = $"{ApiEndpoints.Webhooks}?workspace={workspaceId}&resource={_resourceId}";
-        var request = new AsanaRequest(endpoint, Method.Get, creds).AddQueryParameter("opt_fields", "filters,active");
+        var request = new AsanaRequest(ApiEndpoints.Webhooks, Method.Get, creds)
+            .AddQueryParameter("workspace", workspaceId)
+            .AddQueryParameter("resource", _resourceId)
+            .AddQueryParameter("opt_fields", "filters,active,target");
 
         return await _client.Paginate<WebhookSubscription>(request);
     }
