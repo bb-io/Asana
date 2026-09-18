@@ -8,7 +8,7 @@ using RestSharp;
 
 namespace Apps.Asana.Webhooks.Handlers;
 
-public class BaseWebhookHandler : IWebhookEventHandler
+public class BaseWebhookHandler : IWebhookEventHandler, IAsyncValidatableWebhookEventHandler
 {
     private readonly string _resourceId;
     private readonly string _resourceType;
@@ -32,54 +32,59 @@ public class BaseWebhookHandler : IWebhookEventHandler
         IEnumerable<AuthenticationCredentialsProvider> creds,
         Dictionary<string, string> values)
     {
-        var target = values["payloadUrl"];
+        var credsList = creds.ToList();
+        
+        string target = values["payloadUrl"];
+        var existingWebhooks = await FindByTarget(credsList, values, target);
 
-        var desiredFilter = BuildFilter();
-
-        var existing = (await GetAllWebhooks(creds, values))
-    .FirstOrDefault(w => string.Equals(w.Target, target, StringComparison.OrdinalIgnoreCase));
-
-        if (existing is null)
-        {
-            await CreateWebhook(creds, target, new[] { desiredFilter });
-            return;
-        }
-
-        if (existing.Filters?.Any(f => FilterEquals(f, desiredFilter)) == true)
+        // Asana rejects a second webhook on the same resource + target
+        if (existingWebhooks.Count > 0)
             return;
 
-        var merged = (existing.Filters ?? new List<Dictionary<string, object>>())
-            .Concat(new[] { desiredFilter })
-            .ToArray();
-
-        await DeleteWebhook(creds, existing.Gid);
-        await CreateWebhook(creds, target, merged);
+        await CreateWebhook(credsList, target);
     }
 
-    public async Task UnsubscribeAsync(IEnumerable<AuthenticationCredentialsProvider> creds,
+    public async Task UnsubscribeAsync(
+        IEnumerable<AuthenticationCredentialsProvider> creds,
         Dictionary<string, string> values)
     {
-        var target = values["payloadUrl"];
-        var filterToRemove = BuildFilter();
+        var credsList = creds.ToList();
+        
+        string target = values["payloadUrl"];
+        var existingWebhooks = await FindByTarget(credsList, values, target);
 
-        var existing = (await GetAllWebhooks(creds, values))
-                .FirstOrDefault(w => string.Equals(w.Target, target, StringComparison.OrdinalIgnoreCase));
+        foreach (var webhook in existingWebhooks)
+            await DeleteWebhook(credsList, webhook.Gid);
+    }
 
-        if (existing is null)
-            return;
+    public async Task<WebhookSubscriptionValidationResponse> ValidateSubscription(
+        IEnumerable<AuthenticationCredentialsProvider> creds, 
+        Dictionary<string, string> values)
+    {
+        string target = values["payloadUrl"];
+        
+        var existingWebhooks = await FindByTarget(creds, values, target);
+        bool activeWebhookExists = existingWebhooks.Any(x => x.Active);
 
-        var remaining = (existing.Filters ?? new List<Dictionary<string, object>>())
-             .Where(f => !FilterEquals(f, filterToRemove))
-             .ToArray();
+        if (activeWebhookExists)
+            return new() { IsValid = true };
 
-        if (!remaining.Any())
+        return new()
         {
-            await DeleteWebhook(creds, existing.Gid);
-            return;
-        }
-
-        await DeleteWebhook(creds, existing.Gid);
-        await CreateWebhook(creds, target, remaining);
+            IsValid = false,
+            Message = "No active subscription was found for this bird in Asana. Please republish it"
+        };
+    }
+    
+    private async Task<List<WebhookSubscription>> FindByTarget(
+        IEnumerable<AuthenticationCredentialsProvider> creds,
+        Dictionary<string, string> values,
+        string target)
+    {
+        var webhooks = await GetAllWebhooks(creds, values);
+        return webhooks
+            .Where(w => string.Equals(w.Target.TrimEnd('/'), target.TrimEnd('/'), StringComparison.OrdinalIgnoreCase))
+            .ToList();
     }
 
     protected Dictionary<string, object> BuildFilter()
@@ -96,23 +101,13 @@ public class BaseWebhookHandler : IWebhookEventHandler
         return filter;
     }
 
-    protected virtual bool FilterEquals(Dictionary<string, object> a, Dictionary<string, object> b)
-    {
-        string? Get(Dictionary<string, object> d, string k) => d.TryGetValue(k, out var v) ? v?.ToString() : null;
-
-        return string.Equals(Get(a, "action"), Get(b, "action"), StringComparison.OrdinalIgnoreCase)
-            && string.Equals(Get(a, "resource_type"), Get(b, "resource_type"), StringComparison.OrdinalIgnoreCase)
-            && string.Equals(Get(a, "resource_subtype"), Get(b, "resource_subtype"), StringComparison.OrdinalIgnoreCase);
-    }
-
-    private async Task CreateWebhook(IEnumerable<AuthenticationCredentialsProvider> creds, string target,
-        IEnumerable<Dictionary<string, object>> filters)
+    private async Task CreateWebhook(IEnumerable<AuthenticationCredentialsProvider> creds, string target)
     {
         var data = new Dictionary<string, object>
         {
             ["resource"] = _resourceId,
             ["target"] = target,
-            ["filters"] = filters.ToArray()
+            ["filters"] = new[] { BuildFilter() }
         };
 
         var request = new AsanaRequest(ApiEndpoints.Webhooks, Method.Post, creds)
