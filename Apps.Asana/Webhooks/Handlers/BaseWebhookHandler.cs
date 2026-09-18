@@ -8,7 +8,7 @@ using RestSharp;
 
 namespace Apps.Asana.Webhooks.Handlers;
 
-public class BaseWebhookHandler : IWebhookEventHandler
+public class BaseWebhookHandler : IWebhookEventHandler, IAsyncValidatableWebhookEventHandler
 {
     private readonly string _resourceId;
     private readonly string _resourceType;
@@ -32,16 +32,23 @@ public class BaseWebhookHandler : IWebhookEventHandler
         IEnumerable<AuthenticationCredentialsProvider> creds,
         Dictionary<string, string> values)
     {
-        var target = values["payloadUrl"];
-
+        var credsList = creds.ToList();
+        
+        string target = values["payloadUrl"];
         var desiredFilter = BuildFilter();
 
-        var existing = (await GetAllWebhooks(creds, values))
-    .FirstOrDefault(w => string.Equals(w.Target, target, StringComparison.OrdinalIgnoreCase));
-
+        var allWebhooks = await GetAllWebhooks(credsList, values);
+        var existing = allWebhooks.FirstOrDefault(w => string.Equals(w.Target, target, StringComparison.OrdinalIgnoreCase));
+        
+        if (existing?.Active == false)
+        {
+            await DeleteWebhook(credsList, existing.Gid);
+            existing = null;
+        }
+        
         if (existing is null)
         {
-            await CreateWebhook(creds, target, new[] { desiredFilter });
+            await CreateWebhook(credsList, target, new[] { desiredFilter });
             return;
         }
 
@@ -52,8 +59,8 @@ public class BaseWebhookHandler : IWebhookEventHandler
             .Concat(new[] { desiredFilter })
             .ToArray();
 
-        await DeleteWebhook(creds, existing.Gid);
-        await CreateWebhook(creds, target, merged);
+        await DeleteWebhook(credsList, existing.Gid);
+        await CreateWebhook(credsList, target, merged);
     }
 
     public async Task UnsubscribeAsync(IEnumerable<AuthenticationCredentialsProvider> creds,
@@ -82,6 +89,45 @@ public class BaseWebhookHandler : IWebhookEventHandler
         await CreateWebhook(creds, target, remaining);
     }
 
+    public async Task<WebhookSubscriptionValidationResponse> ValidateSubscription(
+        IEnumerable<AuthenticationCredentialsProvider> creds, 
+        Dictionary<string, string> values)
+    {
+        string target = values["payloadUrl"];
+
+        IEnumerable<WebhookSubscription> allWebhooks;
+        try
+        {
+            allWebhooks = await GetAllWebhooks(creds, values);
+        }
+        catch
+        {
+            // Couldn't list all webhooks != something's wrong with the subscription (like a temporary 500 error)
+            return new() { IsValid = true };
+        }
+        
+        var existing = allWebhooks.FirstOrDefault(w => string.Equals(w.Target, target, StringComparison.OrdinalIgnoreCase));
+        if (existing is null)
+        {
+            return new()
+            {
+                IsValid = false,
+                Message = "The Asana webhook for this event no longer exists. Reactivate the bird to recreate it"
+            };
+        }
+
+        if (!existing.Active)
+        {
+            return new()
+            {
+                IsValid = false,
+                Message = "The Asana webhook for this event is inactive. Reactivate the bird to create a new active one"
+            };
+        }
+
+        return new() { IsValid = true };
+    }
+
     protected Dictionary<string, object> BuildFilter()
     {
         var filter = new Dictionary<string, object>
@@ -96,7 +142,7 @@ public class BaseWebhookHandler : IWebhookEventHandler
         return filter;
     }
 
-    protected virtual bool FilterEquals(Dictionary<string, object> a, Dictionary<string, object> b)
+    protected static bool FilterEquals(Dictionary<string, object> a, Dictionary<string, object> b)
     {
         string? Get(Dictionary<string, object> d, string k) => d.TryGetValue(k, out var v) ? v?.ToString() : null;
 
@@ -128,8 +174,8 @@ public class BaseWebhookHandler : IWebhookEventHandler
     }
 
     public async Task<IEnumerable<WebhookSubscription>> GetAllWebhooks(
-     IEnumerable<AuthenticationCredentialsProvider> creds,
-     Dictionary<string, string> values)
+        IEnumerable<AuthenticationCredentialsProvider> creds,
+        Dictionary<string, string> values)
     {
         var workspaceId = _workspaceId;
 
@@ -146,8 +192,8 @@ public class BaseWebhookHandler : IWebhookEventHandler
             throw new Exception("workspaceId is required for listing webhooks (not provided to handler constructor).");
 
         var endpoint = $"{ApiEndpoints.Webhooks}?workspace={workspaceId}&resource={_resourceId}";
-        var request = new AsanaRequest(endpoint, Method.Get, creds);
+        var request = new AsanaRequest(endpoint, Method.Get, creds).AddQueryParameter("opt_fields", "filters,active");
 
-        return await _client.ExecuteWithErrorHandling<List<WebhookSubscription>>(request);
+        return await _client.Paginate<WebhookSubscription>(request);
     }
 }

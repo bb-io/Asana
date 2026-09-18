@@ -1,10 +1,16 @@
 ﻿using Apps.Asana.Dtos.Base;
+using Newtonsoft.Json;
 
-namespace Apps.Asana.Webhooks.Models.Payload
+namespace Apps.Asana.Webhooks.Models.Payload;
+
+public class WebhookSubscription : AsanaEntity
 {
-    public class WebhookSubscription : AsanaEntity
-    {
-        public string Target { get; set; } = default!;
-        public List<Dictionary<string, object>>? Filters { get; set; }
-    }
+    [JsonProperty("target")]
+    public string Target { get; set; } = string.Empty;
+    
+    [JsonProperty("active")]
+    public bool Active { get; set; }
+    
+    [JsonProperty("filters")]
+    public List<Dictionary<string, object>>? Filters { get; set; }
 }
