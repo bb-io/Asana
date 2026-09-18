@@ -45,6 +45,7 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
 {
     public Task<HttpResponseMessage?> HandleHandshakeAsync(WebhookRequest request)
     {
+        WebhookLogger.Log($"HandleHandshakeAsync fired. Request body: {JsonConvert.SerializeObject(request)}");
         const string secretHeaderKey = "X-Hook-Secret";
         
         if (!request.TryGetHookSecret(secretHeaderKey, out var secretKey))
@@ -61,6 +62,7 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
             Content = new StringContent(string.Empty)
         };
         response.Headers.Add(secretHeaderKey, secretKey);
+        WebhookLogger.Log($"HandleHandshakeAsync response body: {JsonConvert.SerializeObject(response)}");
         
         return Task.FromResult<HttpResponseMessage?>(response);
     }
