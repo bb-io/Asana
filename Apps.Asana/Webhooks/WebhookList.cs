@@ -41,7 +41,7 @@ namespace Apps.Asana.Webhooks;
 [WebhookList("Webhooks")]
 public class WebhookList(InvocationContext invocationContext) : BaseInvocable(invocationContext)
 {
-    const string SecretHeaderKey = "X-Hook-Secret";
+    private const string SecretHeaderKey = "X-Hook-Secret";
 
     private async Task<WebhookResponse<List<TDto>>> HandleWebhookRequest<TDto>(
         WebhookRequest webhookRequest, 
