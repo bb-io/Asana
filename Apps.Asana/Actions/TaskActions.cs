@@ -95,9 +95,13 @@ public class TaskActions(InvocationContext invocationContext) : AsanaActions(inv
             "memberships.project.gid,memberships.section.gid," +
             "custom_fields,custom_fields.enum_value.gid,custom_fields.text_value");
 
-        var tasks = await Client.Paginate<AsanaEntity>(request);
+        var tasks = await Client.Paginate<TaskSearchResultDto>(request);
+        var tasksInScope = TaskSearchFilter.ByMembership(tasks, projectId, sectionId);
 
-        return new ListTasksResponse { Tasks = tasks };
+        return new ListTasksResponse
+        {
+            Tasks = tasksInScope.Select(task => new AsanaEntity { Gid = task.Gid, Name = task.Name })
+        };
     }
 
     [Action("Get task", Description = "Get task by ID")]
