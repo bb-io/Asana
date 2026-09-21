@@ -10,6 +10,7 @@ using Apps.Asana.Models.Sections.Requests;
 using Apps.Asana.Models.Stories.Response;
 using Apps.Asana.Models.Tags.Requests;
 using Apps.Asana.Models.Tasks.Requests;
+using Apps.Asana.Models.Tasks.Responses;
 using Apps.Asana.Models.TeamMemberships;
 using Apps.Asana.Models.Teams.Responses;
 using Apps.Asana.Models.WorkspaceMemberships.Responses;
@@ -157,11 +158,14 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
 
     [MultipleEvents, Webhook("On tasks added", typeof(TaskAddedHandler), Description = "Triggered when tasks are added")]
     public async Task<WebhookResponse<List<TaskDto>>> TasksAddedHandler(WebhookRequest webhookRequest,
-        [WebhookParameter] SectionRequest? sectionFilter)
+        [WebhookParameter] SectionRequest? sectionFilter,
+        [WebhookParameter] SubtaskFilterRequest? subtaskFilter)
     {
         try
         {
-            return await HandleWebhookRequest(webhookRequest, "added", payload => GetTasksFromPayload(payload, sectionFilter));
+            return await HandleWebhookRequest(webhookRequest, "added",
+                async payload => SubtaskFilter.Apply(await GetTasksFromPayload(payload, sectionFilter),
+                    subtaskFilter?.ExcludeSubtasks));
         }
         catch (AsanaResourceNotFoundException)
         {
@@ -171,9 +175,12 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
 
     [MultipleEvents, Webhook("On tasks changed", typeof(TaskChangedHandler), Description = "Triggered when tasks are changed")]
     public Task<WebhookResponse<List<TaskDto>>> TasksChangedHandler(WebhookRequest webhookRequest,
-        [WebhookParameter] TaskCustomFieldsRequest fieldsRequest)
+        [WebhookParameter] TaskCustomFieldsRequest fieldsRequest,
+        [WebhookParameter] SubtaskFilterRequest? subtaskFilter)
     {
-        return HandleWebhookRequest(webhookRequest, "changed", payload => GetTasksFromPayload(payload, fieldsRequest));
+        return HandleWebhookRequest(webhookRequest, "changed",
+            async payload => SubtaskFilter.Apply(await GetTasksFromPayload(payload, fieldsRequest),
+                subtaskFilter?.ExcludeSubtasks));
     }
 
     [MultipleEvents, Webhook("On tasks deleted", typeof(TaskDeletedHandler), Description = "Triggered when tasks are deleted")]
@@ -183,15 +190,19 @@ public class WebhookList(InvocationContext invocationContext) : BaseInvocable(in
     }
 
     [MultipleEvents, Webhook("On tasks removed", typeof(TaskRemovedHandler), Description = "Triggered when tasks are removed")]
-    public Task<WebhookResponse<List<TaskDto>>> TasksRemovedHandler(WebhookRequest webhookRequest)
+    public Task<WebhookResponse<List<TaskDto>>> TasksRemovedHandler(WebhookRequest webhookRequest,
+        [WebhookParameter] SubtaskFilterRequest? subtaskFilter)
     {
-        return HandleWebhookRequest(webhookRequest, "removed", GetTasksFromPayload);
+        return HandleWebhookRequest(webhookRequest, "removed",
+            async payload => SubtaskFilter.Apply(await GetTasksFromPayload(payload), subtaskFilter?.ExcludeSubtasks));
     }
 
     [MultipleEvents, Webhook("On tasks undeleted", typeof(TaskUndeletedHandler), Description = "Triggered when tasks are undeleted")]
-    public Task<WebhookResponse<List<TaskDto>>> TasksUndeletedHandler(WebhookRequest webhookRequest)
+    public Task<WebhookResponse<List<TaskDto>>> TasksUndeletedHandler(WebhookRequest webhookRequest,
+        [WebhookParameter] SubtaskFilterRequest? subtaskFilter)
     {
-        return HandleWebhookRequest(webhookRequest, "undeleted", GetTasksFromPayload);
+        return HandleWebhookRequest(webhookRequest, "undeleted",
+            async payload => SubtaskFilter.Apply(await GetTasksFromPayload(payload), subtaskFilter?.ExcludeSubtasks));
     }
 
     #endregion

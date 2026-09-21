@@ -22,7 +22,8 @@ public class TaskActions(InvocationContext invocationContext) : AsanaActions(inv
 {
     [Action("Search tasks", Description = "List all tasks")]
     public async Task<ListTasksResponse> ListAllTasks([ActionParameter] SectionRequest projectRequest,
-        [ActionParameter] ListTasksRequest input)
+        [ActionParameter] ListTasksRequest input,
+        [ActionParameter] SubtaskFilterRequest subtaskFilter)
     {
         if (input.CreatedAfter.HasValue && input.CreatedBefore.HasValue &&
             input.CreatedAfter > input.CreatedBefore)
@@ -58,6 +59,9 @@ public class TaskActions(InvocationContext invocationContext) : AsanaActions(inv
         else
             AddIf(request, "projects.any", projectId);
 
+        if (subtaskFilter.ExcludeSubtasks == true)
+            request.AddQueryParameter("is_subtask", "false");
+
         AddIf(request, "assignee.any", input.Assignee);
         AddIf(request, "tags.any", input.Tag);
         AddIf(request, "user_task_lists.any", input.UserTaskList);
@@ -91,12 +95,13 @@ public class TaskActions(InvocationContext invocationContext) : AsanaActions(inv
                 input.EnumOptionId);
         }
         request.AddQueryParameter("opt_fields",
-            "gid,name,assignee.gid,projects.gid,created_at,modified_at," +
+            "gid,name,assignee.gid,projects.gid,created_at,modified_at,parent.gid," +
             "memberships.project.gid,memberships.section.gid," +
             "custom_fields,custom_fields.enum_value.gid,custom_fields.text_value");
 
         var tasks = await Client.Paginate<TaskSearchResultDto>(request);
         var tasksInScope = TaskSearchFilter.ByMembership(tasks, projectId, sectionId);
+        tasksInScope = SubtaskFilter.Apply(tasksInScope, subtaskFilter.ExcludeSubtasks);
 
         return new ListTasksResponse
         {

@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace Apps.Asana.Dtos;
 
-public class TaskDto : AsanaEntity
+public class TaskDto : AsanaEntity, ITaskWithParent
 {
     public string Notes { get; set; }
     public bool Completed { get; set; }
@@ -28,6 +28,9 @@ public class TaskDto : AsanaEntity
     [JsonIgnore]
     [Display("Due date")]
     public DateTime? DueDate => DueAt ?? DueOn;
+
+    [DefinitionIgnore]
+    public AsanaEntity? Parent { get; set; }
 
     public IEnumerable<TaskMembershipDto> Memberships { get; set; }
 
