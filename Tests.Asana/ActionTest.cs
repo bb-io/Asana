@@ -41,7 +41,8 @@ namespace Tests.Asana
             //CustomFieldId = "1212284379468784",
             //EnumOptionId = "1212535410102600",
             //CreatedAfter = new DateTime(2025, 12, 1, 0, 0, 0, DateTimeKind.Utc)
-        });
+        },
+        new SubtaskFilterRequest());
 
             var json = Newtonsoft.Json.JsonConvert.SerializeObject(result);
             Console.WriteLine(json);
@@ -63,7 +64,8 @@ namespace Tests.Asana
             {
                 TextCustomFieldId = "",
                 TextCustomFieldEquals = "",
-            });
+            },
+            new SubtaskFilterRequest());
 
             var json = Newtonsoft.Json.JsonConvert.SerializeObject(result);
             Console.WriteLine(json);
