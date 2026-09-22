@@ -35,36 +35,25 @@ using Newtonsoft.Json;
 using RestSharp;
 using System.Net;
 using Apps.Asana.Api.Exceptions;
-using Apps.Asana.Extensions;
 using Apps.Asana.Webhooks.Models.Responses;
 
 namespace Apps.Asana.Webhooks;
 
 [WebhookList("Webhooks")]
-public class WebhookList(InvocationContext invocationContext) 
-    : BaseInvocable(invocationContext), IWebhookHandshakeHandler, IAsyncWebhookHandler
+public class WebhookList(InvocationContext invocationContext) : BaseInvocable(invocationContext)
 {
-    public Task<HttpResponseMessage?> HandleHandshakeAsync(WebhookRequest request)
-    {
-        const string secretHeaderKey = "X-Hook-Secret";
-        
-        if (!request.TryGetHookSecret(secretHeaderKey, out var secretKey))
-            return Task.FromResult<HttpResponseMessage?>(null);
-        
-        var response = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(string.Empty)
-        };
-        response.Headers.Add(secretHeaderKey, secretKey);
-        
-        return Task.FromResult<HttpResponseMessage?>(response);
-    }
-    
-    private static async Task<WebhookResponse<List<TDto>>> HandleWebhookRequest<TDto>(
+    private const string SecretHeaderKey = "X-Hook-Secret";
+
+    private async Task<WebhookResponse<List<TDto>>> HandleWebhookRequest<TDto>(
         WebhookRequest webhookRequest, 
         string action, 
         Func<Payload, Task<List<TDto>>> getEntitiesFromPayload)
     {
+        if (TryGetHookSecret(webhookRequest, out var secretKey))
+        {
+            return CreatePreflightResponse<List<TDto>>(secretKey);
+        }
+
         var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
         if (payload == null || payload.Events == null || !payload.Events.Any())
             return CreatePreflightResponse<List<TDto>>();
@@ -83,10 +72,13 @@ public class WebhookList(InvocationContext invocationContext)
         };
     }
 
-    private static WebhookResponse<List<DeletedItemResponse>> HandleDeletionWebhookRequest(
+    private WebhookResponse<List<DeletedItemResponse>> HandleDeletionWebhookRequest(
         WebhookRequest webhookRequest, 
         string action)
     {
+        if (TryGetHookSecret(webhookRequest, out var secretKey))
+            return CreatePreflightResponse<List<DeletedItemResponse>>(secretKey);
+
         var payload = JsonConvert.DeserializeObject<Payload>(webhookRequest.Body.ToString()!);
         if (payload == null || payload.Events == null || !payload.Events.Any())
             return CreatePreflightResponse<List<DeletedItemResponse>>();
@@ -448,11 +440,36 @@ public class WebhookList(InvocationContext invocationContext)
 
     #region Utils
 
-    private static WebhookResponse<T> CreatePreflightResponse<T>() where T : class
+    private bool TryGetHookSecret(WebhookRequest webhookRequest, out string? secretKey)
     {
+        secretKey = null;
+
+        if (webhookRequest.Headers == null || webhookRequest.Headers.Count == 0)
+            return false;
+
+        var header = webhookRequest.Headers
+            .FirstOrDefault(x => string.Equals(x.Key, SecretHeaderKey, StringComparison.OrdinalIgnoreCase));
+
+        if (string.IsNullOrWhiteSpace(header.Key) || string.IsNullOrWhiteSpace(header.Value))
+            return false;
+
+        secretKey = header.Value;
+        return true;
+    }
+
+    private WebhookResponse<T> CreatePreflightResponse<T>(string? secretKey = null) where T : class
+    {
+        var responseMessage = new HttpResponseMessage { StatusCode = HttpStatusCode.OK };
+        responseMessage.Content = new StringContent(string.Empty);
+
+        if (!string.IsNullOrEmpty(secretKey))
+        {
+            responseMessage.Headers.Add(SecretHeaderKey, secretKey);
+        }
+
         return new WebhookResponse<T>
         {
-            HttpResponseMessage = new HttpResponseMessage { StatusCode = HttpStatusCode.OK },
+            HttpResponseMessage = responseMessage,
             Result = null,
             ReceivedWebhookRequestType = WebhookRequestType.Preflight
         };
