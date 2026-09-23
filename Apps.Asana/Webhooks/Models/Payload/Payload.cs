@@ -36,7 +36,7 @@ public class Event
     public User User { get; set; }
     public DateTime CreatedAt { get; set; }
     public string Action { get; set; }
-    public object Parent { get; set; }
+    public Resource? Parent { get; set; }
     public Change Change { get; set; }
     public Resource Resource { get; set; }
 }
