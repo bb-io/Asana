@@ -109,22 +109,16 @@ public class WebhookList(InvocationContext invocationContext)
     
     private async Task<List<TaskDto>> GetTasksFromPayload(Payload payload, SectionRequest? sectionFilter)
     {
-        var tasks = await GetEntitiesFromPayload(
-            payload,
-            context => new TaskActions(context),
-            item => new TaskRequest { TaskId = item.Resource.Gid },
-            (action, request) => action.GetTask(request));
+        string? sectionId = sectionFilter?.SectionId;
 
-        if (sectionFilter == null || string.IsNullOrWhiteSpace(sectionFilter.SectionId))
-            return tasks;
+        if (!string.IsNullOrWhiteSpace(sectionId))
+        {
+            payload.Events = payload.Events!
+                .Where(e => e.Parent?.ResourceType == "section" && e.Parent.Gid == sectionId)
+                .ToList();
+        }
 
-        var sectionId = sectionFilter.SectionId;
-        var filtered = tasks.Where(t =>
-            (t.SectionId != null && t.SectionId == sectionId) ||
-            (t.Memberships?.Any(m => m?.Section?.Gid == sectionId) == true)
-        ).ToList();
-
-        return filtered;
+        return await GetTasksFromPayload(payload);
     }
         
     #region Projects
