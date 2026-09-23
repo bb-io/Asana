@@ -19,7 +19,7 @@ public class UserActions(InvocationContext invocationContext) : AsanaActions(inv
     [Action("Search users", Description = "List all users")]
     public async Task<ListUsersResponse> ListUsers([ActionParameter] ListUsersRequest input)
     {
-        var endpoint = ApiEndpoints.Users.WithQuery(input);
+        string endpoint = ApiEndpoints.Users.WithQuery(input);
         var request = new AsanaRequest(endpoint, Method.Get, Creds);
 
         var tasks = await Client.ExecuteWithErrorHandling<IEnumerable<AsanaEntity>>(request);
