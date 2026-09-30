@@ -18,7 +18,7 @@ namespace Apps.Asana.Actions;
 [ActionList("Section")]
 public class SectionActions(InvocationContext invocationContext) : AsanaActions(invocationContext)
 {
-    [Action("Search sections", Description = "List all project sections")]
+    [Action("Search sections", Description = "Search sections in the selected project and output their IDs and names.")]
     public async Task<ListSectionsResponse> ListSections([ActionParameter] ProjectRequest input)
     {
         var endpoint = $"{ApiEndpoints.Projects}/{input.ProjectId}{ApiEndpoints.Sections}";
@@ -32,7 +32,7 @@ public class SectionActions(InvocationContext invocationContext) : AsanaActions(
         };
     }
 
-    [Action("Get section", Description = "Get section by ID")]
+    [Action("Get section", Description = "Output the ID and name of the selected section.")]
     public Task<AsanaEntity> GetSection([ActionParameter] SectionRequest input)
     {
         var endpoint = $"{ApiEndpoints.Sections}/{input.SectionId}";
@@ -41,7 +41,7 @@ public class SectionActions(InvocationContext invocationContext) : AsanaActions(
         return Client.ExecuteWithErrorHandling<AsanaEntity>(request);
     }
 
-    [Action("Update section", Description = "Update section by ID")]
+    [Action("Update section", Description = "Rename the selected section and output its details.")]
     public Task<SectionDto> UpdateSection(
         [ActionParameter] SectionRequest section,
         [ActionParameter] ManageSectionRequest input)
@@ -58,7 +58,7 @@ public class SectionActions(InvocationContext invocationContext) : AsanaActions(
         return Client.ExecuteWithErrorHandling<SectionDto>(request);
     }
 
-    [Action("Create section", Description = "Create section in project")]
+    [Action("Create section", Description = "Create a named section in the selected project and output its details.")]
     public Task<SectionDto> CreateSection(
         [ActionParameter] ProjectRequest project,
         [ActionParameter] ManageSectionRequest input)
@@ -75,7 +75,7 @@ public class SectionActions(InvocationContext invocationContext) : AsanaActions(
         return Client.ExecuteWithErrorHandling<SectionDto>(request);
     }
 
-    [Action("Delete section", Description = "Delete specific section")]
+    [Action("Delete section", Description = "Delete the selected section.")]
     public Task DeleteSection([ActionParameter] SectionRequest input)
     {
         var endpoint = $"{ApiEndpoints.Sections}/{input.SectionId}";

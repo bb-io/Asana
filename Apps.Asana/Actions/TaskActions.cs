@@ -20,7 +20,7 @@ namespace Apps.Asana.Actions;
 [ActionList("Task")]
 public class TaskActions(InvocationContext invocationContext) : AsanaActions(invocationContext)
 {
-    [Action("Search tasks", Description = "List all tasks")]
+    [Action("Search tasks", Description = "Search tasks in the selected project or section using assignment, tag, date, and custom field filters. Output matching task IDs and names.")]
     public async Task<ListTasksResponse> ListAllTasks([ActionParameter] SectionRequest projectRequest,
         [ActionParameter] ListTasksRequest input,
         [ActionParameter] SubtaskFilterRequest subtaskFilter)
@@ -109,7 +109,7 @@ public class TaskActions(InvocationContext invocationContext) : AsanaActions(inv
         };
     }
 
-    [Action("Get task", Description = "Get task by ID")]
+    [Action("Get task", Description = "Output the details of the selected task.")]
     public Task<TaskDto> GetTask([ActionParameter] TaskRequest input)
     {
         var endpoint = $"{ApiEndpoints.Tasks}/{input.TaskId}";
@@ -118,7 +118,7 @@ public class TaskActions(InvocationContext invocationContext) : AsanaActions(inv
         return Client.ExecuteWithErrorHandling<TaskDto>(request);
     }
 
-    [Action("Create task", Description = "Create a new task")]
+    [Action("Create task", Description = "Create a task with the supplied details, optionally as a subtask, and output its details.")]
     public Task<TaskDto> CreateTask([ActionParameter] CreateTaskRequest input)
     {
         var payload = new ResponseWrapper<CreateTaskRequest>()
@@ -132,7 +132,7 @@ public class TaskActions(InvocationContext invocationContext) : AsanaActions(inv
         return Client.ExecuteWithErrorHandling<TaskDto>(request);
     }
 
-    [Action("Update task", Description = "Update task by ID")]
+    [Action("Update task", Description = "Update the name, notes, or assignee of the selected task, optionally move it to a section, and output its details.")]
     public async Task<TaskDto> UpdateTask(
     [ActionParameter] TaskRequest task,
     [ActionParameter] UpdateTaskRequest input,
@@ -169,7 +169,7 @@ public class TaskActions(InvocationContext invocationContext) : AsanaActions(inv
         return updatedTask;
     }
 
-    [Action("Delete task", Description = "Delete specific task")]
+    [Action("Delete task", Description = "Delete the selected task.")]
     public Task DeleteTask([ActionParameter] TaskRequest input)
     {
         var endpoint = $"{ApiEndpoints.Tasks}/{input.TaskId}";
@@ -178,7 +178,7 @@ public class TaskActions(InvocationContext invocationContext) : AsanaActions(inv
         return Client.ExecuteWithErrorHandling(request);
     }
 
-    [Action("Get user tasks", Description = "Get user tasks from user task list ID")]
+    [Action("Search user tasks", Description = "Output task IDs and names from the specified user task list (My Tasks).")]
     public async Task<ListTasksResponse> GetUserTasks([ActionParameter] GetUserTasksRequest input)
     {
         var endpoint = $"/user_task_lists/{input.UserTaskListId}{ApiEndpoints.Tasks}";
@@ -192,7 +192,7 @@ public class TaskActions(InvocationContext invocationContext) : AsanaActions(inv
         };
     }
 
-    [Action("Get tasks by tag", Description = "Get tasks by specific tag")]
+    [Action("Search tasks by tag", Description = "Output the IDs and names of tasks with the selected tag.")]
     public async Task<ListTasksResponse> GetTasksByTag([ActionParameter] TagRequest input)
     {
         var endpoint = $"{ApiEndpoints.Tags}/{input.TagId}{ApiEndpoints.Tasks}";
@@ -206,7 +206,7 @@ public class TaskActions(InvocationContext invocationContext) : AsanaActions(inv
         };
     }
 
-    [Action("Assign tag to task", Description = "Assign tag to a specific task")]
+    [Action("Update task tags", Description = "Add the selected tag to the selected task.")]
     public Task AssignTag(
         [ActionParameter] TaskRequest task,
         [ActionParameter] AssignTagRequest input)

@@ -123,32 +123,32 @@ public class WebhookList(InvocationContext invocationContext)
         
     #region Projects
 
-    [MultipleEvents, Webhook("On projects added", typeof(ProjectsAddedHandler), Description = "Triggered when projects are added")]
+    [MultipleEvents, Webhook("On projects added", typeof(ProjectsAddedHandler), Description = "Trigger when projects are added.")]
     public Task<WebhookResponse<List<ProjectDto>>> ProjectsAddedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "added", GetProjectsFromPayload);
     }
 
-    [MultipleEvents, Webhook("On projects changed", typeof(ProjectChangedHandler), Description = "Triggered when projects are changed")]
+    [MultipleEvents, Webhook("On projects changed", typeof(ProjectChangedHandler), Description = "Trigger when projects are changed.")]
     public Task<WebhookResponse<List<ProjectDto>>> ProjectChangedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "changed", GetProjectsFromPayload);
     }
 
-    [MultipleEvents, Webhook("On projects deleted", typeof(ProjectDeletedHandler), Description = "Triggered when projects are deleted")]
+    [MultipleEvents, Webhook("On projects deleted", typeof(ProjectDeletedHandler), Description = "Trigger when projects are deleted and output their IDs.")]
     public Task<WebhookResponse<List<DeletedItemResponse>>> ProjectsDeletedHandler(WebhookRequest webhookRequest)
     {
         return Task.FromResult(HandleDeletionWebhookRequest(webhookRequest, "deleted"));
     }
 
-    [MultipleEvents, Webhook("On projects removed", typeof(ProjectRemovedHandler), Description = "Triggered when projects are removed")]
+    [MultipleEvents, Webhook("On projects removed", typeof(ProjectRemovedHandler), Description = "Trigger when projects are removed.")]
     public Task<WebhookResponse<List<ProjectDto>>> ProjectsRemovedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "removed", GetProjectsFromPayload);
     }
 
     [MultipleEvents, Webhook("On projects undeleted", typeof(ProjectUndeletedHandler),
-         Description = "Triggered when projects are undeleted")]
+         Description = "Trigger when projects are restored after deletion.")]
     public Task<WebhookResponse<List<ProjectDto>>> ProjectsUndeletedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "undeleted", GetProjectsFromPayload);
@@ -158,7 +158,7 @@ public class WebhookList(InvocationContext invocationContext)
 
     #region Tasks
 
-    [MultipleEvents, Webhook("On tasks added", typeof(TaskAddedHandler), Description = "Triggered when tasks are added")]
+    [MultipleEvents, Webhook("On tasks added", typeof(TaskAddedHandler), Description = "Trigger when tasks are added to the selected project, optionally filtered by section. Subtasks are included unless Exclude subtasks is enabled.")]
     public async Task<WebhookResponse<List<TaskDto>>> TasksAddedHandler(WebhookRequest webhookRequest,
         [WebhookParameter] SectionRequest? sectionFilter,
         [WebhookParameter] SubtaskFilterRequest? subtaskFilter)
@@ -175,7 +175,7 @@ public class WebhookList(InvocationContext invocationContext)
         }
     }
 
-    [MultipleEvents, Webhook("On tasks changed", typeof(TaskChangedHandler), Description = "Triggered when tasks are changed")]
+    [MultipleEvents, Webhook("On tasks changed", typeof(TaskChangedHandler), Description = "Trigger when tasks are changed, optionally limited to selected custom fields. Subtasks are included unless Exclude subtasks is enabled.")]
     public Task<WebhookResponse<List<TaskDto>>> TasksChangedHandler(WebhookRequest webhookRequest,
         [WebhookParameter] TaskCustomFieldsRequest fieldsRequest,
         [WebhookParameter] SubtaskFilterRequest? subtaskFilter)
@@ -185,13 +185,13 @@ public class WebhookList(InvocationContext invocationContext)
                 subtaskFilter?.ExcludeSubtasks));
     }
 
-    [MultipleEvents, Webhook("On tasks deleted", typeof(TaskDeletedHandler), Description = "Triggered when tasks are deleted")]
+    [MultipleEvents, Webhook("On tasks deleted", typeof(TaskDeletedHandler), Description = "Trigger when tasks are deleted and output their IDs.")]
     public Task<WebhookResponse<List<DeletedItemResponse>>> TasksDeletedHandler(WebhookRequest webhookRequest)
     {
         return Task.FromResult(HandleDeletionWebhookRequest(webhookRequest, "deleted"));
     }
 
-    [MultipleEvents, Webhook("On tasks removed", typeof(TaskRemovedHandler), Description = "Triggered when tasks are removed")]
+    [MultipleEvents, Webhook("On tasks removed", typeof(TaskRemovedHandler), Description = "Trigger when tasks are removed, optionally excluding subtasks.")]
     public Task<WebhookResponse<List<TaskDto>>> TasksRemovedHandler(WebhookRequest webhookRequest,
         [WebhookParameter] SubtaskFilterRequest? subtaskFilter)
     {
@@ -199,7 +199,7 @@ public class WebhookList(InvocationContext invocationContext)
             async payload => SubtaskFilter.Apply(await GetTasksFromPayload(payload), subtaskFilter?.ExcludeSubtasks));
     }
 
-    [MultipleEvents, Webhook("On tasks undeleted", typeof(TaskUndeletedHandler), Description = "Triggered when tasks are undeleted")]
+    [MultipleEvents, Webhook("On tasks undeleted", typeof(TaskUndeletedHandler), Description = "Trigger when tasks are restored after deletion, optionally excluding subtasks.")]
     public Task<WebhookResponse<List<TaskDto>>> TasksUndeletedHandler(WebhookRequest webhookRequest,
         [WebhookParameter] SubtaskFilterRequest? subtaskFilter)
     {
@@ -211,25 +211,25 @@ public class WebhookList(InvocationContext invocationContext)
 
     #region Tags
 
-    [MultipleEvents, Webhook("On tags added", typeof(TagAddedHandler), Description = "Triggered when tags are added")]
+    [MultipleEvents, Webhook("On tags added", typeof(TagAddedHandler), Description = "Trigger when tags are added.")]
     public Task<WebhookResponse<List<TagDto>>> TagsAddedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "added", GetTagsFromPayload);
     }
 
-    [MultipleEvents, Webhook("On tags changed", typeof(TagChangedHandler), Description = "Triggered when tags are changed")]
+    [MultipleEvents, Webhook("On tags changed", typeof(TagChangedHandler), Description = "Trigger when tags are changed.")]
     public Task<WebhookResponse<List<TagDto>>> TagsChangedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "changed", GetTagsFromPayload);
     }
 
-    [MultipleEvents, Webhook("On tags deleted", typeof(TagDeletedHandler), Description = "Triggered when tags are deleted")]
+    [MultipleEvents, Webhook("On tags deleted", typeof(TagDeletedHandler), Description = "Trigger when tags are deleted and output their IDs.")]
     public Task<WebhookResponse<List<DeletedItemResponse>>> TagsDeletedHandler(WebhookRequest webhookRequest)
     {
         return Task.FromResult(HandleDeletionWebhookRequest(webhookRequest, "deleted"));
     }
     
-    [MultipleEvents, Webhook("On tags undeleted", typeof(TagUndeletedHandler), Description = "Triggered when tags are undeleted")]
+    [MultipleEvents, Webhook("On tags undeleted", typeof(TagUndeletedHandler), Description = "Trigger when tags are restored after deletion.")]
     public Task<WebhookResponse<List<TagDto>>> TagsUndeletedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "undeleted", GetTagsFromPayload);
@@ -239,25 +239,25 @@ public class WebhookList(InvocationContext invocationContext)
 
     #region Sections
 
-    [MultipleEvents, Webhook("On sections added", typeof(SectionAddedHandler), Description = "Triggered when sections are added")]
+    [MultipleEvents, Webhook("On sections added", typeof(SectionAddedHandler), Description = "Trigger when sections are added.")]
     public Task<WebhookResponse<List<AsanaEntity>>> SectionsAddedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "added", GetSectionsFromPayload);
     }
 
-    [MultipleEvents, Webhook("On sections changed", typeof(SectionChangedHandler), Description = "Triggered when sections are changed")]
+    [MultipleEvents, Webhook("On sections changed", typeof(SectionChangedHandler), Description = "Trigger when sections are changed.")]
     public Task<WebhookResponse<List<AsanaEntity>>> SectionsChangedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "changed", GetSectionsFromPayload);
     }
 
-    [MultipleEvents, Webhook("On sections deleted", typeof(SectionDeletedHandler), Description = "Triggered when sections are deleted")]
+    [MultipleEvents, Webhook("On sections deleted", typeof(SectionDeletedHandler), Description = "Trigger when sections are deleted and output their IDs.")]
     public WebhookResponse<List<DeletedItemResponse>> SectionsDeletedHandler(WebhookRequest webhookRequest)
     {
         return HandleDeletionWebhookRequest(webhookRequest, "deleted");
     }
 
-    [MultipleEvents, Webhook("On sections undeleted", typeof(SectionUndeletedHandler), Description = "Triggered when sections are undeleted")]
+    [MultipleEvents, Webhook("On sections undeleted", typeof(SectionUndeletedHandler), Description = "Trigger when sections are restored after deletion.")]
     public Task<WebhookResponse<List<AsanaEntity>>> SectionsUndeletedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "undeleted", GetSectionsFromPayload);
@@ -267,19 +267,19 @@ public class WebhookList(InvocationContext invocationContext)
 
     #region Stories
 
-    [MultipleEvents, Webhook("On stories added", typeof(StoriesAddedHandler), Description = "Triggered when stories are added")]
+    [MultipleEvents, Webhook("On stories added", typeof(StoriesAddedHandler), Description = "Trigger when task activity entries are added.")]
     public Task<WebhookResponse<List<StoryResponse>>> StoriesAddedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "added", GetStoriesFromPayload);
     }
 
-    [MultipleEvents, Webhook("On stories removed", typeof(StoriesRemovedHandler), Description = "Triggered when stories are removed")]
+    [MultipleEvents, Webhook("On stories removed", typeof(StoriesRemovedHandler), Description = "Trigger when task activity entries are removed.")]
     public Task<WebhookResponse<List<StoryResponse>>> StoriesRemovedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "removed", GetStoriesFromPayload);
     }
 
-    [MultipleEvents, Webhook("On stories undeleted", typeof(StoriesUndeletedHandler), Description = "Triggered when stories are undeleted")]
+    [MultipleEvents, Webhook("On stories undeleted", typeof(StoriesUndeletedHandler), Description = "Trigger when task activity entries are restored after deletion.")]
     public Task<WebhookResponse<List<StoryResponse>>> StoriesUndeletedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "undeleted", GetStoriesFromPayload);
@@ -290,28 +290,28 @@ public class WebhookList(InvocationContext invocationContext)
     #region StoriesComments
     
     [MultipleEvents, Webhook("On stories comments added", typeof(StoriesCommentsAddedHandler),
-         Description = "Triggered when comments are added to stories")]
+         Description = "Trigger when task comments are added.")]
     public Task<WebhookResponse<List<StoryResponse>>> StoriesCommentsAddedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "added", GetStoriesFromPayload);
     }
 
     [MultipleEvents, Webhook("On stories comments changed", typeof(StoriesCommentsChangedHandler),
-         Description = "Triggered when comments on stories are changed")]
+         Description = "Trigger when task comments are edited.")]
     public Task<WebhookResponse<List<StoryResponse>>> StoriesCommentsChangedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "changed", GetStoriesFromPayload);
     }
 
     [MultipleEvents, Webhook("On stories comments removed", typeof(StoriesCommentsRemovedHandler),
-         Description = "Triggered when comments are removed from stories")]
+         Description = "Trigger when task comments are removed.")]
     public Task<WebhookResponse<List<StoryResponse>>> StoriesCommentsRemovedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "removed", GetStoriesFromPayload);
     }
 
     [MultipleEvents, Webhook("On stories comments undeleted", typeof(StoriesCommentsUndeletedHandler),
-         Description = "Triggered when comments on stories are undeleted")]
+         Description = "Trigger when task comments are restored after deletion.")]
     public Task<WebhookResponse<List<StoryResponse>>> StoriesCommentsUndeletedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "undeleted", GetStoriesFromPayload);
@@ -322,7 +322,7 @@ public class WebhookList(InvocationContext invocationContext)
     #region Workspaces
 
     [MultipleEvents, Webhook("On workspaces changed", typeof(WorkspaceChangedHandler),
-         Description = "Triggered when changes are made to workspaces")]
+         Description = "Trigger when changes are made to workspaces.")]
     public Task<WebhookResponse<List<WorkspaceDto>>> WorkspaceChangedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "changed", GetWorkspacesFromPayload);
@@ -332,31 +332,31 @@ public class WebhookList(InvocationContext invocationContext)
 
     #region Goals
 
-    [MultipleEvents, Webhook("On goals added", typeof(GoalsAddedHandler), Description = "Triggered when goals are added")]
+    [MultipleEvents, Webhook("On goals added", typeof(GoalsAddedHandler), Description = "Trigger when goals are added.")]
     public Task<WebhookResponse<List<GoalResponse>>> GoalsAddedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "added", GetGoalsFromPayload);
     }
 
-    [MultipleEvents, Webhook("On goals changed", typeof(GoalsChangedHandler), Description = "Triggered when goals are changed")]
+    [MultipleEvents, Webhook("On goals changed", typeof(GoalsChangedHandler), Description = "Trigger when goals are changed.")]
     public Task<WebhookResponse<List<GoalResponse>>> GoalsChangedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "changed", GetGoalsFromPayload);
     }
 
-    [MultipleEvents, Webhook("On goals removed", typeof(GoalsRemovedHandler), Description = "Triggered when goals are removed")]
+    [MultipleEvents, Webhook("On goals removed", typeof(GoalsRemovedHandler), Description = "Trigger when goals are removed.")]
     public Task<WebhookResponse<List<GoalResponse>>> GoalsRemovedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "removed", GetGoalsFromPayload);
     }
 
-    [MultipleEvents, Webhook("On goals deleted", typeof(GoalsDeletedHandler), Description = "Triggered when goals are deleted")]
+    [MultipleEvents, Webhook("On goals deleted", typeof(GoalsDeletedHandler), Description = "Trigger when goals are deleted and output their IDs.")]
     public WebhookResponse<List<DeletedItemResponse>> GoalsDeletedHandler(WebhookRequest webhookRequest)
     {
         return HandleDeletionWebhookRequest(webhookRequest, "deleted");
     }
 
-    [MultipleEvents, Webhook("On goals undeleted", typeof(GoalsUndeletedHandler), Description = "Triggered when goals are undeleted")]
+    [MultipleEvents, Webhook("On goals undeleted", typeof(GoalsUndeletedHandler), Description = "Trigger when goals are restored after deletion.")]
     public Task<WebhookResponse<List<GoalResponse>>> GoalsUndeletedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "undeleted", GetGoalsFromPayload);
@@ -367,14 +367,14 @@ public class WebhookList(InvocationContext invocationContext)
     #region ProjectMemberships
 
     [MultipleEvents, Webhook("On project memberships added", typeof(ProjectMembershipsAddedHandler),
-         Description = "Triggered when project memberships are added")]
+         Description = "Trigger when project memberships are added.")]
     public Task<WebhookResponse<List<ProjectMembershipResponse>>> ProjectMembershipsAddedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "added", GetProjectMembershipsFromPayload);
     }
 
     [MultipleEvents, Webhook("On project memberships removed", typeof(ProjectMembershipsRemovedHandler),
-         Description = "Triggered when project memberships are removed")]
+         Description = "Trigger when project memberships are removed.")]
     public Task<WebhookResponse<List<ProjectMembershipResponse>>> ProjectMembershipsRemovedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "removed", GetProjectMembershipsFromPayload);
@@ -384,19 +384,19 @@ public class WebhookList(InvocationContext invocationContext)
 
     #region Teams
 
-    [MultipleEvents, Webhook("On teams added", typeof(TeamsAddedHandler), Description = "Triggered when teams are added")]
+    [MultipleEvents, Webhook("On teams added", typeof(TeamsAddedHandler), Description = "Trigger when teams are added.")]
     public Task<WebhookResponse<List<TeamResponse>>> TeamsAddedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "added", GetTeamsFromPayload);
     }
 
-    [MultipleEvents, Webhook("On teams changed", typeof(TeamsChangedHandler), Description = "Triggered when teams are changed")]
+    [MultipleEvents, Webhook("On teams changed", typeof(TeamsChangedHandler), Description = "Trigger when teams are changed.")]
     public Task<WebhookResponse<List<TeamResponse>>> TeamsChangedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "changed", GetTeamsFromPayload);
     }
 
-    [MultipleEvents, Webhook("On teams deleted", typeof(TeamsDeletedHandler), Description = "Triggered when teams are deleted")]
+    [MultipleEvents, Webhook("On teams deleted", typeof(TeamsDeletedHandler), Description = "Trigger when teams are deleted and output their IDs.")]
     public Task<WebhookResponse<List<DeletedItemResponse>>> TeamsDeletedHandler(WebhookRequest webhookRequest)
     {
         return Task.FromResult(HandleDeletionWebhookRequest(webhookRequest, "deleted"));
@@ -407,14 +407,14 @@ public class WebhookList(InvocationContext invocationContext)
     #region TeamMemberships
 
     [MultipleEvents, Webhook("On team memberships added", typeof(TeamMembershipsAddedHandler), 
-         Description = "Triggered when team memberships are added")]
+         Description = "Trigger when team memberships are added.")]
     public Task<WebhookResponse<List<TeamMembershipResponse>>> TeamMembershipsAddedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "added", GetTeamMembershipsFromPayload);
     }
 
     [MultipleEvents, Webhook("On team memberships removed", typeof(TeamMembershipsRemovedHandler),
-         Description = "Triggered when team memberships are removed")]
+         Description = "Trigger when team memberships are removed.")]
     public Task<WebhookResponse<List<TeamMembershipResponse>>> TeamMembershipsRemovedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "removed", GetTeamMembershipsFromPayload);
@@ -425,14 +425,14 @@ public class WebhookList(InvocationContext invocationContext)
     #region WorkspaceMemberships
 
     [MultipleEvents, Webhook("On workspace memberships added", typeof(WorkspaceMembershipsAddedHandler),
-         Description = "Triggered when workspace memberships are added")]
+         Description = "Trigger when workspace memberships are added.")]
     public Task<WebhookResponse<List<WorkspaceMembershipResponse>>> WorkspaceMembershipsAddedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "added", GetWorkspaceMembershipsFromPayload);
     }
 
     [MultipleEvents, Webhook("On workspace memberships removed", typeof(WorkspaceMembershipsRemovedHandler),
-         Description = "Triggered when workspace memberships are removed")]
+         Description = "Trigger when workspace memberships are removed.")]
     public Task<WebhookResponse<List<WorkspaceMembershipResponse>>> WorkspaceMembershipsRemovedHandler(WebhookRequest webhookRequest)
     {
         return HandleWebhookRequest(webhookRequest, "removed", GetWorkspaceMembershipsFromPayload);
