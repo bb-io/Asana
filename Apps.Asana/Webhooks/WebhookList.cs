@@ -158,7 +158,7 @@ public class WebhookList(InvocationContext invocationContext)
 
     #region Tasks
 
-    [MultipleEvents, Webhook("On tasks added", typeof(TaskAddedHandler), Description = "Trigger when tasks are added to the selected project, optionally filtered by section and with subtasks excluded.")]
+    [MultipleEvents, Webhook("On tasks added", typeof(TaskAddedHandler), Description = "Trigger when tasks are added to the selected project, optionally filtered by section. Subtasks are included unless Exclude subtasks is enabled.")]
     public async Task<WebhookResponse<List<TaskDto>>> TasksAddedHandler(WebhookRequest webhookRequest,
         [WebhookParameter] SectionRequest? sectionFilter,
         [WebhookParameter] SubtaskFilterRequest? subtaskFilter)
@@ -175,7 +175,7 @@ public class WebhookList(InvocationContext invocationContext)
         }
     }
 
-    [MultipleEvents, Webhook("On tasks changed", typeof(TaskChangedHandler), Description = "Trigger when tasks are changed, optionally limited to selected custom fields and with subtasks excluded.")]
+    [MultipleEvents, Webhook("On tasks changed", typeof(TaskChangedHandler), Description = "Trigger when tasks are changed, optionally limited to selected custom fields. Subtasks are included unless Exclude subtasks is enabled.")]
     public Task<WebhookResponse<List<TaskDto>>> TasksChangedHandler(WebhookRequest webhookRequest,
         [WebhookParameter] TaskCustomFieldsRequest fieldsRequest,
         [WebhookParameter] SubtaskFilterRequest? subtaskFilter)

@@ -80,7 +80,7 @@ public class ProjectActions(InvocationContext invocationContext) : AsanaActions(
         return Client.ExecuteWithErrorHandling(request);
     }
 
-    [Action("Get project sections", Description = "Output the IDs and names of sections in the selected project.")]
+    [Action("Search project sections", Description = "Output the IDs and names of sections in the selected project.")]
     public async Task<GetProjectSectionsResponse> GetProjectSections(
         [ActionParameter] ProjectRequest input)
     {
@@ -104,7 +104,7 @@ public class ProjectActions(InvocationContext invocationContext) : AsanaActions(
         return Client.ExecuteWithErrorHandling<ProjectStatusDto>(request);
     }
 
-    [Action("Get project status updates", Description = "Output status updates for the selected project.")]
+    [Action("Search project status updates", Description = "Output status updates for the selected project.")]
     public async Task<GetProjectStatusUpdatesResponse> GetProjectStatusUpdates(
         [ActionParameter] ProjectRequest input)
     {

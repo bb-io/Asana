@@ -19,7 +19,7 @@ public class CustomFieldsActions(InvocationContext invocationContext) : AsanaAct
     [Action("Get text custom field", Description = "Output the text value of a custom field on the selected task.")]
     public async Task<TextCustomFieldResponse> GetTextCustomField([ActionParameter] TextCustomFieldRequest input)
     {
-        var task = await GetTask(input.TaskId);
+        var task = await GetTaskWithCustomFields(input.TaskId);
         var customField = task.CustomFields.FirstOrDefault(x => x.Gid == input.CustomFieldId) ??
                           throw new PluginApplicationException ("Custom field with the provided ID was not found");
 
@@ -33,7 +33,7 @@ public class CustomFieldsActions(InvocationContext invocationContext) : AsanaAct
     [Action("Get people custom field", Description = "Output the user IDs and names selected in a people custom field on the selected task.")]
     public async Task<PeopleCustomFieldResponse> GetPeopleCustomField([ActionParameter] GetPeopleCustomFieldRequest input)
     {
-        var task = await GetTask(input.TaskId);
+        var task = await GetTaskWithCustomFields(input.TaskId);
         var field = task.CustomFields.FirstOrDefault(x => x.Gid == input.CustomFieldId)
             ?? throw new PluginApplicationException("Custom field with the provided ID was not found");
 
@@ -53,7 +53,7 @@ public class CustomFieldsActions(InvocationContext invocationContext) : AsanaAct
     [Action("Get date custom field", Description = "Output the date value of a custom field on the selected task, including the time when available.")]
     public async Task<DateCustomFieldResponse> GetDateCustomField([ActionParameter] DateCustomFieldRequest input)
     {
-        var task = await GetTask(input.TaskId) ?? throw new PluginApplicationException("Task with the provided ID was not found");
+        var task = await GetTaskWithCustomFields(input.TaskId) ?? throw new PluginApplicationException("Task with the provided ID was not found");
 
         var customField = task.CustomFields.FirstOrDefault(x => x.Gid == input.CustomFieldId) ??
                           throw new PluginApplicationException("Custom field with the provided ID was not found");
@@ -91,7 +91,7 @@ public class CustomFieldsActions(InvocationContext invocationContext) : AsanaAct
     [Action("Get enum custom field", Description = "Output the selected option name of an enum custom field on the selected task.")]
     public async Task<TextCustomFieldResponse> GetEnumCustomField([ActionParameter] EnumCustomFieldRequest input)
     {
-        var task = await GetTask(input.TaskId);
+        var task = await GetTaskWithCustomFields(input.TaskId);
         var customField = task.CustomFields.FirstOrDefault(x => x.Gid == input.CustomFieldId) ??
                           throw new PluginApplicationException("Custom field with the provided ID was not found");
 
@@ -105,7 +105,7 @@ public class CustomFieldsActions(InvocationContext invocationContext) : AsanaAct
     [Action("Get number custom field", Description = "Output the number value of a custom field on the selected task.")]
     public async Task<NumberCustomFieldResponse> GetNumberCustomField([ActionParameter] NumberCustomFieldRequest input)
     {
-        var task = await GetTask(input.TaskId)
+        var task = await GetTaskWithCustomFields(input.TaskId)
             ?? throw new PluginApplicationException("Task with the provided ID was not found");
 
         var customField = task.CustomFields
@@ -122,7 +122,7 @@ public class CustomFieldsActions(InvocationContext invocationContext) : AsanaAct
     [Action("Get multi-enum custom field", Description = "Output the selected option names of a multi-enum custom field on the selected task.")]
     public async Task<MultiEnumCustomFieldResponse> GetMultiEnumCustomField([ActionParameter] MultipleCustomFieldRequest input)
     {
-        var task = await GetTask(input.TaskId);
+        var task = await GetTaskWithCustomFields(input.TaskId);
         var field = task.CustomFields.FirstOrDefault(x => x.Gid == input.CustomFieldId) ??
                           throw new PluginApplicationException("Custom field with the provided ID was not found");
 
@@ -188,7 +188,7 @@ public class CustomFieldsActions(InvocationContext invocationContext) : AsanaAct
         return UpdateCustomField(input.TaskId, input.CustomFieldId, input.EnumOptionId);
     }
 
-    [Action("Set multi-enum custom field", Description = "Replace the selected options of a multi-enum custom field on the selected task using choice IDs, choice names, or both. At least one choice is required.")]
+    [Action("Update multi-enum custom field", Description = "Replace the selected options of a multi-enum custom field on the selected task using choice IDs, choice names, or both. At least one choice is required.")]
     public async Task SetMultiEnumCustomField([ActionParameter] SetMultiEnumCustomFieldRequest input)
     {
         var choiceIds = (input.ChoiceIds ?? Enumerable.Empty<string>())
@@ -248,7 +248,7 @@ public class CustomFieldsActions(InvocationContext invocationContext) : AsanaAct
         await UpdateCustomField(input.TaskId, input.CustomFieldId, values);
     }
 
-    private Task<TaskDtoWithCustomFields> GetTask(string taskId)
+    private Task<TaskDtoWithCustomFields> GetTaskWithCustomFields(string taskId)
     {
         var request = new AsanaRequest($"{ApiEndpoints.Tasks}/{taskId}?opt_fields=custom_fields", Method.Get, Creds);
 

@@ -178,7 +178,7 @@ public class TaskActions(InvocationContext invocationContext) : AsanaActions(inv
         return Client.ExecuteWithErrorHandling(request);
     }
 
-    [Action("Get user tasks", Description = "Output task IDs and names from the specified user task list (My Tasks).")]
+    [Action("Search user tasks", Description = "Output task IDs and names from the specified user task list (My Tasks).")]
     public async Task<ListTasksResponse> GetUserTasks([ActionParameter] GetUserTasksRequest input)
     {
         var endpoint = $"/user_task_lists/{input.UserTaskListId}{ApiEndpoints.Tasks}";
@@ -192,7 +192,7 @@ public class TaskActions(InvocationContext invocationContext) : AsanaActions(inv
         };
     }
 
-    [Action("Get tasks by tag", Description = "Output the IDs and names of tasks with the selected tag.")]
+    [Action("Search tasks by tag", Description = "Output the IDs and names of tasks with the selected tag.")]
     public async Task<ListTasksResponse> GetTasksByTag([ActionParameter] TagRequest input)
     {
         var endpoint = $"{ApiEndpoints.Tags}/{input.TagId}{ApiEndpoints.Tasks}";
@@ -206,7 +206,7 @@ public class TaskActions(InvocationContext invocationContext) : AsanaActions(inv
         };
     }
 
-    [Action("Assign tag to task", Description = "Add the selected tag to the selected task.")]
+    [Action("Update task tags", Description = "Add the selected tag to the selected task.")]
     public Task AssignTag(
         [ActionParameter] TaskRequest task,
         [ActionParameter] AssignTagRequest input)

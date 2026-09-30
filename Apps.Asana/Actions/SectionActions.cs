@@ -41,7 +41,7 @@ public class SectionActions(InvocationContext invocationContext) : AsanaActions(
         return Client.ExecuteWithErrorHandling<AsanaEntity>(request);
     }
 
-    [Action("Update section", Description = "Rename or reposition the selected section and output its details.")]
+    [Action("Update section", Description = "Rename the selected section and output its details.")]
     public Task<SectionDto> UpdateSection(
         [ActionParameter] SectionRequest section,
         [ActionParameter] ManageSectionRequest input)

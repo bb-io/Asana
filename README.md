@@ -83,7 +83,7 @@ Optional inputs are listed beneath the relevant action or event.
 - **Update number custom field**: Set the number value of a custom field on the selected task.
 - **Update people custom field**: Replace the users in a people custom field on the selected task. Supports up to 20 users; an empty selection clears the field.
 - **Update enum custom field**: Set the selected option of an enum custom field on the selected task.
-- **Set multi-enum custom field**: Replace the selected options of a multi-enum custom field on the selected task using choice IDs, choice names, or both. At least one choice is required.
+- **Update multi-enum custom field**: Replace the selected options of a multi-enum custom field on the selected task using choice IDs, choice names, or both. At least one choice is required.
    - **Choice IDs**: Multiple option IDs to select. Can be combined with Choice names.
    - **Choice names**: Multiple option names to select. Names are matched without regard to capitalization or surrounding spaces; unknown or ambiguous names cause an error.
 
@@ -93,9 +93,9 @@ Optional inputs are listed beneath the relevant action or event.
 
 - **Get project**: Output the details of the selected project.
 - **Delete project**: Delete the selected project.
-- **Get project sections**: Output the IDs and names of sections in the selected project.
+- **Search project sections**: Output the IDs and names of sections in the selected project.
 - **Get project status**: Output the details of a single project status update by its ID.
-- **Get project status updates**: Output status updates for the selected project.
+- **Search project status updates**: Output status updates for the selected project.
 - **Create project**: Create a project for the specified team and output its details.
 - **Search projects**: Search projects in the selected workspace, with optional team and archive filters, and output their IDs and names.
 - **Update project**: Update the selected project and output its details.
@@ -105,7 +105,7 @@ Optional inputs are listed beneath the relevant action or event.
 
 - **Search sections**: Search sections in the selected project and output their IDs and names.
 - **Get section**: Output the ID and name of the selected section.
-- **Update section**: Rename or reposition the selected section and output its details.
+- **Update section**: Rename the selected section and output its details.
 - **Create section**: Create a named section in the selected project and output its details.
 - **Delete section**: Delete the selected section.
 
@@ -121,9 +121,9 @@ Optional inputs are listed beneath the relevant action or event.
 
 - **Update task**: Update the name, notes, or assignee of the selected task, optionally move it to a section, and output its details.
 - **Delete task**: Delete the selected task.
-- **Get user tasks**: Output task IDs and names from the specified user task list (My Tasks).
-- **Get tasks by tag**: Output the IDs and names of tasks with the selected tag.
-- **Assign tag to task**: Add the selected tag to the selected task.
+- **Search user tasks**: Output task IDs and names from the specified user task list (My Tasks).
+- **Search tasks by tag**: Output the IDs and names of tasks with the selected tag.
+- **Update task tags**: Add the selected tag to the selected task.
 - **Get task**: Output the details of the selected task.
 - **Create task**: Create a task with the supplied details, optionally as a subtask, and output its details.
 - **Search tasks**: Search tasks in the selected project or section using assignment, tag, date, and custom field filters. Output matching task IDs and names. **Section ID** takes precedence over **Project ID**. Only tasks with direct membership in the selected project or section are included. Each "after" date must be no later than its corresponding "before" date.
@@ -149,7 +149,7 @@ Optional inputs are listed beneath the relevant action or event.
 - **Search users**: Search users, optionally by workspace or team, and output their IDs and names.
 - **Get user**: Output the details of the selected user.
 - **Get user's task list**: Output the ID and name of the selected user's My Tasks list in the selected workspace.
-- **Get user's teams**: Output the IDs and names of teams the selected user belongs to in the selected workspace.
+- **Search user's teams**: Output the IDs and names of teams the selected user belongs to in the selected workspace.
 
 ### Workspace
 
@@ -171,10 +171,10 @@ Optional inputs are listed beneath the relevant action or event.
 - **On tasks deleted**: Trigger when tasks are deleted and output their IDs.
 - **On tasks removed**: Trigger when tasks are removed, optionally excluding subtasks.
 - **On tasks undeleted**: Trigger when tasks are restored after deletion, optionally excluding subtasks.
-- **On tasks added**: Trigger when tasks are added to the selected project, optionally filtered by section and with subtasks excluded.
+- **On tasks added**: Trigger when tasks are added to the selected project, optionally filtered by section. Subtasks are included unless Exclude subtasks is enabled.
    - **Section ID**: Only trigger for tasks added to the selected section. It's recommended to always set section ID for preventing new flights starting when task is moving between sections.
 
-- **On tasks changed**: Trigger when tasks are changed, optionally limited to selected custom fields and with subtasks excluded.
+- **On tasks changed**: Trigger when tasks are changed, optionally limited to selected custom fields. Subtasks are included unless Exclude subtasks is enabled.
    - **Custom fields**: Multiple custom fields to monitor. When set, only changes involving these fields trigger the event.
 
 

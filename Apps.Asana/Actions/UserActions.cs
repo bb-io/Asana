@@ -49,7 +49,7 @@ public class UserActions(InvocationContext invocationContext) : AsanaActions(inv
         return Client.ExecuteWithErrorHandling<AsanaEntity>(request);
     }
 
-    [Action("Get user's teams", Description = "Output the IDs and names of teams the selected user belongs to in the selected workspace.")]
+    [Action("Search user's teams", Description = "Output the IDs and names of teams the selected user belongs to in the selected workspace.")]
     public async Task<GetUserTeamsResponse> GetUserTeams([ActionParameter] GetUserItemsRequest input)
     {
         var endpoint = $"{ApiEndpoints.Users}/{input.UserId}/teams"
