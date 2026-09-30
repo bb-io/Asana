@@ -19,7 +19,7 @@ namespace Apps.Asana.Actions;
 public class AttachmentActions(InvocationContext invocationContext, IFileManagementClient fileManagementClient) 
     : AsanaActions(invocationContext)
 {
-    [Action("Search attachments", Description = "List attachments from object")]
+    [Action("Search attachments", Description = "Search attachments on a task, project, or project brief and output their IDs and names.")]
     public async Task<GetAttachmentsResponse> ListAttachments(
         [ActionParameter] ListAttachmentsRequest input)
     {
@@ -34,7 +34,7 @@ public class AttachmentActions(InvocationContext invocationContext, IFileManagem
         };
     }
 
-    [Action("Get attachment", Description = "Get attachment by ID")]
+    [Action("Get attachment", Description = "Download an attachment by ID and output its file and details.")]
     public async Task<AttachmentDto> GetAttachment([ActionParameter] AttachmentRequest input)
     {
         var endpoint = $"{ApiEndpoints.Attachments}/{input.AttachmentId}";
@@ -67,7 +67,7 @@ public class AttachmentActions(InvocationContext invocationContext, IFileManagem
         };
     }
 
-    [Action("Delete attachment", Description = "Delete attachment by ID")]
+    [Action("Delete attachment", Description = "Delete the selected attachment.")]
     public Task DeleteAttachment([ActionParameter] AttachmentRequest input)
     {
         var endpoint = $"{ApiEndpoints.Attachments}/{input.AttachmentId}";
@@ -76,7 +76,7 @@ public class AttachmentActions(InvocationContext invocationContext, IFileManagem
         return Client.ExecuteWithErrorHandling(request);
     }
 
-    [Action("Upload attachment", Description = "Upload a new attachment")]
+    [Action("Upload attachment", Description = "Upload a file to the specified parent and output the attachment details.")]
     public async Task<AttachmentDto> UploadAttachment(
         [ActionParameter] UploadAttachmentRequest input)
     {

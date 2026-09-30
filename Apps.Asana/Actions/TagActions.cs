@@ -18,7 +18,7 @@ namespace Apps.Asana.Actions;
 [ActionList("Tag")]
 public class TagActions(InvocationContext invocationContext) : AsanaActions(invocationContext)
 {
-    [Action("Search tags", Description = "List all tags")]
+    [Action("Search tags", Description = "Search tags, optionally within a workspace, and output their IDs and names.")]
     public async Task<ListTagsResponse> ListAllTags([ActionParameter] ListTagsRequest input)
     {
         var endpoint = ApiEndpoints.Tags.WithQuery(input);
@@ -32,7 +32,7 @@ public class TagActions(InvocationContext invocationContext) : AsanaActions(invo
         };
     }
 
-    [Action("Get tag", Description = "Get tag by ID")]
+    [Action("Get tag", Description = "Output the details of the selected tag.")]
     public Task<TagDto> GetTag([ActionParameter] TagRequest input)
     {
         var endpoint = $"{ApiEndpoints.Tags}/{input.TagId}";
@@ -41,7 +41,7 @@ public class TagActions(InvocationContext invocationContext) : AsanaActions(invo
         return Client.ExecuteWithErrorHandling<TagDto>(request);
     }
 
-    [Action("Update tag", Description = "Update tag by ID")]
+    [Action("Update tag", Description = "Update the name, color, or notes of the selected tag and output its details.")]
     public Task<TagDto> UpdateTag(
         [ActionParameter] TagRequest tag,
         [ActionParameter] UpdateTagRequest input)
@@ -57,7 +57,7 @@ public class TagActions(InvocationContext invocationContext) : AsanaActions(invo
         return Client.ExecuteWithErrorHandling<TagDto>(request);
     }
 
-    [Action("Create tag", Description = "Create a new tag")]
+    [Action("Create tag", Description = "Create a tag in the selected workspace and output its details.")]
     public Task<TagDto> CreateTag([ActionParameter] CreateTagRequest input)
     {
         var payload = new ResponseWrapper<CreateTagRequest>()
@@ -70,7 +70,7 @@ public class TagActions(InvocationContext invocationContext) : AsanaActions(invo
         return Client.ExecuteWithErrorHandling<TagDto>(request);
     }
 
-    [Action("Delete tag", Description = "Delete specific tag")]
+    [Action("Delete tag", Description = "Delete the selected tag.")]
     public Task DeleteTag([ActionParameter] TagRequest input)
     {
         var endpoint = $"{ApiEndpoints.Tags}/{input.TagId}";

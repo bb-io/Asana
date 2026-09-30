@@ -16,7 +16,7 @@ namespace Apps.Asana.Actions;
 [ActionList("Custom fields")]
 public class CustomFieldsActions(InvocationContext invocationContext) : AsanaActions(invocationContext)
 {
-    [Action("Get text custom field", Description = "Get value of a custom field with text type")]
+    [Action("Get text custom field", Description = "Output the text value of a custom field on the selected task.")]
     public async Task<TextCustomFieldResponse> GetTextCustomField([ActionParameter] TextCustomFieldRequest input)
     {
         var task = await GetTask(input.TaskId);
@@ -30,7 +30,7 @@ public class CustomFieldsActions(InvocationContext invocationContext) : AsanaAct
         };
     }
 
-    [Action("Get people custom field", Description = "Get value of a custom field with people type (returns users)")]
+    [Action("Get people custom field", Description = "Output the user IDs and names selected in a people custom field on the selected task.")]
     public async Task<PeopleCustomFieldResponse> GetPeopleCustomField([ActionParameter] GetPeopleCustomFieldRequest input)
     {
         var task = await GetTask(input.TaskId);
@@ -50,7 +50,7 @@ public class CustomFieldsActions(InvocationContext invocationContext) : AsanaAct
         };
     }
 
-    [Action("Get date custom field", Description = "Get value of a custom field with date type")]
+    [Action("Get date custom field", Description = "Output the date value of a custom field on the selected task, including the time when available.")]
     public async Task<DateCustomFieldResponse> GetDateCustomField([ActionParameter] DateCustomFieldRequest input)
     {
         var task = await GetTask(input.TaskId) ?? throw new PluginApplicationException("Task with the provided ID was not found");
@@ -88,7 +88,7 @@ public class CustomFieldsActions(InvocationContext invocationContext) : AsanaAct
         };
     }
 
-    [Action("Get enum custom field", Description = "Get value of a custom field with enum type")]
+    [Action("Get enum custom field", Description = "Output the selected option name of an enum custom field on the selected task.")]
     public async Task<TextCustomFieldResponse> GetEnumCustomField([ActionParameter] EnumCustomFieldRequest input)
     {
         var task = await GetTask(input.TaskId);
@@ -102,7 +102,7 @@ public class CustomFieldsActions(InvocationContext invocationContext) : AsanaAct
         };
     }
 
-    [Action("Get number custom field", Description = "Get value of a custom field with number type")]
+    [Action("Get number custom field", Description = "Output the number value of a custom field on the selected task.")]
     public async Task<NumberCustomFieldResponse> GetNumberCustomField([ActionParameter] NumberCustomFieldRequest input)
     {
         var task = await GetTask(input.TaskId)
@@ -119,7 +119,7 @@ public class CustomFieldsActions(InvocationContext invocationContext) : AsanaAct
         };
     }
 
-    [Action("Get multi-enum custom field", Description = "Get values of a custom field with multi-enum type (returns option names)")]
+    [Action("Get multi-enum custom field", Description = "Output the selected option names of a multi-enum custom field on the selected task.")]
     public async Task<MultiEnumCustomFieldResponse> GetMultiEnumCustomField([ActionParameter] MultipleCustomFieldRequest input)
     {
         var task = await GetTask(input.TaskId);
@@ -142,14 +142,14 @@ public class CustomFieldsActions(InvocationContext invocationContext) : AsanaAct
     }
 
 
-    [Action("Update text custom field", Description = "Update value of a custom field with text type")]
+    [Action("Update text custom field", Description = "Set the text value of a custom field on the selected task.")]
     public Task UpdateTextCustomField([ActionParameter] TextCustomFieldRequest input,
         [ActionParameter, Display("Value")] string value)
     {
         return UpdateCustomField(input.TaskId,  input.CustomFieldId, value);
     }
 
-    [Action("Update date custom field", Description = "Update value of a custom field with date type")]
+    [Action("Update date custom field", Description = "Set the date and time value of a custom field on the selected task.")]
     public Task UpdateDateCustomField([ActionParameter] DateCustomFieldRequest input,
         [ActionParameter, Display("Value")] DateTime value)
     {
@@ -159,7 +159,7 @@ public class CustomFieldsActions(InvocationContext invocationContext) : AsanaAct
         });
     }
 
-    [Action("Update number custom field", Description = "Update value of a custom field with number type")]
+    [Action("Update number custom field", Description = "Set the number value of a custom field on the selected task.")]
     public Task UpdateNumberCustomField(
     [ActionParameter] NumberCustomFieldRequest input,
     [ActionParameter, Display("Value")] double value)
@@ -167,7 +167,7 @@ public class CustomFieldsActions(InvocationContext invocationContext) : AsanaAct
         return UpdateCustomField(input.TaskId, input.CustomFieldId, value);
     }
 
-    [Action("Update people custom field", Description = "Update value of a custom field with people type")]
+    [Action("Update people custom field", Description = "Replace the users in a people custom field on the selected task. Supports up to 20 users; an empty selection clears the field.")]
     public Task UpdatePeopleCustomField(
     [ActionParameter] PeopleCustomFieldRequest input)
     {
@@ -182,13 +182,13 @@ public class CustomFieldsActions(InvocationContext invocationContext) : AsanaAct
         return UpdateCustomField(input.TaskId, input.CustomFieldId, ids);
     }
 
-    [Action("Update enum custom field", Description = "Update value of a custom field with enum type")]
+    [Action("Update enum custom field", Description = "Set the selected option of an enum custom field on the selected task.")]
     public Task UpdateEnumCustomField([ActionParameter] EnumCustomFieldValueRequest input)
     {
         return UpdateCustomField(input.TaskId, input.CustomFieldId, input.EnumOptionId);
     }
 
-    [Action("Set multi-enum custom field", Description = "Set values of a custom field with multi-enum type")]
+    [Action("Set multi-enum custom field", Description = "Replace the selected options of a multi-enum custom field on the selected task using choice IDs, choice names, or both. At least one choice is required.")]
     public async Task SetMultiEnumCustomField([ActionParameter] SetMultiEnumCustomFieldRequest input)
     {
         var choiceIds = (input.ChoiceIds ?? Enumerable.Empty<string>())

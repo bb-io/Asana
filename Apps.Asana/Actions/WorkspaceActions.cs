@@ -15,7 +15,7 @@ namespace Apps.Asana.Actions;
 [ActionList("Workspace")]
 public class WorkspaceActions(InvocationContext invocationContext) : AsanaActions(invocationContext)
 {
-    [Action("Search workspaces", Description = "List workspaces")]
+    [Action("Search workspaces", Description = "Search workspaces accessible to the connected user and output their IDs and names.")]
     public async Task<ListWorkspacesResponse> ListAllWorkspaces()
     {
         var request = new AsanaRequest(ApiEndpoints.Workspaces, Method.Get, Creds);
@@ -27,7 +27,7 @@ public class WorkspaceActions(InvocationContext invocationContext) : AsanaAction
         };
     }
 
-    [Action("Get workspace", Description = "Get details of specific workspaces")]
+    [Action("Get workspace", Description = "Output the details of the selected workspace.")]
     public Task<WorkspaceDto> GetWorkspace([ActionParameter] WorkspaceRequest workspace)
     {
         var endpoint = $"{ApiEndpoints.Workspaces}/{workspace.WorkspaceId}";

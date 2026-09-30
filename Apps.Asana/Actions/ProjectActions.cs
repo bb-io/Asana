@@ -12,14 +12,13 @@ using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.Sdk.Utils.Extensions.Http;
 using Blackbird.Applications.Sdk.Utils.Extensions.String;
-using Blackbird.Applications.Sdk.Utils.Extensions.Sdk;
 
 namespace Apps.Asana.Actions;
 
 [ActionList("Project")]
 public class ProjectActions(InvocationContext invocationContext) : AsanaActions(invocationContext)
 {
-    [Action("Search projects", Description = "List all projects")]
+    [Action("Search projects", Description = "Search projects in the selected workspace, with optional team and archive filters, and output their IDs and names.")]
     public async Task<ListProjectsResponse> ListAllProjects([ActionParameter] ListProjectsRequest input)
     {
         var endpoint = ApiEndpoints.Projects.WithQuery(input);
@@ -33,7 +32,7 @@ public class ProjectActions(InvocationContext invocationContext) : AsanaActions(
         };
     }
 
-    [Action("Get project", Description = "Get project by ID")]
+    [Action("Get project", Description = "Output the details of the selected project.")]
     public Task<ProjectDto> GetProject([ActionParameter] ProjectRequest input)
     {
         var endpoint = $"{ApiEndpoints.Projects}/{input.ProjectId}";
@@ -42,7 +41,7 @@ public class ProjectActions(InvocationContext invocationContext) : AsanaActions(
         return Client.ExecuteWithErrorHandling<ProjectDto>(request);
     }
 
-    [Action("Update project", Description = "Update project by ID")]
+    [Action("Update project", Description = "Update the selected project and output its details.")]
     public Task<ProjectDto> UpdateProject(
         [ActionParameter] ProjectRequest project,
         [ActionParameter] UpdateProjectRequest input)
@@ -59,7 +58,7 @@ public class ProjectActions(InvocationContext invocationContext) : AsanaActions(
         return Client.ExecuteWithErrorHandling<ProjectDto>(request);
     }
 
-    [Action("Create project", Description = "Create a new project")]
+    [Action("Create project", Description = "Create a project for the specified team and output its details.")]
     public Task<ProjectDto> CreateProject([ActionParameter] CreateProjectRequest input)
     {
         var payload = new ResponseWrapper<CreateProjectRequest>
@@ -72,7 +71,7 @@ public class ProjectActions(InvocationContext invocationContext) : AsanaActions(
         return Client.ExecuteWithErrorHandling<ProjectDto>(request);
     }
 
-    [Action("Delete project", Description = "Delete specific project")]
+    [Action("Delete project", Description = "Delete the selected project.")]
     public Task DeleteProject([ActionParameter] ProjectRequest input)
     {
         var endpoint = $"{ApiEndpoints.Projects}/{input.ProjectId}";
@@ -81,7 +80,7 @@ public class ProjectActions(InvocationContext invocationContext) : AsanaActions(
         return Client.ExecuteWithErrorHandling(request);
     }
 
-    [Action("Get project sections", Description = "Get all project sections")]
+    [Action("Get project sections", Description = "Output the IDs and names of sections in the selected project.")]
     public async Task<GetProjectSectionsResponse> GetProjectSections(
         [ActionParameter] ProjectRequest input)
     {
@@ -96,7 +95,7 @@ public class ProjectActions(InvocationContext invocationContext) : AsanaActions(
         };
     }
 
-    [Action("Get project status", Description = "Get project status by ID")]
+    [Action("Get project status", Description = "Output the details of a single project status update by its ID.")]
     public Task<ProjectStatusDto> GetProjectStatus([ActionParameter] GetProjectStatusRequest input)
     {
         var endpoint = $"/project_statuses/{input.ProjectStatusId}";
@@ -105,7 +104,7 @@ public class ProjectActions(InvocationContext invocationContext) : AsanaActions(
         return Client.ExecuteWithErrorHandling<ProjectStatusDto>(request);
     }
 
-    [Action("Get project status updates", Description = "Get project all status updates")]
+    [Action("Get project status updates", Description = "Output status updates for the selected project.")]
     public async Task<GetProjectStatusUpdatesResponse> GetProjectStatusUpdates(
         [ActionParameter] ProjectRequest input)
     {
@@ -120,11 +119,4 @@ public class ProjectActions(InvocationContext invocationContext) : AsanaActions(
         };
     }
 
-    [Action("Debug", Description = "Debug")]
-    public async Task<string> Debug(
-        [ActionParameter] ProjectRequest input)
-    {
-        var res = InvocationContext.AuthenticationCredentialsProviders.Get(CredsNames.AccessToken);
-        return res.Value;
-    }
 }
