@@ -132,15 +132,24 @@ public class TaskActions(InvocationContext invocationContext) : AsanaActions(inv
         return Client.ExecuteWithErrorHandling<TaskDto>(request);
     }
 
-    [Action("Update task", Description = "Update the name, notes, or assignee of the selected task, optionally move it to a section, and output its details.")]
+    [Action("Update task", Description = "Update the name, notes, due date or assignee of the selected task, optionally move it to a section, and output its details.")]
     public async Task<TaskDto> UpdateTask(
     [ActionParameter] TaskRequest task,
     [ActionParameter] UpdateTaskRequest input,
     [ActionParameter] TaskSectionRequest section)
     {
-        var payload = new ResponseWrapper<UpdateTaskRequest>()
+        var apiPayload = new
         {
-            Data = input
+            name = input.Name,
+            notes = input.Notes,
+            assignee = input.Assignee,
+            due_on = input.due_on?.ToString("yyyy-MM-dd"),
+            due_at = input.due_at?.ToString("yyyy-MM-ddTHH:mm:ssK")
+        };
+
+        var payload = new ResponseWrapper<object>()
+        {
+            Data = apiPayload
         };
 
         var endpoint = $"{ApiEndpoints.Tasks}/{task.TaskId}";
@@ -161,9 +170,8 @@ public class TaskActions(InvocationContext invocationContext) : AsanaActions(inv
             var moveRequest = new AsanaRequest(sectionEndpoint, Method.Post, Creds)
                 .WithJsonBody(sectionPayload, JsonConfig.Settings);
 
-             await Client.ExecuteWithErrorHandling(moveRequest);
-            updatedTask = await GetTask(new TaskRequest { TaskId = task.TaskId});
-           
+            await Client.ExecuteWithErrorHandling(moveRequest);
+            updatedTask = await GetTask(new TaskRequest { TaskId = task.TaskId });
         }
 
         return updatedTask;

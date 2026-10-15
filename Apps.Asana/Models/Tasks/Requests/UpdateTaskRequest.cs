@@ -8,8 +8,14 @@ public class UpdateTaskRequest
 {
     public string? Name { get; set; }
     public string? Notes { get; set; }
-    
+
     [Display("Assignee ID")]
     [DataSource(typeof(UserDataHandler))]
     public string? Assignee { get; set; }
+
+    [Display("Due date")]
+    public DateTime? due_on { get; set; }
+
+    [Display("Due at (Date & Time)")]
+    public DateTime? due_at { get; set; }
 }
