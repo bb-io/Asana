@@ -102,6 +102,7 @@ public class TaskActions(InvocationContext invocationContext) : AsanaActions(inv
         var tasks = await Client.Paginate<TaskSearchResultDto>(request);
         var tasksInScope = TaskSearchFilter.ByMembership(tasks, projectId, sectionId);
         tasksInScope = SubtaskFilter.Apply(tasksInScope, subtaskFilter.ExcludeSubtasks);
+        tasksInScope = CustomFieldSearchFilter.Apply(tasksInScope, input);
 
         return new ListTasksResponse
         {
